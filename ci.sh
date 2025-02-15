@@ -6,7 +6,6 @@
 set -Eeuo pipefail
 
 ci () {
-
   cargo audit
   cargo upgrade --verbose
   cargo update --verbose

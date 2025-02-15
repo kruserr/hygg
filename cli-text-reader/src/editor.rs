@@ -24,6 +24,7 @@ pub struct EditorState {
   pub command_buffer: String,
   pub search_query: String,
   pub search_direction: bool, // true for forward, false for backward
+  #[allow(dead_code)]
   pub last_search_index: Option<usize>,
   pub current_match: Option<(usize, usize, usize)>, // (line_index, start, end)
 }
@@ -51,6 +52,7 @@ pub struct Editor {
   editor_state: EditorState,
   document_hash: u64,
   total_lines: usize,
+  #[allow(dead_code)]
   progress_display_until: Option<std::time::Instant>,
   show_progress: bool,
 }
@@ -160,8 +162,8 @@ impl Editor {
         stdout.flush()?;
 
         // Handle scrolling input
-        match event::read()? {
-          CEvent::Key(key_event) => match key_event.code {
+        if let CEvent::Key(key_event) = event::read()? {
+          match key_event.code {
             KeyCode::Char('j') | KeyCode::Down => {
               if tutorial_offset + self.height < tutorial_lines.len() {
                 tutorial_offset += 1;
@@ -180,8 +182,7 @@ impl Editor {
               tutorial_offset = tutorial_offset.saturating_sub(self.height);
             }
             _ => break,
-          },
-          _ => {}
+          }
         }
       }
 
@@ -441,7 +442,7 @@ impl Editor {
     };
 
     let find_in_line = |line: &str, query: &str| -> Option<(usize, usize)> {
-      line.to_lowercase().find(&query).map(|start| (start, start + query.len()))
+      line.to_lowercase().find(query).map(|start| (start, start + query.len()))
     };
 
     if forward {
