@@ -1,6 +1,6 @@
 [package]
 name = "cli-justify"
-version = "0.1.11"
+version = "0.1.12"
 edition = "2021"
 license = "AGPL-3.0"
 readme = "../README.md"
