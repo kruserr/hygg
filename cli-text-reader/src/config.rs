@@ -32,7 +32,7 @@ pub fn load_config() -> AppConfig {
   let mut config = AppConfig::default();
 
   if let Ok(config_path) = get_config_env_path() {
-    if let Ok(_) = ensure_config_file() {
+    if ensure_config_file().is_ok() {
       dotenvy::from_path(config_path).ok();
       if let Ok(val) = std::env::var("ENABLE_TUTORIAL") {
         config.enable_tutorial = Some(val.to_lowercase() == "true");

@@ -74,22 +74,18 @@ pub fn load_progress(
   for line in reader.lines() {
     let line = line?;
     let event: Event = serde_json::from_str(&line)?;
-    if let Event::UpdateProgress {
+
+    let Event::UpdateProgress {
       document_hash: hash,
       offset,
       total_lines,
       percentage,
       ..
-    } = event
-    {
-      if hash == document_hash {
-        latest_progress = Some(Progress {
-          document_hash: hash,
-          offset,
-          total_lines,
-          percentage,
-        });
-      }
+    } = event;
+
+    if hash == document_hash {
+      latest_progress =
+        Some(Progress { document_hash: hash, offset, total_lines, percentage });
     }
   }
 
