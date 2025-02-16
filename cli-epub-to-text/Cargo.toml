@@ -16,4 +16,4 @@ workspace = true
 
 [dependencies]
 epub = "2.1"
-html2text = "0.13"
+html2text = "0.14"
