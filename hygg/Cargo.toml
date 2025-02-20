@@ -1,7 +1,7 @@
 [package]
 name = "hygg"
 version = "0.1.12"
-edition = "2021"
+edition = "2024"
 default-run = "hygg"
 license = "AGPL-3.0"
 readme = "../README.md"
