@@ -1,6 +1,6 @@
 [package]
 name = "hygg"
-version = "0.1.12"
+version = "0.1.13"
 edition = "2024"
 default-run = "hygg"
 license = "AGPL-3.0"
