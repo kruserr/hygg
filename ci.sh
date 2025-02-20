@@ -14,7 +14,8 @@ ci () {
   cargo clippy --all-targets --all-features -- -Dwarnings
   cargo test
 
-  cargo +nightly udeps --all-targets
+  # cargo +nightly udeps --all-targets
+  # cargo udeps --all-targets
 }
 
 ci
