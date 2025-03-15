@@ -4,3 +4,4 @@ test-data/local
 progress.json
 TODO.md
 hygg-server/data/hygg.db
+test-upload.txt

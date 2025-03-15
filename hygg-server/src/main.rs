@@ -83,6 +83,33 @@ async fn get_file_content(Path(file_path): Path<String>) -> impl IntoResponse {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct FileUpload {
+    file_path: String,
+    content: String,
+}
+
+async fn upload_file(
+    State(_state): State<AppState>,
+    Json(upload): Json<FileUpload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    println!("FILE UPLOAD: Attempting to save file: {}", upload.file_path);
+    
+    // For security, only allow files to be saved to test-data directory
+    let file_name = upload.file_path.trim_start_matches('/').split('/').last().unwrap_or("unknown.txt");
+    let safe_path = format!("test-data/{}", file_name);
+    
+    // Write the file
+    tokio::fs::write(&safe_path, &upload.content).await
+        .map_err(|e| {
+            println!("ERROR: Failed to write file {:?}: {}", safe_path, e);
+            (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write file: {}", e))
+        })?;
+    
+    println!("FILE UPLOAD: Successfully saved file: {}", file_name);
+    Ok((StatusCode::OK, "File uploaded successfully".to_string()).into_response())
+}
+
 async fn acquire_lock(
     State(state): State<AppState>,
     Json(progress): Json<ReadingProgress>,
@@ -374,6 +401,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let app = Router::new()
         .route("/file/:path", get(get_file_content))
+        .route("/file/upload", post(upload_file))
         .route("/progress/lock", post(acquire_lock))
         .route("/progress/release", post(release_lock))
         .route("/progress/update", post(update_progress))

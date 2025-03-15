@@ -12,6 +12,8 @@ pub enum ClientError {
     Http(#[from] reqwest::Error),
     #[error("Lock error: {0}")]
     Lock(String),
+    #[error("Upload error: {0}")]
+    Upload(String),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -118,5 +120,32 @@ impl HyggClient {
 
         let progress = response.json().await?;
         Ok(progress)
+    }
+    
+    pub async fn upload_file(&self, file_path: &str, content: &str) -> Result<()> {
+        let url = format!("{}/file/upload", SERVER_URL);
+        
+        #[derive(Serialize)]
+        struct FileUpload {
+            file_path: String,
+            content: String,
+        }
+        
+        let upload = FileUpload {
+            file_path: file_path.to_string(),
+            content: content.to_string(),
+        };
+        
+        let response = self.client.post(&url)
+            .json(&upload)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error = response.text().await?;
+            return Err(ClientError::Upload(format!("Failed to upload file: {}", error)).into());
+        }
+
+        Ok(())
     }
 }

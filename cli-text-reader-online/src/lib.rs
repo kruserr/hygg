@@ -10,6 +10,46 @@ use uuid::Uuid;
 use chrono::Utc;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::path::Path;
+use tokio::fs::read_to_string;
+
+/// Upload a local file to the server for syncing
+/// 
+/// This allows users to upload their files to the server so they can be accessed
+/// from other clients and their reading progress can be tracked online.
+/// 
+/// # Arguments
+/// * `local_file_path` - Path to the local file to upload
+/// * `user_id` - User identifier
+/// 
+/// # Returns
+/// * `Result<(), Box<dyn std::error::Error>>` - Result indicating success or error
+pub async fn upload_file_to_server(
+    local_file_path: String,
+    user_id: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Check if file exists
+    if !Path::new(&local_file_path).exists() {
+        return Err(format!("File not found: {}", local_file_path).into());
+    }
+    
+    // Read file content
+    let content = read_to_string(&local_file_path).await?
+        .replace('\r', ""); // Normalize line endings
+    
+    // Extract filename from path
+    let file_name = Path::new(&local_file_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| format!("Invalid file path: {}", local_file_path))?;
+    
+    // Create client and upload file
+    let client = HyggClient::new(user_id.clone());
+    client.upload_file(file_name, &content).await?;
+    
+    println!("Successfully uploaded {} to the server", file_name);
+    Ok(())
+}
 
 pub async fn run_cli_text_reader(
     file_path: String,
