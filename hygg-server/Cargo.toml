@@ -1,0 +1,28 @@
+[package]
+name = "hygg-server"
+version = "0.1.11"
+edition = "2021"
+license = "AGPL-3.0"
+readme = "../README.md"
+repository = "https://github.com/kruserr/hygg"
+description = "A less like CLI text reader"
+keywords = ["pdf", "cli", "parser", "terminal", "utility"]
+categories = ["command-line-utilities", "parser-implementations", "text-processing"]
+
+[lints]
+workspace = true
+
+[dependencies]
+tokio = { version = "1.36", features = ["full"] }
+axum = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tower-http = { version = "0.5", features = ["cors"] }
+uuid = { version = "1.7", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "chrono", "uuid"] }
+anyhow = "1.0"
+async-lock = "3.3"
