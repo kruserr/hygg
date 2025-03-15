@@ -53,7 +53,7 @@ Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/pages/g
 - [x] Convert scanned documents and images to plain text with ocrmypdf
 - [x] Auto saving progress
 - [x] Integrated command line with vim like commands
-- [ ] Server to sync progress and books
+- [x] Server to sync progress and books
 - [ ] Text highlighting with server sync
 - [ ] Start screen to show overview of books and progress
 - [ ] Full test suite
