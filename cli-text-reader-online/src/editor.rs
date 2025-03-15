@@ -42,79 +42,92 @@ impl EditorState {
 }
 
 pub struct Editor {
-  lines: Vec<String>,
-  col: usize,
-  offset: usize,
-  width: usize,
-  height: usize,
-  show_highlighter: bool,
-  editor_state: EditorState,
-  document_hash: u64,
-  total_lines: usize,
-  progress_display_until: Option<std::time::Instant>,
-  show_progress: bool,
+    lines: Vec<String>,
+    col: usize,
+    offset: usize,
+    width: usize,
+    height: usize,
+    show_highlighter: bool,
+    editor_state: EditorState,
+    document_hash: u64,
+    total_lines: usize,
+    progress_display_until: Option<std::time::Instant>,
+    show_progress: bool,
+    progress_callback: Option<Box<dyn Fn(usize) + Send>>,
+    read_only: bool,
 }
 
 impl Editor {
-  pub fn new(lines: Vec<String>, col: usize) -> Self {
-    let document_hash = generate_hash(&lines);
-    let total_lines = lines.len();
-    let (width, height) = terminal::size()
-      .map(|(w, h)| (w as usize, h as usize))
-      .unwrap_or((80, 24));
+    pub fn new(lines: Vec<String>, col: usize) -> Self {
+        let document_hash = generate_hash(&lines);
+        let total_lines = lines.len();
+        let (width, height) = terminal::size()
+            .map(|(w, h)| (w as usize, h as usize))
+            .unwrap_or((80, 24));
 
-    Self {
-      lines,
-      col,
-      offset: 0,
-      width,
-      height,
-      show_highlighter: true,
-      editor_state: EditorState::new(),
-      document_hash,
-      total_lines,
-      progress_display_until: None,
-      show_progress: false,
-    }
+        Self {
+            lines,
+            col,
+            offset: 0,
+            width,
+            height,
+            show_highlighter: true,
+            editor_state: EditorState::new(),
+            document_hash,
+            total_lines,
+            progress_display_until: None,
+            show_progress: false,
+            progress_callback: None,
+            read_only: false,
+        }
   }
 
-  pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-    let mut stdout = io::stdout();
-    let config = load_config();
-
-    self.show_highlighter = config.enable_line_highlighter.unwrap_or(true);
-
-    let show_tutorial = match config.enable_tutorial {
-      Some(false) => false,
-      _ => self.lines.is_empty() || load_progress(self.document_hash).is_err(),
-    };
-
-    if show_tutorial {
-      self.show_tutorial(&mut stdout)?;
+    pub fn set_position(&mut self, position: usize) {
+        self.offset = position.min(self.total_lines.saturating_sub(1));
+    }
+    
+    pub fn set_read_only(&mut self, read_only: bool) {
+        self.read_only = read_only;
     }
 
-    // If the file is empty, exit after tutorial
-    if self.lines.is_empty() {
-      self.cleanup(&mut stdout)?;
-      return Ok(());
+    pub fn run_with_progress<F>(&mut self, callback: F) -> Result<(), Box<dyn std::error::Error>>
+    where
+        F: Fn(usize) + Send + 'static,
+    {
+        self.progress_callback = Some(Box::new(callback));
+        self.run()
     }
 
-    self.offset = match load_progress(self.document_hash) {
-      Ok(progress) => {
-        (progress.percentage / 100.0 * self.total_lines as f64).round() as usize
-      }
-      Err(_) => 0,
-    };
+    pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut stdout = io::stdout();
+        let config = load_config();
 
-    if std::io::stdout().is_terminal() {
-      execute!(stdout, terminal::EnterAlternateScreen, Hide)?;
-      terminal::enable_raw_mode()?;
-    }
+        self.show_highlighter = config.enable_line_highlighter.unwrap_or(true);
 
-    self.main_loop(&mut stdout)?;
+        let show_tutorial = match config.enable_tutorial {
+            Some(false) => false,
+            _ => self.lines.is_empty(),
+        };
 
-    self.cleanup(&mut stdout)?;
-    Ok(())
+        if show_tutorial {
+            self.show_tutorial(&mut stdout)?;
+        }
+
+        // If the file is empty, exit after tutorial
+        if self.lines.is_empty() {
+            self.cleanup(&mut stdout)?;
+            return Ok(());
+        }
+
+        if std::io::stdout().is_terminal() {
+            execute!(stdout, terminal::EnterAlternateScreen, Hide)?;
+            terminal::enable_raw_mode()?;
+        }
+
+        self.main_loop(&mut stdout)?;
+
+        self.cleanup(&mut stdout)?;
+        Ok(())
   }
 
   pub fn show_tutorial(
@@ -209,10 +222,10 @@ impl Editor {
     Ok(())
   }
 
-  fn main_loop(
-    &mut self,
-    stdout: &mut io::Stdout,
-  ) -> Result<(), Box<dyn std::error::Error>> {
+    fn main_loop(
+        &mut self,
+        stdout: &mut io::Stdout,
+    ) -> Result<(), Box<dyn std::error::Error>> {
     loop {
       if std::io::stdout().is_terminal() {
         execute!(stdout, MoveTo(0, 0), Clear(ClearType::All))?;
@@ -285,6 +298,16 @@ impl Editor {
         execute!(stdout, MoveTo(x, y))?;
         print!("{}", message);
       }
+      
+      // Show read-only indicator if in read-only mode
+      if self.read_only {
+        let message = "READ-ONLY";
+        let x = 2;
+        let y = self.height as u16 - 2;
+        execute!(stdout, MoveTo(x, y), SetForegroundColor(Color::Yellow))?;
+        print!("{}", message);
+        execute!(stdout, ResetColor)?;
+      }
 
       stdout.flush()?;
 
@@ -323,16 +346,37 @@ impl Editor {
               KeyCode::Char('j') | KeyCode::Down => {
                 if self.offset + self.height < self.total_lines {
                   self.offset += 1;
+                  
+                  // If we have a progress callback and we're not in read-only mode, call it
+                  if let Some(callback) = &self.progress_callback {
+                    if !self.read_only {
+                      callback(self.offset);
+                    }
+                  }
                 }
               }
               KeyCode::Char('k') | KeyCode::Up => {
                 if self.offset > 0 {
                   self.offset -= 1;
+                  
+                  // If we have a progress callback and we're not in read-only mode, call it
+                  if let Some(callback) = &self.progress_callback {
+                    if !self.read_only {
+                      callback(self.offset);
+                    }
+                  }
                 }
               }
               KeyCode::PageDown => {
                 if self.offset + self.height < self.total_lines {
                   self.offset += self.height - 3;
+                  
+                  // If we have a progress callback and we're not in read-only mode, call it
+                  if let Some(callback) = &self.progress_callback {
+                    if !self.read_only {
+                      callback(self.offset);
+                    }
+                  }
                 }
               }
               KeyCode::PageUp => {
@@ -340,6 +384,13 @@ impl Editor {
                   self.offset -= self.height - 3;
                 } else {
                   self.offset = 0;
+                }
+                
+                // If we have a progress callback and we're not in read-only mode, call it
+                if let Some(callback) = &self.progress_callback {
+                  if !self.read_only {
+                    callback(self.offset);
+                  }
                 }
               }
               _ => {}
