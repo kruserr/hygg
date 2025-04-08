@@ -41,10 +41,10 @@ then use the `--ocr=true` flag
 hygg --ocr=true doc.pdf
 ```
 
-For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/README.md)
+For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)
 
 ## Documentation
-Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)
+Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.md)
 
 ## Roadmap
 - [x] Plain text format support
