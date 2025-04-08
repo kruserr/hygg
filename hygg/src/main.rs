@@ -104,37 +104,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     None => "".to_owned(),
   };
 
-  println!("
-    server_upload: {server_upload},
-    server_list: {server_list},
-    server_read: {server_read}
-  ");
+  // println!("
+  //   server_upload: {server_upload},
+  //   server_list: {server_list},
+  //   server_read: {server_read}
+  // ");
 
-  if (!server_upload.is_empty()) {
-    // TODO function to upload a local file to the server here
+  // if (!server_upload.is_empty()) {
+  //   // TODO function to upload a local file to the server here
 
-    return Ok(());
-  }
+  //   return Ok(());
+  // }
 
-  if(server_list) {
-    // TODO function to list all file hashes, progress and original file names here
+  // if(server_list) {
+  //   // TODO function to list all file hashes, progress and original file names here
 
-    return Ok(());
-  }
+  //   return Ok(());
+  // }
 
-  if (!server_read.is_empty()) {
-    // TODO function to download file with the hash of `server_read`
-    // and store locally with the hash as name here
+  // if (!server_read.is_empty()) {
+  //   // TODO function to download file with the hash of `server_read`
+  //   // and store locally with the hash as name here
 
-    // let server_file_path = ""; // TODO get server file hash local path here
+  //   // let server_file_path = ""; // TODO get server file hash local path here
 
-    // let content = cli_epub_to_text::epub_to_text(&server_file_path)
-    //   .or(cli_pdf_to_text::pdf_to_text(&server_file_path))?;
-    // let lines = cli_justify::justify(&content, col);
-    // cli_text_reader_online::run_cli_text_reader(lines, col)?;
+  //   // let content = cli_epub_to_text::epub_to_text(&server_file_path)
+  //   //   .or(cli_pdf_to_text::pdf_to_text(&server_file_path))?;
+  //   // let lines = cli_justify::justify(&content, col);
+  //   // cli_text_reader_online::run_cli_text_reader(lines, col)?;
 
-    return Ok(());
-  }
+  //   return Ok(());
+  // }
 
   // TODO refactor the above into the assignment of `file` and `temp_file` vars
   // such that ocr also works for files from the server

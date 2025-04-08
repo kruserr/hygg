@@ -1,6 +1,6 @@
 [package]
 name = "cli-text-reader-online"
-version = "0.1.11"
+version = "0.1.14"
 edition = "2021"
 license = "AGPL-3.0"
 readme = "../README.md"
@@ -23,7 +23,7 @@ dirs = "5"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1.36", features = ["full"] }
-uuid = { version = "1.7", features = ["v4", "serde"] }
+tokio = { version = "1.44", features = ["full"] }
+uuid = { version = "1.16", features = ["v4", "serde"] }
 anyhow = "1.0"
 thiserror = "1.0"
