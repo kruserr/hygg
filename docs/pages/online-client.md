@@ -2,6 +2,9 @@
 
 ### [<-](../README.md)
 
+!WARNING!
+These docs are outdated and work in progress. Right now you have to clone the repo and run the server directly, then run the online client directly.
+
 ## Overview
 
 The Hygg online client allows you to read text files with progress tracking that is synchronized with a server. This means you can start reading on one device and continue from the same position on another device.
