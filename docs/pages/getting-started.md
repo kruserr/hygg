@@ -37,5 +37,5 @@ Clone the repo, build from source, install and run
 git clone https://github.com/kruserr/hygg.git
 cd hygg
 cargo install --locked --path hygg
-cargo run -- test-data/pdf/pdfreference1.7old-1-50.pdf
+hygg test-data/pdf/pdfreference1.7old-1-50.pdf
 ```
