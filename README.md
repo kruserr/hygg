@@ -54,7 +54,7 @@ Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.
 - [x] Auto saving progress
 - [x] Integrated command line with vim like commands
 - [x] Server to sync progress and books
-- [ ] Text selection and yanking
+- [x] Text selection and yanking
 - [ ] Execute commands from yanked text
 - [ ] Text highlighting with server sync
 - [ ] Offline PWA web client
