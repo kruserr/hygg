@@ -138,7 +138,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   // TODO refactor the above into the assignment of `file` and `temp_file` vars
   // such that ocr also works for files from the server
-  let file = std::env::args().last().unwrap();
+  let file = std::env::args().next_back().unwrap();
   let temp_file = format!("{file}-{}", uuid::Uuid::new_v4());
 
   let content = if (ocr && which("ocrmypdf").is_some()) {
