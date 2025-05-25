@@ -1,18 +1,15 @@
 [package]
 name = "hygg"
-version = "0.1.15"
+version.workspace = true
 edition = "2024"
+authors.workspace = true
 default-run = "hygg"
-license = "AGPL-3.0"
-readme = "../README.md"
-repository = "https://github.com/kruserr/hygg"
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
 description = "Simplifying the way you read"
-keywords = ["pdf", "cli", "parser", "terminal", "utility"]
-categories = [
-    "command-line-utilities",
-    "parser-implementations",
-    "text-processing",
-]
+keywords.workspace = true
+categories.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -29,4 +26,4 @@ redirect-stderr = { version = "0.1", path = "../redirect-stderr" }
 
 uuid = { version = "1", features = ["v4"] }
 
-getopts = "0.2"
+clap = { version = "4.0", features = ["derive"] }

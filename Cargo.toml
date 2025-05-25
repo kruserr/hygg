@@ -15,6 +15,19 @@ members = [
   # "examples",
 ]
 
+[workspace.package]
+version = "0.1.15"
+authors = ["kruserr"]
+license = "AGPL-3.0"
+readme = "README.md"
+repository = "https://github.com/kruserr/hygg"
+keywords = ["pdf", "cli", "parser", "terminal", "utility"]
+categories = [
+  "command-line-utilities",
+  "parser-implementations",
+  "text-processing",
+]
+
 [workspace.lints.rust]
 unused_parens = "allow"
 unused_imports = "allow"
