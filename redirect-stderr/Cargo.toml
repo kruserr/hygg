@@ -1,13 +1,17 @@
 [package]
 name = "redirect-stderr"
-version = "0.1.14"
+version = "0.1.15"
 edition = "2024"
 license = "AGPL-3.0"
 readme = "../README.md"
 repository = "https://github.com/kruserr/hygg"
 description = "A cross platform lib to redirect std-err"
 keywords = ["pdf", "cli", "parser", "terminal", "utility"]
-categories = ["command-line-utilities", "parser-implementations", "text-processing"]
+categories = [
+    "command-line-utilities",
+    "parser-implementations",
+    "text-processing",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

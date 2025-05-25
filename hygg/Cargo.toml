@@ -1,6 +1,6 @@
 [package]
 name = "hygg"
-version = "0.1.14"
+version = "0.1.15"
 edition = "2024"
 default-run = "hygg"
 license = "AGPL-3.0"
@@ -8,7 +8,11 @@ readme = "../README.md"
 repository = "https://github.com/kruserr/hygg"
 description = "Simplifying the way you read"
 keywords = ["pdf", "cli", "parser", "terminal", "utility"]
-categories = ["command-line-utilities", "parser-implementations", "text-processing"]
+categories = [
+    "command-line-utilities",
+    "parser-implementations",
+    "text-processing",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,8 +25,8 @@ cli-epub-to-text = { version = "0.1", path = "../cli-epub-to-text" }
 cli-justify = { version = "0.1", path = "../cli-justify" }
 cli-text-reader = { version = "0.1", path = "../cli-text-reader" }
 cli-text-reader-online = { version = "0.1", path = "../cli-text-reader-online" }
-redirect-stderr = { version = "0.1", path= "../redirect-stderr" }
+redirect-stderr = { version = "0.1", path = "../redirect-stderr" }
 
-uuid = {version = "1", features = ["v4"]}
+uuid = { version = "1", features = ["v4"] }
 
 getopts = "0.2"
