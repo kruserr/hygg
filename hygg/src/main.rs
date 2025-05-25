@@ -117,7 +117,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // }
 
   // if(server_list) {
-  //   // TODO function to list all file hashes, progress and original file names here
+  //   // TODO function to list all file hashes, progress and original file
+  // names here
 
   //   return Ok(());
   // }
@@ -126,7 +127,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   //   // TODO function to download file with the hash of `server_read`
   //   // and store locally with the hash as name here
 
-  //   // let server_file_path = ""; // TODO get server file hash local path here
+  //   // let server_file_path = ""; // TODO get server file hash local path
+  // here
 
   //   // let content = cli_epub_to_text::epub_to_text(&server_file_path)
   //   //   .or(cli_pdf_to_text::pdf_to_text(&server_file_path))?;

@@ -41,7 +41,7 @@ impl Editor {
           .enumerate()
         {
           execute!(stdout, MoveTo(center_offset as u16, i as u16))?;
-          println!("{}", line);
+          println!("{line}");
         }
 
         stdout.flush()?;

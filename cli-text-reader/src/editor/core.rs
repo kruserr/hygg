@@ -14,7 +14,8 @@ pub enum EditorMode {
   VisualLine,
 }
 
-// Editor state - tracks current mode, command buffer, search state, and selection
+// Editor state - tracks current mode, command buffer, search state, and
+// selection
 pub struct EditorState {
   pub mode: EditorMode,
   pub command_buffer: String,
@@ -23,10 +24,11 @@ pub struct EditorState {
   #[allow(dead_code)]
   pub last_search_index: Option<usize>,
   pub current_match: Option<(usize, usize, usize)>, // (line_index, start, end)
-  pub selection_start: Option<(usize, usize)>, // (line_index, column_index)
-  pub selection_end: Option<(usize, usize)>,   // (line_index, column_index)
-  pub yank_buffer: String,                     // Buffer for yanked text
-  pub operator_pending: Option<char>,          // For vim operations like 'y'
+  pub selection_start: Option<(usize, usize)>,      /* (line_index,
+                                                     * column_index) */
+  pub selection_end: Option<(usize, usize)>, // (line_index, column_index)
+  pub yank_buffer: String,                   // Buffer for yanked text
+  pub operator_pending: Option<char>,        // For vim operations like 'y'
 }
 
 impl EditorState {

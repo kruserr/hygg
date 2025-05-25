@@ -103,9 +103,8 @@ impl Editor {
 
     if big_word {
       // Big word (space separated) - non-whitespace sequences
-      let is_whitespace = |idx: usize| {
-        line.chars().nth(idx).map_or(true, |c| c.is_whitespace())
-      };
+      let is_whitespace =
+        |idx: usize| line.chars().nth(idx).is_none_or(|c| c.is_whitespace());
 
       // If cursor is on whitespace, no word to select
       if is_whitespace(col_idx) {
@@ -136,7 +135,7 @@ impl Editor {
 
       let current_char = char_at(col_idx);
 
-      // If cursor is on whitespace, no word to select  
+      // If cursor is on whitespace, no word to select
       if current_char.is_whitespace() {
         return;
       }
@@ -146,7 +145,7 @@ impl Editor {
 
       if is_word_char(current_char) {
         // We're on a word character - find word boundaries
-        
+
         // Move backward to find start of word
         while start > 0 && is_word_char(char_at(start - 1)) {
           start -= 1;
@@ -158,7 +157,7 @@ impl Editor {
         }
       } else {
         // We're on punctuation - find punctuation sequence boundaries
-        
+
         // Move backward to find start of punctuation sequence
         while start > 0 {
           let prev_char = char_at(start - 1);

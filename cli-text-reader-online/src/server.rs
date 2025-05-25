@@ -45,8 +45,8 @@ impl HyggClient {
       .and_then(|name| name.to_str())
       .unwrap_or("sample.txt");
 
-    let url = format!("{}/file/{}", SERVER_URL, file_name);
-    println!("Requesting file from: {}", url);
+    let url = format!("{SERVER_URL}/file/{file_name}");
+    println!("Requesting file from: {url}");
     let content =
       self.client.get(&url).send().await?.error_for_status()?.text().await?;
     Ok(content)
@@ -56,7 +56,7 @@ impl HyggClient {
     &self,
     progress: &ReadingProgress,
   ) -> Result<ReadingProgress> {
-    let url = format!("{}/progress/lock", SERVER_URL);
+    let url = format!("{SERVER_URL}/progress/lock");
     let response = self.client.post(&url).json(progress).send().await?;
 
     if !response.status().is_success() {
@@ -72,7 +72,7 @@ impl HyggClient {
     &self,
     progress: &ReadingProgress,
   ) -> Result<ReadingProgress> {
-    let url = format!("{}/progress/update", SERVER_URL);
+    let url = format!("{SERVER_URL}/progress/update");
     let response = self.client.post(&url).json(progress).send().await?;
 
     if !response.status().is_success() {
@@ -88,13 +88,13 @@ impl HyggClient {
     &self,
     progress_id: &str,
   ) -> Result<ReadingProgress> {
-    let url = format!("{}/progress/{}", SERVER_URL, progress_id);
+    let url = format!("{SERVER_URL}/progress/{progress_id}");
     let response = self.client.get(&url).send().await?;
 
     if !response.status().is_success() {
       let error = response.text().await?;
       return Err(
-        ClientError::Lock(format!("Failed to get progress: {}", error)).into(),
+        ClientError::Lock(format!("Failed to get progress: {error}")).into(),
       );
     }
 
@@ -106,13 +106,13 @@ impl HyggClient {
     &self,
     progress: &ReadingProgress,
   ) -> Result<ReadingProgress> {
-    let url = format!("{}/progress/release", SERVER_URL);
+    let url = format!("{SERVER_URL}/progress/release");
     let response = self.client.post(&url).json(progress).send().await?;
 
     if !response.status().is_success() {
       let error = response.text().await?;
       return Err(
-        ClientError::Lock(format!("Failed to release lock: {}", error)).into(),
+        ClientError::Lock(format!("Failed to release lock: {error}")).into(),
       );
     }
 
@@ -125,7 +125,7 @@ impl HyggClient {
     file_path: &str,
     content: &str,
   ) -> Result<()> {
-    let url = format!("{}/file/upload", SERVER_URL);
+    let url = format!("{SERVER_URL}/file/upload");
 
     #[derive(Serialize)]
     struct FileUpload {
@@ -143,7 +143,7 @@ impl HyggClient {
     if !response.status().is_success() {
       let error = response.text().await?;
       return Err(
-        ClientError::Upload(format!("Failed to upload file: {}", error)).into(),
+        ClientError::Upload(format!("Failed to upload file: {error}")).into(),
       );
     }
 

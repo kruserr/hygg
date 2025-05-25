@@ -170,7 +170,7 @@ impl Editor {
           .enumerate()
         {
           execute!(stdout, MoveTo(center_offset as u16, i as u16))?;
-          println!("{}", line);
+          println!("{line}");
         }
 
         stdout.flush()?;
@@ -258,7 +258,7 @@ impl Editor {
         // Handle search highlight
         if let Some((line_idx, start, end)) = self.editor_state.current_match {
           if line_idx == self.offset + i {
-            print!("{}", center_offset_string);
+            print!("{center_offset_string}");
             print!("{}", &line[..start]);
             execute!(
               stdout,
@@ -272,7 +272,7 @@ impl Editor {
           }
         }
 
-        println!("{}{}", center_offset_string, line);
+        println!("{center_offset_string}{line}");
 
         if self.show_highlighter && i == self.height / 2 {
           execute!(stdout, SetBackgroundColor(Color::Reset))?;
@@ -294,11 +294,11 @@ impl Editor {
       if self.show_progress {
         let progress =
           (self.offset as f64 / self.total_lines as f64 * 100.0).round();
-        let message = format!("{}%", progress);
+        let message = format!("{progress}%");
         let x = self.width as u16 - message.len() as u16 - 2;
         let y = self.height as u16 - 2;
         execute!(stdout, MoveTo(x, y))?;
-        print!("{}", message);
+        print!("{message}");
       }
 
       // Show read-only indicator if in read-only mode
@@ -307,7 +307,7 @@ impl Editor {
         let x = 2;
         let y = self.height as u16 - 2;
         execute!(stdout, MoveTo(x, y), SetForegroundColor(Color::Yellow))?;
-        print!("{}", message);
+        print!("{message}");
         execute!(stdout, ResetColor)?;
       }
 
@@ -349,7 +349,8 @@ impl Editor {
                 if self.offset + self.height < self.total_lines {
                   self.offset += 1;
 
-                  // If we have a progress callback and we're not in read-only mode, call it
+                  // If we have a progress callback and we're not in read-only
+                  // mode, call it
                   if let Some(callback) = &self.progress_callback {
                     if !self.read_only {
                       callback(self.offset);
@@ -361,7 +362,8 @@ impl Editor {
                 if self.offset > 0 {
                   self.offset -= 1;
 
-                  // If we have a progress callback and we're not in read-only mode, call it
+                  // If we have a progress callback and we're not in read-only
+                  // mode, call it
                   if let Some(callback) = &self.progress_callback {
                     if !self.read_only {
                       callback(self.offset);
@@ -373,7 +375,8 @@ impl Editor {
                 if self.offset + self.height < self.total_lines {
                   self.offset += self.height - 3;
 
-                  // If we have a progress callback and we're not in read-only mode, call it
+                  // If we have a progress callback and we're not in read-only
+                  // mode, call it
                   if let Some(callback) = &self.progress_callback {
                     if !self.read_only {
                       callback(self.offset);
@@ -388,7 +391,8 @@ impl Editor {
                   self.offset = 0;
                 }
 
-                // If we have a progress callback and we're not in read-only mode, call it
+                // If we have a progress callback and we're not in read-only
+                // mode, call it
                 if let Some(callback) = &self.progress_callback {
                   if !self.read_only {
                     callback(self.offset);

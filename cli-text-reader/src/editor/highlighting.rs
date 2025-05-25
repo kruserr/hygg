@@ -74,7 +74,7 @@ impl Editor {
 
       if is_in_selection_range {
         // This line is part of the selection, highlight it
-        print!("{}", center_offset_string);
+        print!("{center_offset_string}");
 
         if self.editor_state.mode == EditorMode::VisualLine {
           // In line mode, highlight the entire line
@@ -83,7 +83,7 @@ impl Editor {
             SetBackgroundColor(Color::DarkBlue),
             SetForegroundColor(Color::White)
           )?;
-          println!("{}", line);
+          println!("{line}");
           execute!(stdout, ResetColor)?;
           return Ok(true);
         } else {
@@ -146,7 +146,7 @@ impl Editor {
   ) -> IoResult<bool> {
     if let Some((line_idx, start, end)) = self.editor_state.current_match {
       if line_idx == self.offset + line_index {
-        print!("{}", center_offset_string);
+        print!("{center_offset_string}");
         print!("{}", &line[..start]);
         execute!(
           stdout,

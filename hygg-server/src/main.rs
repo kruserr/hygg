@@ -87,12 +87,12 @@ async fn get_file_content(Path(file_path): Path<String>) -> impl IntoResponse {
       .unwrap_or("sample.txt")
   );
 
-  println!("Attempting to read file: {}", safe_path);
+  println!("Attempting to read file: {safe_path}");
   match tokio::fs::read_to_string(&safe_path).await {
     Ok(content) => (StatusCode::OK, content).into_response(),
     Err(err) => {
-      eprintln!("Error reading file {}: {}", safe_path, err);
-      (StatusCode::NOT_FOUND, format!("File not found: {}", file_path))
+      eprintln!("Error reading file {safe_path}: {err}");
+      (StatusCode::NOT_FOUND, format!("File not found: {file_path}"))
         .into_response()
     }
   }
@@ -117,15 +117,15 @@ async fn upload_file(
     .split('/')
     .next_back()
     .unwrap_or("unknown.txt");
-  let safe_path = format!("test-data/{}", file_name);
+  let safe_path = format!("test-data/{file_name}");
 
   // Write the file
   tokio::fs::write(&safe_path, &upload.content).await.map_err(|e| {
-    println!("ERROR: Failed to write file {:?}: {}", safe_path, e);
-    (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write file: {}", e))
+    println!("ERROR: Failed to write file {safe_path:?}: {e}");
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write file: {e}"))
   })?;
 
-  println!("FILE UPLOAD: Successfully saved file: {}", file_name);
+  println!("FILE UPLOAD: Successfully saved file: {file_name}");
   Ok((StatusCode::OK, "File uploaded successfully".to_string()).into_response())
 }
 
@@ -144,7 +144,7 @@ async fn acquire_lock(
     .fetch_optional(&state.db)
     .await
     .map_err(|e| {
-      println!("DATABASE ERROR: Failed to query reading_progress: {}", e);
+      println!("DATABASE ERROR: Failed to query reading_progress: {e}");
       (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
 
@@ -167,7 +167,7 @@ async fn acquire_lock(
         .execute(&state.db)
         .await
         .map_err(|e| {
-            println!("DATABASE ERROR: Failed to create progress entry: {}", e);
+            println!("DATABASE ERROR: Failed to create progress entry: {e}");
             (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
         })?;
   }
@@ -188,7 +188,7 @@ async fn acquire_lock(
     );
     return Err((
       axum::http::StatusCode::CONFLICT,
-      format!("Progress is locked by {}", holder),
+      format!("Progress is locked by {holder}"),
     ));
   }
 
@@ -213,7 +213,7 @@ async fn acquire_lock(
   .execute(&state.db)
   .await
   .map_err(|e| {
-    println!("DATABASE ERROR: Failed to update lock in database: {}", e);
+    println!("DATABASE ERROR: Failed to update lock in database: {e}");
     (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
   })?;
 
@@ -227,14 +227,14 @@ async fn acquire_lock(
     .fetch_one(&state.db)
     .await
     .map_err(|e| {
-        println!("DATABASE ERROR: Failed to query updated progress: {}", e);
+        println!("DATABASE ERROR: Failed to query updated progress: {e}");
         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
 
   // Convert to ReadingProgress
   let id_str: String = db_progress.get(0);
   let id = Uuid::parse_str(&id_str).map_err(|e| {
-    (StatusCode::INTERNAL_SERVER_ERROR, format!("Invalid UUID: {}", e))
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("Invalid UUID: {e}"))
   })?;
 
   let mut updated_progress = progress.clone();
@@ -289,7 +289,7 @@ async fn release_lock(
       .execute(&state.db)
       .await
       .map_err(|e| {
-        println!("DATABASE ERROR: Failed to update lock in database: {}", e);
+        println!("DATABASE ERROR: Failed to update lock in database: {e}");
         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
       })?;
 
@@ -364,7 +364,7 @@ async fn update_progress(
     .execute(&state.db)
     .await
     .map_err(|e| {
-        println!("DATABASE ERROR: Failed to insert progress event: {}", e);
+        println!("DATABASE ERROR: Failed to insert progress event: {e}");
         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
 
@@ -381,7 +381,7 @@ async fn update_progress(
   .execute(&state.db)
   .await
   .map_err(|e| {
-    println!("DATABASE ERROR: Failed to update reading progress: {}", e);
+    println!("DATABASE ERROR: Failed to update reading progress: {e}");
     (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
   })?;
 
@@ -396,7 +396,7 @@ async fn get_progress(
   State(state): State<AppState>,
   Path(id): Path<String>,
 ) -> Result<Json<ReadingProgress>, (axum::http::StatusCode, String)> {
-  println!("PROGRESS GET: Retrieving progress with ID {}", id);
+  println!("PROGRESS GET: Retrieving progress with ID {id}");
 
   // Query the database for the progress with the given ID
   let progress = sqlx::query("
@@ -408,7 +408,7 @@ async fn get_progress(
     .fetch_optional(&state.db)
     .await
     .map_err(|e| {
-        println!("DATABASE ERROR: Failed to query reading progress: {}", e);
+        println!("DATABASE ERROR: Failed to query reading progress: {e}");
         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
 
@@ -420,7 +420,7 @@ async fn get_progress(
       let id = match Uuid::parse_str(&id_str) {
         Ok(uuid) => uuid,
         Err(e) => {
-          return Err((StatusCode::BAD_REQUEST, format!("Invalid UUID: {}", e)))
+          return Err((StatusCode::BAD_REQUEST, format!("Invalid UUID: {e}")))
         }
       };
 
@@ -446,8 +446,8 @@ async fn get_progress(
       Ok(Json(progress))
     }
     None => {
-      println!("PROGRESS NOT FOUND: ID {}", id);
-      Err((StatusCode::NOT_FOUND, format!("Progress with ID {} not found", id)))
+      println!("PROGRESS NOT FOUND: ID {id}");
+      Err((StatusCode::NOT_FOUND, format!("Progress with ID {id} not found")))
     }
   }
 }

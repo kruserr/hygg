@@ -65,7 +65,7 @@ impl Editor {
     let x = self.width as u16 - position_info.len() as u16 - 1;
     let y = self.height as u16 - 1;
     execute!(stdout, MoveTo(x, y))?;
-    print!("{}", position_info);
+    print!("{position_info}");
 
     Ok(())
   }
@@ -74,11 +74,11 @@ impl Editor {
   fn draw_progress_indicator(&self, stdout: &mut io::Stdout) -> io::Result<()> {
     let progress =
       (self.offset as f64 / self.total_lines as f64 * 100.0).round();
-    let message = format!("{}%", progress);
+    let message = format!("{progress}%");
     let x = self.width as u16 - message.len() as u16 - 2;
     let y = self.height as u16 - 2;
     execute!(stdout, MoveTo(x, y))?;
-    print!("{}", message);
+    print!("{message}");
 
     Ok(())
   }

@@ -7,7 +7,11 @@ readme = "../README.md"
 repository = "https://github.com/kruserr/hygg"
 description = "A CLI epub to plain text converter"
 keywords = ["pdf", "cli", "parser", "terminal", "utility"]
-categories = ["command-line-utilities", "parser-implementations", "text-processing"]
+categories = [
+    "command-line-utilities",
+    "parser-implementations",
+    "text-processing",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,5 +19,9 @@ categories = ["command-line-utilities", "parser-implementations", "text-processi
 workspace = true
 
 [dependencies]
-epub = "2.1"
-html2text = "0.14"
+epub = "2.1.4"
+html2text = "0.15"
+
+[dev-dependencies]
+tempfile = "3"
+zip = "4"

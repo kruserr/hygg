@@ -142,13 +142,13 @@ impl Editor {
     center_offset_string: &str,
   ) -> IoResult<()> {
     let content_height = self.height.saturating_sub(1);
-    
+
     for i in 0..content_height {
       execute!(stdout, crossterm::cursor::MoveTo(0, i as u16))?;
-      
+
       // Calculate the actual line index in the document
       let line_idx = self.offset + i;
-      
+
       if line_idx < self.lines.len() {
         // We have a real line to display
         let line = self.lines[line_idx].clone();
@@ -163,40 +163,50 @@ impl Editor {
         }
 
         // Try highlighting search match
-        if self.highlight_search_match(stdout, i, &line, center_offset_string)? {
+        if self.highlight_search_match(
+          stdout,
+          i,
+          &line,
+          center_offset_string,
+        )? {
           continue;
         }
 
         // Normal line rendering - if current line was highlighted,
         // we need to use appropriate text color
         if is_current_line {
-          // For the highlighted line, use a color that contrasts with the background
+          // For the highlighted line, use a color that contrasts with the
+          // background
           execute!(
             stdout,
-            crossterm::style::SetForegroundColor(crossterm::style::Color::White)
+            crossterm::style::SetForegroundColor(
+              crossterm::style::Color::White
+            )
           )?;
-          println!("{}{}", center_offset_string, line);
+          println!("{center_offset_string}{line}");
           execute!(stdout, crossterm::style::ResetColor)?;
         } else {
-          println!("{}{}", center_offset_string, line);
+          println!("{center_offset_string}{line}");
         }
       } else {
         // This is beyond the document - show blank line for overscroll
         // But still check if we need to highlight the cursor line
         let is_current_line =
           self.highlight_current_line(stdout, i, term_width)?;
-          
+
         if is_current_line {
           // Show highlighted empty line for cursor position
           execute!(
             stdout,
-            crossterm::style::SetForegroundColor(crossterm::style::Color::White)
+            crossterm::style::SetForegroundColor(
+              crossterm::style::Color::White
+            )
           )?;
-          println!("{}", center_offset_string);
+          println!("{center_offset_string}");
           execute!(stdout, crossterm::style::ResetColor)?;
         } else {
           // Just show blank line
-          println!("{}", center_offset_string);
+          println!("{center_offset_string}");
         }
       }
     }

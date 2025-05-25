@@ -137,27 +137,28 @@ impl Editor {
         let current_line = self.offset + self.cursor_y;
         let content_height = self.height.saturating_sub(1);
         let page_size = content_height.saturating_sub(3); // Leave some overlap
-        let target_line = (current_line + page_size).min(self.total_lines.saturating_sub(1));
-        
+        let target_line =
+          (current_line + page_size).min(self.total_lines.saturating_sub(1));
+
         if target_line != current_line {
           self.goto_line_with_overscroll(target_line);
         }
       }
       KeyCode::PageUp => {
-        // Move cursor up by page height to get overscroll behavior  
+        // Move cursor up by page height to get overscroll behavior
         let current_line = self.offset + self.cursor_y;
         let content_height = self.height.saturating_sub(1);
         let page_size = content_height.saturating_sub(3); // Leave some overlap
         let target_line = current_line.saturating_sub(page_size);
-        
+
         if target_line != current_line {
           self.goto_line_with_overscroll(target_line);
         }
       }
       KeyCode::Char('g') => {
         // Handle 'gg' motion - wait for another 'g'
-        match event::read()? {
-          CEvent::Key(inner_key) => match inner_key.code {
+        if let CEvent::Key(inner_key) = event::read()? {
+          match inner_key.code {
             KeyCode::Char('g') => {
               // 'gg' - go to first line with overscroll
               self.goto_line_with_overscroll(0);
@@ -166,7 +167,6 @@ impl Editor {
               // Invalid sequence, ignore
             }
           }
-          _ => {}
         }
       }
       KeyCode::Char('G') => {
@@ -359,11 +359,11 @@ impl Editor {
     }
 
     let new_line = current_line + 1;
-    
+
     // Update the line position and recenter with overscroll
     let content_height = self.height.saturating_sub(1);
     let center_y = content_height / 2;
-    
+
     // Always try to center the new line (overscroll behavior)
     if new_line < center_y {
       // Near the beginning - cursor follows line position
@@ -392,11 +392,11 @@ impl Editor {
     }
 
     let new_line = current_line - 1;
-    
+
     // Update the line position and recenter with overscroll
     let content_height = self.height.saturating_sub(1);
     let center_y = content_height / 2;
-    
+
     // Always try to center the new line (overscroll behavior)
     if new_line < center_y {
       // Near the beginning - cursor follows line position
@@ -440,7 +440,7 @@ impl Editor {
       // Line changed - need to update cursor position properly
       let content_height = self.height.saturating_sub(1);
       let center_y = content_height / 2;
-      
+
       if new_line >= self.offset && new_line < self.offset + content_height {
         // New line is visible on screen
         self.cursor_y = new_line - self.offset;

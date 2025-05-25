@@ -7,7 +7,11 @@ readme = "../README.md"
 repository = "https://github.com/kruserr/hygg"
 description = "A less like CLI text reader"
 keywords = ["pdf", "cli", "parser", "terminal", "utility"]
-categories = ["command-line-utilities", "parser-implementations", "text-processing"]
+categories = [
+    "command-line-utilities",
+    "parser-implementations",
+    "text-processing",
+]
 
 [lints]
 workspace = true
@@ -16,14 +20,14 @@ workspace = true
 cli-justify = { version = "0.1", path = "../cli-justify" }
 
 getopts = "0.2"
-crossterm = "0.28"
+crossterm = "0.29"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-dirs = "5"
+dirs = "6"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
-reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1.44", features = ["full"] }
-uuid = { version = "1.16", features = ["v4", "serde"] }
-anyhow = "1.0"
-thiserror = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+anyhow = "1"
+thiserror = "2"

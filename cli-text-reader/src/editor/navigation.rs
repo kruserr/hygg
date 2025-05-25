@@ -1,7 +1,8 @@
 use super::core::Editor;
 
 impl Editor {
-  // Helper to check if character is a word character (alphanumeric + underscore)
+  // Helper to check if character is a word character (alphanumeric +
+  // underscore)
   fn is_word_char(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
   }
@@ -169,7 +170,7 @@ impl Editor {
     }
 
     let line = &self.lines[target_line];
-    
+
     // Find the last non-whitespace character
     let mut end_pos = line.len();
     while end_pos > 0 {
@@ -184,7 +185,7 @@ impl Editor {
     let mut start_pos = end_pos;
     if start_pos > 0 {
       let char_at_end = line.chars().nth(start_pos - 1).unwrap_or(' ');
-      
+
       if Self::is_word_char(char_at_end) {
         // Find start of word characters
         while start_pos > 0 {
@@ -213,14 +214,14 @@ impl Editor {
   pub fn goto_line_with_overscroll(&mut self, target_line: usize) {
     // Clamp target line to valid range
     let target_line = target_line.min(self.total_lines.saturating_sub(1));
-    
+
     // Calculate new offset and cursor position to center the target line
     let content_height = self.height.saturating_sub(1);
     let center_y = content_height / 2;
-    
+
     // Always try to center the target line (overscroll behavior)
     self.offset = target_line.saturating_sub(center_y);
-    
+
     // Calculate cursor_y position
     if target_line < center_y {
       // Target line is near the beginning - cursor follows the line
@@ -230,10 +231,10 @@ impl Editor {
       // Center the cursor
       self.cursor_y = center_y;
     }
-    
+
     // Set cursor to beginning of line
     self.cursor_x = 0;
-    
+
     // Find first non-whitespace character on the line if it exists
     if target_line < self.lines.len() {
       let line = &self.lines[target_line];

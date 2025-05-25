@@ -15,22 +15,24 @@ use uuid::Uuid;
 
 /// Upload a local file to the server for syncing
 ///
-/// This allows users to upload their files to the server so they can be accessed
-/// from other clients and their reading progress can be tracked online.
+/// This allows users to upload their files to the server so they can be
+/// accessed from other clients and their reading progress can be tracked
+/// online.
 ///
 /// # Arguments
 /// * `local_file_path` - Path to the local file to upload
 /// * `user_id` - User identifier
 ///
 /// # Returns
-/// * `Result<(), Box<dyn std::error::Error>>` - Result indicating success or error
+/// * `Result<(), Box<dyn std::error::Error>>` - Result indicating success or
+///   error
 pub async fn upload_file_to_server(
   local_file_path: String,
   user_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
   // Check if file exists
   if !Path::new(&local_file_path).exists() {
-    return Err(format!("File not found: {}", local_file_path).into());
+    return Err(format!("File not found: {local_file_path}").into());
   }
 
   // Read file content
@@ -40,13 +42,13 @@ pub async fn upload_file_to_server(
   let file_name = Path::new(&local_file_path)
     .file_name()
     .and_then(|name| name.to_str())
-    .ok_or_else(|| format!("Invalid file path: {}", local_file_path))?;
+    .ok_or_else(|| format!("Invalid file path: {local_file_path}"))?;
 
   // Create client and upload file
   let client = HyggClient::new(user_id.clone());
   client.upload_file(file_name, &content).await?;
 
-  println!("Successfully uploaded {} to the server", file_name);
+  println!("Successfully uploaded {file_name} to the server");
   Ok(())
 }
 
@@ -90,7 +92,7 @@ pub async fn run_cli_text_reader(
   ];
 
   let file_uuid = Uuid::from_bytes(uuid_bytes);
-  println!("Using file-based UUID: {}", file_uuid);
+  println!("Using file-based UUID: {file_uuid}");
 
   let mut progress = ReadingProgress {
     id: file_uuid,
@@ -129,10 +131,7 @@ pub async fn run_cli_text_reader(
         }
       } else {
         // For non-lock errors, propagate the error
-        return Err(Box::new(std::io::Error::new(
-          std::io::ErrorKind::Other,
-          e.to_string(),
-        )));
+        return Err(Box::new(std::io::Error::other(e.to_string())));
       }
     }
   };
@@ -156,7 +155,7 @@ pub async fn run_cli_text_reader(
       let client = client_clone.clone();
       tokio::spawn(async move {
         if let Err(e) = client.update_progress(&progress_update).await {
-          eprintln!("Failed to update progress: {}", e);
+          eprintln!("Failed to update progress: {e}");
         }
       });
     })
@@ -168,7 +167,7 @@ pub async fn run_cli_text_reader(
       Ok(_) => println!(
         "\nLock released successfully. Other users can now edit this file."
       ),
-      Err(e) => eprintln!("\nFailed to release lock: {}", e),
+      Err(e) => eprintln!("\nFailed to release lock: {e}"),
     }
   }
 

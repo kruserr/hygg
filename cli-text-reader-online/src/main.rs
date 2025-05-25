@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     file_path_index = 1;
 
     if matches.free.len() < 2 {
-      println!("Error: File path is required for {} command.", command);
+      println!("Error: File path is required for {command} command.");
       print_help_menu(args, opts);
       return Ok(());
     }
@@ -47,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   match command {
     "upload" => {
-      println!("Uploading file '{}' to server...", file_path);
+      println!("Uploading file '{file_path}' to server...");
       cli_text_reader_online::upload_file_to_server(file_path, user_id).await?
     }
     _ => {

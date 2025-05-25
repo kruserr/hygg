@@ -44,11 +44,11 @@ impl Editor {
       {
         // In command/search mode, position cursor after the buffer content
         let cmd_len = match self.editor_state.mode {
-          EditorMode::Command => 1 + self.editor_state.command_buffer.len(), // ":" + buffer
-          EditorMode::Search => 1 + self.editor_state.command_buffer.len(), // "/" + buffer
+          EditorMode::Command => 1 + self.editor_state.command_buffer.len(), /* ":" + buffer */
+          EditorMode::Search => 1 + self.editor_state.command_buffer.len(), /* "/" + buffer */
           EditorMode::ReverseSearch => {
             1 + self.editor_state.command_buffer.len()
-          } // "?" + buffer
+          } /* "?" + buffer */
           _ => 0,
         };
 
@@ -72,18 +72,20 @@ impl Editor {
   pub fn center_cursor_with_overscroll(&mut self, allow_overscroll: bool) {
     // Get the actual line we're focusing on (absolute document position)
     let current_line = self.offset + self.cursor_y;
-    
+
     // Ensure we don't go beyond document boundaries
     let current_line = current_line.min(self.total_lines.saturating_sub(1));
 
-    // Calculate center position for cursor - place in middle of content area (excluding status line)
+    // Calculate center position for cursor - place in middle of content area
+    // (excluding status line)
     let content_height = self.height.saturating_sub(1);
     let center_y = content_height / 2;
 
     if allow_overscroll {
       // With overscroll, always try to center the current line on screen
-      // This allows first and last lines to be centered with blank lines above/below
-      
+      // This allows first and last lines to be centered with blank lines
+      // above/below
+
       // Calculate the offset needed to center the current line
       let desired_offset = if current_line >= center_y {
         current_line - center_y
@@ -91,7 +93,7 @@ impl Editor {
         // For lines near the beginning, use negative offset (handled as 0)
         0
       };
-      
+
       // Allow negative offset conceptually by using the offset as signed
       if current_line < center_y {
         // We're in the overscroll region at the top
@@ -102,7 +104,7 @@ impl Editor {
         self.offset = desired_offset;
         self.cursor_y = center_y;
       }
-      
+
       // No maximum offset limit - allow overscroll at the bottom too
       // This means we can have the last line centered with blank lines below
     } else {
