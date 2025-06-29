@@ -66,3 +66,13 @@ Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.
 - [ ] Natural sounding ai voice model for text to speech narration
 - [ ] Run all inference directly in rust no external runtime deps
 - [ ] Support more ebook and document formats
+
+## Star History
+
+<a href="https://www.star-history.com/#kruserr/hygg&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=kruserr/hygg&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=kruserr/hygg&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kruserr/hygg&type=Date" />
+ </picture>
+</a>
