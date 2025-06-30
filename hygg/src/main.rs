@@ -108,7 +108,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   };
 
   // If no file provided, start with empty content to allow tutorial access
-  let (lines, temp_file) = if let Some(file) = file {
+  let (lines, temp_file, raw_content) = if let Some(file) = file {
     let temp_file = format!("{file}-{}", uuid::Uuid::new_v4());
     
     let content = if (args.ocr && which("ocrmypdf").is_some()) {
@@ -164,11 +164,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       std::process::exit(1);
     }
     
-    (lines, Some(temp_file))
+    (lines, Some(temp_file), Some(content))
   } else {
     // No file provided - start with empty content
     // Users can access tutorial with :tutorial command
-    (vec![], None)
+    (vec![], None, None)
   };
 
   // Now redirect stderr after file validation is complete
@@ -177,7 +177,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Continue execution - this is not critical for main functionality
   }
 
-  cli_text_reader::run_cli_text_reader(lines, args.col)?;
+  // Pass raw content for consistent hashing across different column widths
+  if let Some(content) = raw_content {
+    cli_text_reader::run_cli_text_reader_with_content(lines, args.col, Some(content), false)?;
+  } else {
+    cli_text_reader::run_cli_text_reader(lines, args.col)?;
+  }
 
   if let Some(temp_file) = temp_file
     && std::path::Path::new(&temp_file).exists() {

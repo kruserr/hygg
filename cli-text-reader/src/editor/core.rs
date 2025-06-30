@@ -8,9 +8,25 @@ use crate::progress::generate_hash;
 
 impl Editor {
   pub fn new(lines: Vec<String>, col: usize) -> Self {
+    Self::new_internal(lines, col, None)
+  }
+
+  pub fn new_with_content(lines: Vec<String>, col: usize, raw_content: String) -> Self {
+    Self::new_internal(lines, col, Some(raw_content))
+  }
+
+  fn new_internal(lines: Vec<String>, col: usize, raw_content: Option<String>) -> Self {
     crate::debug::debug_log("editor", "Creating new Editor instance");
 
-    let document_hash = generate_hash(&lines);
+    // Generate hash from raw content if provided, otherwise from lines
+    let document_hash = if let Some(content) = &raw_content {
+      crate::debug::debug_log("editor", "Generating hash from raw content");
+      generate_hash(content)
+    } else {
+      crate::debug::debug_log("editor", "Generating hash from justified lines");
+      generate_hash(&lines)
+    };
+    
     let total_lines = lines.len();
     let (width, height) = terminal::size()
       .map(|(w, h)| (w as usize, h as usize))
@@ -105,6 +121,8 @@ impl Editor {
       tutorial_step_completed: false,
       last_key_event: None,
       key_debounce_duration: std::time::Duration::from_millis(50),
+      initial_setup_complete: false,
+      last_saved_viewport_offset: 0,
     }
   }
 

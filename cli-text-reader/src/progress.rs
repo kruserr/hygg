@@ -10,9 +10,13 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize)]
 pub struct Progress {
   pub document_hash: u64,
-  pub offset: usize,
+  pub offset: usize, // This stores the actual line number (not viewport offset)
   pub total_lines: usize,
   pub percentage: f64,
+  #[serde(default)]
+  pub viewport_offset: Option<usize>,
+  #[serde(default)]
+  pub cursor_y: Option<usize>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,6 +27,10 @@ enum Event {
     offset: usize,
     total_lines: usize,
     percentage: f64,
+    #[serde(default)]
+    viewport_offset: Option<usize>,
+    #[serde(default)]
+    cursor_y: Option<usize>,
   },
 }
 
@@ -41,6 +49,16 @@ pub fn save_progress(
   offset: usize,
   total_lines: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
+  save_progress_with_viewport(document_hash, offset, total_lines, None, None)
+}
+
+pub fn save_progress_with_viewport(
+  document_hash: u64,
+  offset: usize, // This is the actual line number
+  total_lines: usize,
+  viewport_offset: Option<usize>,
+  cursor_y: Option<usize>,
+) -> Result<(), Box<dyn std::error::Error>> {
   let percentage = (offset as f64 / total_lines as f64) * 100.0;
   let event = Event::UpdateProgress {
     timestamp: Utc::now(),
@@ -48,6 +66,8 @@ pub fn save_progress(
     offset,
     total_lines,
     percentage,
+    viewport_offset,
+    cursor_y,
   };
   let serialized = serde_json::to_string(&event)?;
   let progress_file_path = get_progress_file_path()?;
@@ -75,12 +95,21 @@ pub fn load_progress(
       offset,
       total_lines,
       percentage,
+      viewport_offset,
+      cursor_y,
       ..
     } = event;
 
     if hash == document_hash {
       latest_progress =
-        Some(Progress { document_hash: hash, offset, total_lines, percentage });
+        Some(Progress { 
+          document_hash: hash, 
+          offset, 
+          total_lines, 
+          percentage,
+          viewport_offset,
+          cursor_y,
+        });
     }
   }
 

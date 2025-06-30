@@ -7,7 +7,7 @@ use crossterm::{
 use std::io::{self, IsTerminal, Result as IoResult, Write};
 
 use super::core::{Editor, EditorMode, ViewMode};
-use crate::progress::save_progress;
+use crate::progress::save_progress_with_viewport;
 
 impl Editor {
   pub fn main_loop(
@@ -113,6 +113,7 @@ impl Editor {
       }
 
       first_iteration = false;
+      self.initial_setup_complete = true;
 
       // Handle keyboard input
       if std::io::stdout().is_terminal() {
@@ -228,8 +229,11 @@ impl Editor {
               self.debug_log(&format!("Resize event: {w}x{h}"));
               self.width = w as usize;
               self.height = h as usize;
-              // Recenter after resize
-              self.center_cursor();
+              // Only recenter after resize if initial setup is complete
+              // This prevents overriding loaded progress position
+              if self.initial_setup_complete {
+                self.center_cursor();
+              }
               // Force full clear and redraw after resize
               self.force_clear = true;
               self.mark_dirty();
@@ -270,10 +274,18 @@ impl Editor {
         std::thread::sleep(std::time::Duration::from_millis(50));
       }
 
-      // Only save progress if offset changed
-      if self.offset != self.last_offset {
-        save_progress(self.document_hash, self.offset, self.total_lines)?;
-        self.last_offset = self.offset;
+      // Save progress with exact viewport state
+      let current_line = self.offset + self.cursor_y;
+      if current_line != self.last_offset || self.offset != self.last_saved_viewport_offset {
+        save_progress_with_viewport(
+          self.document_hash, 
+          current_line, 
+          self.total_lines,
+          Some(self.offset),
+          Some(self.cursor_y)
+        )?;
+        self.last_offset = current_line;
+        self.last_saved_viewport_offset = self.offset;
       }
       self.debug_log("Main loop iteration complete\n");
     }

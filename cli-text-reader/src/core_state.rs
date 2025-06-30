@@ -72,4 +72,8 @@ pub struct Editor {
   // Key event debouncing for remote desktop/VM issues
   pub last_key_event: Option<(KeyEvent, Instant)>,
   pub key_debounce_duration: Duration,
+  // Track if initial setup is complete to avoid resize issues
+  pub initial_setup_complete: bool,
+  // Track last saved viewport offset to avoid duplicate saves
+  pub last_saved_viewport_offset: usize,
 }
