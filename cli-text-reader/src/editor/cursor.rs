@@ -1,10 +1,10 @@
 use crossterm::{
-  cursor::{MoveTo, SetCursorStyle, Show},
+  cursor::{Hide, MoveTo, SetCursorStyle, Show},
   execute,
 };
 use std::io::{self, IsTerminal};
 
-use super::core::{Editor, EditorMode};
+use super::core::{Editor, EditorMode, ViewMode};
 
 impl Editor {
   // Position and style the cursor based on editor mode
@@ -14,50 +14,79 @@ impl Editor {
     center_offset: usize,
   ) -> io::Result<()> {
     if std::io::stdout().is_terminal() {
+      if !self.show_cursor {
+        // Explicitly hide the cursor when show_cursor is false
+        execute!(stdout, Hide)?;
+        return Ok(());
+      }
+      let active_mode = self.get_active_mode();
       // Position the cursor at current position in text
-      if self.editor_state.mode == EditorMode::Normal
-        || self.editor_state.mode == EditorMode::VisualChar
-        || self.editor_state.mode == EditorMode::VisualLine
+      if active_mode == EditorMode::Normal
+        || active_mode == EditorMode::VisualChar
+        || active_mode == EditorMode::VisualLine
       {
+        // Calculate cursor position based on view mode
+        let cursor_y = if self.view_mode == ViewMode::HorizontalSplit {
+          // In split view, adjust cursor position based on active pane
+          if self.active_pane == 0 {
+            // Top pane - cursor is within the top pane's viewport
+            self.cursor_y
+          } else {
+            // Bottom pane - cursor is below the top pane and separator
+            let top_height = (self.height.saturating_sub(1) as f32
+              * self.split_ratio) as usize;
+            top_height + 1 + self.cursor_y // +1 for separator line
+          }
+        } else {
+          // Normal view - cursor position unchanged
+          self.cursor_y
+        };
+
         // Position cursor exactly on the highlighted line
         execute!(
           stdout,
-          Show,
-          MoveTo((center_offset + self.cursor_x) as u16, self.cursor_y as u16),
-          // Ensure cursor is clearly visible regardless of terminal settings
-          SetCursorStyle::BlinkingBlock
+          MoveTo((center_offset + self.cursor_x) as u16, cursor_y as u16)
         )?;
 
-        // Set appropriate cursor style for the mode
-        match self.editor_state.mode {
+        // Set appropriate cursor style for the mode and show cursor
+        match active_mode {
           EditorMode::Normal => {
-            execute!(stdout, SetCursorStyle::BlinkingBlock)?;
+            execute!(stdout, Show, SetCursorStyle::BlinkingBlock)?;
           }
           EditorMode::VisualChar | EditorMode::VisualLine => {
-            execute!(stdout, SetCursorStyle::SteadyBlock)?;
+            execute!(stdout, Show, SetCursorStyle::SteadyBlock)?;
           }
-          _ => {}
+          _ => {
+            execute!(stdout, Show)?;
+          }
         }
-      } else if self.editor_state.mode == EditorMode::Command
-        || self.editor_state.mode == EditorMode::Search
-        || self.editor_state.mode == EditorMode::ReverseSearch
+      } else if active_mode == EditorMode::Command
+        || active_mode == EditorMode::CommandExecution
+        || active_mode == EditorMode::Search
+        || active_mode == EditorMode::ReverseSearch
       {
-        // In command/search mode, position cursor after the buffer content
-        let cmd_len = match self.editor_state.mode {
-          EditorMode::Command => 1 + self.editor_state.command_buffer.len(), /* ":" + buffer */
-          EditorMode::Search => 1 + self.editor_state.command_buffer.len(), /* "/" + buffer */
+        // In command/search mode, position cursor at the correct position
+        let cmd_len = match active_mode {
+          EditorMode::Command | EditorMode::CommandExecution => {
+            1 + self.get_active_command_cursor_pos()
+          } /* ":" + cursor pos */
+          EditorMode::Search => 1 + self.get_active_command_cursor_pos(), /* "/" + cursor pos */
           EditorMode::ReverseSearch => {
-            1 + self.editor_state.command_buffer.len()
-          } /* "?" + buffer */
+            1 + self.get_active_command_cursor_pos()
+          } /* "?" + cursor pos */
           _ => 0,
         };
 
-        execute!(
-          stdout,
-          Show,
-          MoveTo(cmd_len as u16, (self.height - 1) as u16),
-          SetCursorStyle::BlinkingBar
-        )?;
+        if self.show_cursor {
+          execute!(
+            stdout,
+            Show,
+            MoveTo(cmd_len as u16, (self.height - 1) as u16),
+            SetCursorStyle::BlinkingBar
+          )?;
+        } else {
+          execute!(stdout, Hide)?;
+        }
       }
     }
     Ok(())
@@ -65,7 +94,9 @@ impl Editor {
 
   // Calculate center position for cursor - called from main_loop
   pub fn center_cursor(&mut self) {
-    self.center_cursor_with_overscroll(true);
+    // Always use normal mode centering
+    self.debug_log("center_cursor: Using normal mode centering");
+    self.center_cursor_with_overscroll(true)
   }
 
   // Calculate center position for cursor with optional overscroll
@@ -87,12 +118,7 @@ impl Editor {
       // above/below
 
       // Calculate the offset needed to center the current line
-      let desired_offset = if current_line >= center_y {
-        current_line - center_y
-      } else {
-        // For lines near the beginning, use negative offset (handled as 0)
-        0
-      };
+      let desired_offset = current_line.saturating_sub(center_y);
 
       // Allow negative offset conceptually by using the offset as signed
       if current_line < center_y {
@@ -135,5 +161,6 @@ impl Editor {
         self.offset = self.total_lines.saturating_sub(content_height);
       }
     }
+    self.mark_dirty();
   }
 }

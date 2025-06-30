@@ -7,25 +7,20 @@
 # hygg
 Simplifying the way you read
 
-## Overview
-The goal of this project is to build an ebook and document reader that has a minimal set of features, that make reading enjoyable on a desktop computer.
+## Transform your terminal into a powerful document reader
 
-A large emphasis is on making a minimalistic and distraction free environment for you to easily focus on what is important, the content.
+Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
 
-Furthermore we are working on building a seamless experience for reading ebooks but also more generally documents, both on a desktop computer and a tablet or e-reader with a browser.
+## ✨ Why hygg?
 
-## Features
-- CLI client
-  - Converts regular or scanned PDF or EPUB to plain text
-  - Justifies the plain text to specified column width
-  - Horizontally centers the text
-  - Minimalistic less like interactive reader with vim like bindings (still work in progress)
-  - Saves progress
-  - Cross platform
-  - Each component in the CLI client is exposed as a UNIX style utility for easy code reuse in your own open source project
+- 📖 **Universal document support** - PDF, EPUB, and scanned documents with OCR
+- ⚡ **Lightning-fast keyboard based navigation** - Vim-inspired keybindings
+- 🔍 **Powerful search** - Find anything instantly, highlight important passages, add bookmarks
+- 💾 **Never lose your place** - Automatic progress saving
+- 🛠️ **Extensible workflows** - Execute commands directly from copied text
+- 🔒 **Privacy-first** - Your documents stay on your machine
 
-## Quick start guide
-### Install the CLI client
+## 🚀 Quick start guide
 ```sh
 cargo install --locked hygg
 hygg doc.pdf
@@ -43,29 +38,55 @@ hygg --ocr=true doc.pdf
 
 For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)
 
-## Documentation
-Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.md)
+## 📚 Features
 
-## Roadmap
+### Core Reading Experience
+- **Minimalist interface** - Nothing between you and your content
+- **Smart text justification** - Perfectly formatted for your terminal width
+- **Vim keybindings** - Navigate with the efficiency you already know
+- **Visual selection** - Select, copy, highlight text
+- **Persistent highlights** - Mark important passages across sessions
+- **Bookmarks** - Set bookmark points and jump between them instantly
+
+### Advanced Workflows
+- **Command execution** - Run shell commands from copied text, also works for previous command output
+- **Split view** - View command output alongside your document
+- **Interactive tutorial** - Learn everything in under 5 minutes
+- **Cross-platform** - Works on Linux, macOS, and Windows
+
+## 🗺️ Roadmap
 - [x] Plain text format support
 - [x] PDF format support
 - [x] EPUB format support
 - [x] Convert scanned documents and images to plain text with ocrmypdf
 - [x] Auto saving progress
 - [x] Integrated command line with vim like commands
-- [x] Server to sync progress and books
 - [x] Text selection and yanking
-- [ ] Execute commands from yanked text
-- [ ] Text highlighting with server sync
+- [x] Execute commands from yanked text
+- [x] Text highlighting
+- [x] Bookmarks
+- [x] Interactive tutorial
+- [ ] Self hosted sync server for docs, progress, bookmarks, highlights and notes
 - [ ] Offline PWA web client
 - [ ] Start screen to show overview of books and progress
-- [ ] Full test suite
-- [ ] CI / CD pipelines
 - [ ] Minimal build feature flag, for only basic converters, no server integration and no ai
 - [ ] Image to ascii art converter
 - [ ] Natural sounding ai voice model for text to speech narration
 - [ ] Run all inference directly in rust no external runtime deps
 - [ ] Support more ebook and document formats
+- [ ] AI-powered document summarization
+- [ ] Reading statistics and insights
+
+## 📖 Documentation
+Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.md)
+
+## 🌟 Community
+
+**hygg** is built by readers, for readers. Join our growing community:
+
+- 🐛 [Report issues](https://github.com/kruserr/hygg/issues)
+- 💡 [Request features](https://github.com/kruserr/hygg/issues)
+- 🤝 [Contribute code](https://github.com/kruserr/hygg/pulls)
 
 ## Star History
 

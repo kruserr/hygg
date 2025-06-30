@@ -7,7 +7,7 @@ mod tests {
 
   #[cfg(debug_assertions)]
   pub fn is_debug() -> bool {
-    return true;
+    true
   }
 
   #[cfg(not(debug_assertions))]
@@ -160,9 +160,9 @@ mod tests {
     let stderr = String::from_utf8(output.stderr).unwrap();
     let success = output.status.success();
 
-    println!("{}", stdout);
-    println!("{}", stderr);
-    println!("{}", success);
+    println!("{stdout}");
+    println!("{stderr}");
+    println!("{success}");
 
     if (!success) {
       // panic!("command failed");

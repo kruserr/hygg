@@ -21,7 +21,6 @@
 //! ```
 
 use epub::doc::EpubDoc;
-use html2text;
 use std::error::Error;
 use std::fmt;
 use std::path::Path;
@@ -131,22 +130,19 @@ mod tests {
   #[test]
   fn test_epub_error_display() {
     let file_error = EpubError::FileNotFound("test.epub".to_string());
-    assert_eq!(format!("{}", file_error), "EPUB file not found: test.epub");
+    assert_eq!(format!("{file_error}"), "EPUB file not found: test.epub");
 
     let invalid_error = EpubError::InvalidEpub("Bad format".to_string());
-    assert_eq!(format!("{}", invalid_error), "Invalid EPUB format: Bad format");
+    assert_eq!(format!("{invalid_error}"), "Invalid EPUB format: Bad format");
 
     let resource_error = EpubError::ResourceNotFound("chapter1".to_string());
     assert_eq!(
-      format!("{}", resource_error),
+      format!("{resource_error}"),
       "Resource not found in EPUB: chapter1"
     );
 
     let html_error = EpubError::HtmlConversion("Parse failed".to_string());
-    assert_eq!(
-      format!("{}", html_error),
-      "HTML conversion error: Parse failed"
-    );
+    assert_eq!(format!("{html_error}"), "HTML conversion error: Parse failed");
   }
 
   #[test]

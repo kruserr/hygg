@@ -65,12 +65,12 @@ fn debug_epub_creation() {
   let result = epub_to_text(&epub_path.to_string_lossy());
   match result {
     Ok(text) => {
-      println!("SUCCESS: Got text: '{}'", text);
-      assert!(text.len() > 0, "Should have some content");
+      println!("SUCCESS: Got text: '{text}'");
+      assert!(!text.is_empty(), "Should have some content");
     }
     Err(e) => {
-      println!("ERROR: {:?}", e);
-      panic!("Failed to convert EPUB: {:?}", e);
+      println!("ERROR: {e:?}");
+      panic!("Failed to convert EPUB: {e:?}");
     }
   }
 }

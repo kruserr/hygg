@@ -30,7 +30,7 @@ fn create_test_epub(temp_dir: &TempDir, content: &str) -> String {
 
   // Add OEBPS/content.opf
   zip.start_file("OEBPS/content.opf", options).unwrap();
-  zip.write_all(format!(r#"<?xml version="1.0" encoding="UTF-8"?>
+  zip.write_all(r#"<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
     <dc:title>Test Book</dc:title>
@@ -43,7 +43,7 @@ fn create_test_epub(temp_dir: &TempDir, content: &str) -> String {
   <spine>
     <itemref idref="chapter1"/>
   </spine>
-</package>"#).as_bytes()).unwrap();
+</package>"#.to_string().as_bytes()).unwrap();
 
   // Add OEBPS/chapter1.xhtml
   zip.start_file("OEBPS/chapter1.xhtml", options).unwrap();
@@ -55,9 +55,9 @@ fn create_test_epub(temp_dir: &TempDir, content: &str) -> String {
 </head>
 <body>
   <h1>Chapter 1</h1>
-  <p>{}</p>
+  <p>{content}</p>
 </body>
-</html>"#, content).as_bytes()).unwrap();
+</html>"#).as_bytes()).unwrap();
 
   zip.finish().unwrap();
 

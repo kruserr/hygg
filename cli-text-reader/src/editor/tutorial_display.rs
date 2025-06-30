@@ -9,6 +9,7 @@ use super::core::Editor;
 use crate::tutorial::get_tutorial_text;
 
 impl Editor {
+  #[allow(dead_code)]
   pub fn show_tutorial(
     &self,
     stdout: &mut io::Stdout,
@@ -59,9 +60,7 @@ impl Editor {
             }
             crossterm::event::KeyCode::Char('k')
             | crossterm::event::KeyCode::Up => {
-              if tutorial_offset > 0 {
-                tutorial_offset -= 1;
-              }
+              tutorial_offset = tutorial_offset.saturating_sub(1);
             }
             crossterm::event::KeyCode::PageDown => {
               tutorial_offset = (tutorial_offset + self.height)

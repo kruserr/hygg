@@ -1,7 +1,3 @@
-use redirect_stderr;
-
-use lopdf;
-use pdf_extract;
 use std::{
   env,
   io::{BufWriter, Cursor},
@@ -33,7 +29,8 @@ pub fn pdf_to_text(
 
     duplicate_fd = unsafe { libc::dup(original_fd) };
 
-    let dev_null = File::open("/dev/null").unwrap();
+    let dev_null = File::open("/dev/null")
+      .map_err(|e| format!("Failed to open /dev/null: {e}"))?;
     unsafe {
       libc::dup2(dev_null.as_raw_fd(), original_fd);
     }
@@ -77,8 +74,8 @@ pub fn pdf_to_text(
   // panic!();
 
   let res = std::str::from_utf8(&output_buf)
-    .expect("Could not convert to String")
+    .map_err(|e| format!("Failed to convert PDF output to UTF-8: {e}"))?
     .to_owned();
 
-  return Ok(res);
+  Ok(res)
 }

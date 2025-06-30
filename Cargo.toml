@@ -6,10 +6,8 @@ members = [
   "cli-epub-to-text",
   "cli-justify",
   "cli-text-reader",
-  "cli-text-reader-online",
   "redirect-stderr",
   "hygg",
-  "hygg-server",
 
   # Internal
   # "examples",

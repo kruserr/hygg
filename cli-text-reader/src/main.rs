@@ -1,10 +1,5 @@
-use cli_justify;
-use cli_text_reader;
-
 use std::env;
 use std::io::{self, BufRead};
-
-use getopts;
 
 pub fn print_help_menu(args: Vec<String>, opts: getopts::Options) {
   let brief = format!("Usage: {} FILE [options]", args[0]);
@@ -36,21 +31,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   let handle = std::thread::spawn(move || {
     let stdin = io::stdin();
     for line in stdin.lock().lines().map_while(Result::ok) {
-      lines_vec_arc_clone.lock().unwrap().push(line);
+      match lines_vec_arc_clone.lock() {
+        Ok(mut vec) => vec.push(line),
+        Err(e) => {
+          eprintln!("Warning: Mutex lock failed: {e}");
+          return; // Exit thread on lock failure
+        }
+      }
     }
   });
 
-  std::thread::sleep(std::time::Duration::from_nanos(1));
-
-  let lines_vec = lines_vec_arc.lock().unwrap();
-
-  if (lines_vec.len() > 1) {
-    handle.join().unwrap();
+  // Wait for the thread to finish reading all input
+  if let Err(e) = handle.join() {
+    return Err(format!("Input reading thread failed: {e:?}").into());
   }
+
+  let lines_vec = lines_vec_arc
+    .lock()
+    .map_err(|e| format!("Failed to acquire mutex lock: {e}"))?;
 
   let lines = cli_justify::justify(&lines_vec.join("\n"), col);
 
   cli_text_reader::run_cli_text_reader(lines, col)?;
 
-  return Ok(());
+  Ok(())
 }

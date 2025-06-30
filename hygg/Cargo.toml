@@ -21,7 +21,6 @@ cli-pdf-to-text = { version = "0.1", path = "../cli-pdf-to-text" }
 cli-epub-to-text = { version = "0.1", path = "../cli-epub-to-text" }
 cli-justify = { version = "0.1", path = "../cli-justify" }
 cli-text-reader = { version = "0.1", path = "../cli-text-reader" }
-cli-text-reader-online = { version = "0.1", path = "../cli-text-reader-online" }
 redirect-stderr = { version = "0.1", path = "../redirect-stderr" }
 
 uuid = { version = "1", features = ["v4"] }

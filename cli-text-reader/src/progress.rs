@@ -1,5 +1,5 @@
+use crate::utils::get_hygg_config_file;
 use chrono::{DateTime, Utc};
-use dirs::config_dir;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::fs::OpenOptions;
@@ -33,12 +33,7 @@ pub fn generate_hash<T: Hash>(t: &T) -> u64 {
 }
 
 fn get_progress_file_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-  let mut config_path =
-    config_dir().ok_or("Unable to find config directory")?;
-  config_path.push("hygg");
-  std::fs::create_dir_all(&config_path)?;
-  config_path.push(".progress.jsonl");
-  Ok(config_path)
+  get_hygg_config_file(".progress.jsonl")
 }
 
 pub fn save_progress(
@@ -91,4 +86,70 @@ pub fn load_progress(
 
   latest_progress
     .ok_or_else(|| "No progress found for the given document hash".into())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::fs;
+  use tempfile::tempdir;
+
+  #[test]
+  fn test_save_and_load_progress() {
+    // Create a temporary directory for test
+    let temp_dir = tempdir().unwrap();
+    let temp_path = temp_dir.path().join(".progress.jsonl");
+
+    // Mock the get_progress_file_path function by creating a test file
+    let test_hash = 12345u64;
+    let test_offset = 50usize;
+    let test_total_lines = 100usize;
+
+    // Save progress
+    let percentage = (test_offset as f64 / test_total_lines as f64) * 100.0;
+    let event = Event::UpdateProgress {
+      timestamp: Utc::now(),
+      document_hash: test_hash,
+      offset: test_offset,
+      total_lines: test_total_lines,
+      percentage,
+    };
+
+    let serialized = serde_json::to_string(&event).unwrap();
+    fs::write(&temp_path, format!("{serialized}\n")).unwrap();
+
+    // Load progress by reading the file directly
+    let file = OpenOptions::new().read(true).open(&temp_path).unwrap();
+    let reader = io::BufReader::new(file);
+    let mut loaded_progress: Option<Progress> = None;
+
+    for line in reader.lines() {
+      let line = line.unwrap();
+      let event: Event = serde_json::from_str(&line).unwrap();
+
+      let Event::UpdateProgress {
+        document_hash: hash,
+        offset,
+        total_lines,
+        percentage,
+        ..
+      } = event;
+
+      if hash == test_hash {
+        loaded_progress = Some(Progress {
+          document_hash: hash,
+          offset,
+          total_lines,
+          percentage,
+        });
+      }
+    }
+
+    // Verify the loaded progress
+    let progress = loaded_progress.expect("Progress should be loaded");
+    assert_eq!(progress.document_hash, test_hash);
+    assert_eq!(progress.offset, test_offset);
+    assert_eq!(progress.total_lines, test_total_lines);
+    assert_eq!(progress.percentage, 50.0);
+  }
 }

@@ -12,8 +12,7 @@ impl Editor {
     // Draw mode indicators in the status line
     self.draw_mode_indicator(stdout)?;
 
-    // Show position info
-    self.draw_position_info(stdout)?;
+    // Position info is now always hidden per user request
 
     // Show progress indicator if enabled
     if self.show_progress {
@@ -25,37 +24,117 @@ impl Editor {
 
   // Draw mode indicator in the status line
   fn draw_mode_indicator(&mut self, stdout: &mut io::Stdout) -> io::Result<()> {
-    match self.editor_state.mode {
+    // Always use the active buffer's mode - this ensures command line is shown properly
+    let effective_mode = self.get_active_mode();
+    
+    match effective_mode {
       EditorMode::Command => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
-        print!(":{}", self.editor_state.command_buffer);
+        write!(stdout, ":{}", self.get_active_command_buffer())?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
+      }
+      EditorMode::CommandExecution => {
+        execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
+        write!(stdout, ":{}", self.get_active_command_buffer())?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
       }
       EditorMode::Search => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
-        print!("/{}", self.editor_state.command_buffer);
+        write!(stdout, "/{}", self.get_active_command_buffer())?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
       }
       EditorMode::ReverseSearch => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
-        print!("?{}", self.editor_state.command_buffer);
+        write!(stdout, "?{}", self.get_active_command_buffer())?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
       }
       EditorMode::VisualChar => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
-        print!("-- VISUAL --");
+        write!(stdout, "-- VISUAL --")?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
       }
       EditorMode::VisualLine => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
-        print!("-- VISUAL LINE --");
+        write!(stdout, "-- VISUAL LINE --")?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
       }
-      _ => {}
+      EditorMode::Tutorial => {
+        execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
+        write!(stdout, "-- TUTORIAL --")?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine
+          )
+        )?;
+      }
+      _ => {
+        // Clear the command line in normal mode
+        execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
+        execute!(
+          stdout,
+          crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::CurrentLine
+          )
+        )?;
+      }
     }
     Ok(())
   }
 
   // Draw position information in the status line
+  #[allow(dead_code)]
   fn draw_position_info(&self, stdout: &mut io::Stdout) -> io::Result<()> {
     let current_line = self.offset + self.cursor_y;
+
+    // Add overlay indicator if we're in overlay mode
+    let overlay_info = if self.view_mode == super::core::ViewMode::Overlay {
+      if let Some(buffer) = self.buffers.get(1) {
+        if let Some(cmd) = &buffer.command {
+          format!(" [Overlay: {cmd}]  ")
+        } else {
+          " [Overlay]  ".to_string()
+        }
+      } else {
+        String::new()
+      }
+    } else {
+      String::new()
+    };
+
     let position_info = format!(
-      "{}:{} ({}/{})",
+      "{}{}: {} ({}/{})",
+      overlay_info,
       current_line + 1,
       self.cursor_x + 1,
       current_line + 1,
@@ -65,7 +144,11 @@ impl Editor {
     let x = self.width as u16 - position_info.len() as u16 - 1;
     let y = self.height as u16 - 1;
     execute!(stdout, MoveTo(x, y))?;
-    print!("{position_info}");
+    write!(stdout, "{position_info}")?;
+    execute!(
+      stdout,
+      crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine)
+    )?;
 
     Ok(())
   }
@@ -78,7 +161,11 @@ impl Editor {
     let x = self.width as u16 - message.len() as u16 - 2;
     let y = self.height as u16 - 2;
     execute!(stdout, MoveTo(x, y))?;
-    print!("{message}");
+    write!(stdout, "{message}")?;
+    execute!(
+      stdout,
+      crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine)
+    )?;
 
     Ok(())
   }
