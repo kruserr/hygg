@@ -94,16 +94,17 @@ impl Editor {
           )?;
           write!(stdout, "{center_offset_string}{line}")?;
           execute!(stdout, crossterm::style::ResetColor)?;
+          // Don't clear the line since we want to keep the background color
         } else {
           write!(stdout, "{center_offset_string}{line}")?;
+          // Clear to end of line to avoid artifacts
+          execute!(
+            stdout,
+            crossterm::terminal::Clear(
+              crossterm::terminal::ClearType::UntilNewLine
+            )
+          )?;
         }
-        // Clear to end of line to avoid artifacts
-        execute!(
-          stdout,
-          crossterm::terminal::Clear(
-            crossterm::terminal::ClearType::UntilNewLine
-          )
-        )?;
       } else {
         // This is beyond the document - show blank line for overscroll
         // But still check if we need to highlight the cursor line
@@ -120,17 +121,18 @@ impl Editor {
           )?;
           write!(stdout, "{center_offset_string}")?;
           execute!(stdout, crossterm::style::ResetColor)?;
+          // Don't clear the line since we want to keep the background color
         } else {
           // Just show blank line
           write!(stdout, "{center_offset_string}")?;
+          // Clear to end of line
+          execute!(
+            stdout,
+            crossterm::terminal::Clear(
+              crossterm::terminal::ClearType::UntilNewLine
+            )
+          )?;
         }
-        // Clear to end of line
-        execute!(
-          stdout,
-          crossterm::terminal::Clear(
-            crossterm::terminal::ClearType::UntilNewLine
-          )
-        )?;
       }
     }
 
