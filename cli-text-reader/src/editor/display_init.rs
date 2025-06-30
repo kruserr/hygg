@@ -18,7 +18,7 @@ impl Editor {
 
     self.show_highlighter = config.enable_line_highlighter.unwrap_or(true);
     self.show_cursor = config.show_cursor.unwrap_or(true);
-    self.show_progress = config.show_progress.unwrap_or(false);
+    self.show_progress = config.show_progress.unwrap_or(true);
     
     // Check if tutorial should be shown
     let tutorial_enabled = config.enable_tutorial.unwrap_or(true);

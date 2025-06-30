@@ -1,6 +1,6 @@
 use arboard::Clipboard;
 use std::collections::HashMap;
-use std::time::Instant;
+use std::time::{Instant, Duration};
 use crossterm::event::KeyEvent;
 
 use crate::highlights::HighlightData;
@@ -69,4 +69,7 @@ pub struct Editor {
   pub tutorial_backward_search_used: bool,
   pub last_executed_command: Option<String>,
   pub tutorial_step_completed: bool,
+  // Key event debouncing for remote desktop/VM issues
+  pub last_key_event: Option<(KeyEvent, Instant)>,
+  pub key_debounce_duration: Duration,
 }

@@ -170,6 +170,25 @@ impl Editor {
         if event::poll(timeout)? {
           match event::read()? {
             CEvent::Key(key_event) => {
+              // Check for duplicate key events (common in remote desktop/VM scenarios)
+              let now = std::time::Instant::now();
+              let is_duplicate = if let Some((last_key, last_time)) = self.last_key_event {
+                // Check if this is the same key event within the debounce window
+                last_key == key_event && now.duration_since(last_time) < self.key_debounce_duration
+              } else {
+                false
+              };
+
+              if is_duplicate {
+                self.debug_log(&format!(
+                  "Ignoring duplicate key event: {key_event:?} (within debounce window)"
+                ));
+                continue;
+              }
+
+              // Store this key event for future duplicate detection
+              self.last_key_event = Some((key_event, now));
+
               // Get the active buffer's mode
               let active_mode = self.get_active_mode();
               self.debug_log(&format!(

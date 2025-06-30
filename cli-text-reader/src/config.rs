@@ -21,7 +21,7 @@ fn ensure_config_file() -> Result<(), Box<dyn std::error::Error>> {
   let config_path = get_config_env_path()?;
   ensure_config_file_with_defaults(
     &config_path,
-    "ENABLE_TUTORIAL=true\nENABLE_LINE_HIGHLIGHTER=true\nSHOW_CURSOR=true\nSHOW_PROGRESS=false\nTUTORIAL_SHOWN=false\n",
+    "ENABLE_TUTORIAL=true\nENABLE_LINE_HIGHLIGHTER=true\nSHOW_CURSOR=true\nSHOW_PROGRESS=true\nTUTORIAL_SHOWN=false\n",
   )
 }
 
@@ -53,7 +53,7 @@ pub fn save_config(
   let enable_tutorial = config.enable_tutorial.or(existing_config.enable_tutorial).unwrap_or(true);
   let enable_line_highlighter = config.enable_line_highlighter.or(existing_config.enable_line_highlighter).unwrap_or(true);
   let show_cursor = config.show_cursor.or(existing_config.show_cursor).unwrap_or(true);
-  let show_progress = config.show_progress.or(existing_config.show_progress).unwrap_or(false);
+  let show_progress = config.show_progress.or(existing_config.show_progress).unwrap_or(true);
   let tutorial_shown = config.tutorial_shown.or(existing_config.tutorial_shown).unwrap_or(false);
 
   let content = format!(

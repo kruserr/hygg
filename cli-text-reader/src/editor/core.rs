@@ -103,6 +103,8 @@ impl Editor {
       tutorial_backward_search_used: false,
       last_executed_command: None,
       tutorial_step_completed: false,
+      last_key_event: None,
+      key_debounce_duration: std::time::Duration::from_millis(50),
     }
   }
 
