@@ -107,8 +107,6 @@ impl Editor {
       demo_hint_until: None,
       demo_typing_char_index: 0,
       demo_pending_keys: Vec::new(),
-      tutorial_practice_start: 0,
-      tutorial_practice_lines: 0,
       current_tutorial_condition: None,
       tutorial_highlight_created: false,
       tutorial_yank_performed: false,
@@ -119,8 +117,6 @@ impl Editor {
       tutorial_backward_search_used: false,
       last_executed_command: None,
       tutorial_step_completed: false,
-      last_key_event: None,
-      key_debounce_duration: std::time::Duration::from_millis(50),
       initial_setup_complete: false,
       last_saved_viewport_offset: 0,
     }

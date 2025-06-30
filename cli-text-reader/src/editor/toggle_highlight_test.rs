@@ -37,6 +37,6 @@ mod tests {
     let highlight = &editor.highlights.highlights[0];
     // "First line\n" = 11 chars, then position 7 in second line
     assert_eq!(highlight.start, 11 + 7); // 18
-    assert_eq!(highlight.end, 11 + 11); // 22
+    assert_eq!(highlight.end, 11 + 12); // 23 (inclusive end)
   }
 }

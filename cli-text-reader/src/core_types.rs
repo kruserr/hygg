@@ -17,6 +17,7 @@ pub enum ViewMode {
 
 // Editor modes
 #[derive(PartialEq, Debug, Clone)]
+#[allow(dead_code)]
 pub enum EditorMode {
   Normal,
   Command,

@@ -9,7 +9,7 @@ use super::core::{Editor, EditorMode, ViewMode};
 use crate::bookmarks::load_bookmarks;
 use crate::config::load_config;
 use crate::highlights::load_highlights;
-use crate::progress::{load_progress, save_progress};
+use crate::progress::load_progress;
 
 impl Editor {
   pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -57,8 +57,7 @@ impl Editor {
           self.offset = viewport_offset;
           self.cursor_y = saved_cursor_y;
           self.debug_log(&format!(
-            "Restored exact viewport state: offset={}, cursor_y={}", 
-            viewport_offset, saved_cursor_y
+            "Restored exact viewport state: offset={viewport_offset}, cursor_y={saved_cursor_y}"
           ));
         } else {
           // Fallback to old logic for backward compatibility
@@ -86,8 +85,8 @@ impl Editor {
             self.cursor_y = center_y;
           }
           self.debug_log(&format!(
-            "Using fallback progress logic: line={}, offset={}, cursor_y={}", 
-            saved_line, self.offset, self.cursor_y
+            "Using fallback progress logic: line={saved_line}, offset={}, cursor_y={}", 
+            self.offset, self.cursor_y
           ));
         }
         
@@ -97,7 +96,7 @@ impl Editor {
         skip_first_center = true;
       }
       Err(e) => {
-        self.debug_log(&format!("No progress found: {}", e));
+        self.debug_log(&format!("No progress found: {e}"));
         self.offset = 0;
         // cursor_y is already initialized to height/2 in the constructor
       }

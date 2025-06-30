@@ -1,6 +1,7 @@
 use crossterm::style::{Attribute, Color, SetAttribute, SetForegroundColor, ResetColor};
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub enum TutorialSuccessCondition {
   KeyPress(String),
   VisualSelection { start_line: usize, end_line: usize },

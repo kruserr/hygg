@@ -44,6 +44,7 @@ fn get_progress_file_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
   get_hygg_config_file(".progress.jsonl")
 }
 
+#[allow(dead_code)]
 pub fn save_progress(
   document_hash: u64,
   offset: usize,
@@ -142,6 +143,8 @@ mod tests {
       offset: test_offset,
       total_lines: test_total_lines,
       percentage,
+      viewport_offset: None,
+      cursor_y: None,
     };
 
     let serialized = serde_json::to_string(&event).unwrap();
@@ -161,6 +164,8 @@ mod tests {
         offset,
         total_lines,
         percentage,
+        viewport_offset,
+        cursor_y,
         ..
       } = event;
 
@@ -170,6 +175,8 @@ mod tests {
           offset,
           total_lines,
           percentage,
+          viewport_offset,
+          cursor_y,
         });
       }
     }

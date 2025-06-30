@@ -14,8 +14,10 @@ impl Editor {
 
     // Position info is now always hidden per user request
 
-    // Show progress indicator if enabled
-    if self.show_progress {
+    // Show progress indicator if enabled, in normal view mode, and not in demo
+    if self.show_progress 
+      && self.view_mode == super::core::ViewMode::Normal 
+      && !self.tutorial_demo_mode {
       self.draw_progress_indicator(stdout)?;
     }
 
@@ -158,6 +160,11 @@ impl Editor {
     let progress =
       (self.offset as f64 / self.total_lines as f64 * 100.0).round();
     let message = format!("{progress}%");
+    
+    self.debug_log(&format!(
+      "Drawing progress indicator: {} (view_mode: {:?}, demo: {})",
+      message, self.view_mode, self.tutorial_demo_mode
+    ));
     let x = self.width as u16 - message.len() as u16 - 2;
     let y = self.height as u16 - 2;
     execute!(stdout, MoveTo(x, y))?;

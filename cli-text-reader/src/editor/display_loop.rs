@@ -171,29 +171,21 @@ impl Editor {
         if event::poll(timeout)? {
           match event::read()? {
             CEvent::Key(key_event) => {
-              // Check for duplicate key events (common in remote desktop/VM scenarios)
-              let now = std::time::Instant::now();
-              let is_duplicate = if let Some((last_key, last_time)) = self.last_key_event {
-                // Check if this is the same key event within the debounce window
-                last_key == key_event && now.duration_since(last_time) < self.key_debounce_duration
-              } else {
-                false
-              };
-
-              if is_duplicate {
+              // On Windows, crossterm sends both Press and Release events
+              // We only want to process Press events to avoid double input
+              if key_event.kind != crossterm::event::KeyEventKind::Press {
                 self.debug_log(&format!(
-                  "Ignoring duplicate key event: {key_event:?} (within debounce window)"
+                  "Ignoring key event with kind: {:?} (only processing Press events)",
+                  key_event.kind
                 ));
                 continue;
               }
 
-              // Store this key event for future duplicate detection
-              self.last_key_event = Some((key_event, now));
-
               // Get the active buffer's mode
               let active_mode = self.get_active_mode();
               self.debug_log(&format!(
-                "Key event: {key_event:?} in mode {active_mode:?}"
+                "Key event: {:?} kind: {:?} in mode {:?}",
+                key_event, key_event.kind, active_mode
               ));
               self.debug_log(&format!(
                 "  Processing in buffer {} of {}",

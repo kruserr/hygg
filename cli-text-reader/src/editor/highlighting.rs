@@ -16,6 +16,11 @@ impl Editor {
     term_width: u16,
   ) -> IoResult<bool> {
     if self.show_highlighter && line_index == self.cursor_y {
+      self.debug_log(&format!(
+        "Highlighting line {} with width {} (view_mode: {:?})",
+        line_index, term_width, self.view_mode
+      ));
+      
       // First, draw the background for the entire line
       execute!(
         stdout,

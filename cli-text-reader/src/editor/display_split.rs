@@ -78,6 +78,7 @@ impl Editor {
   }
 
   // Draw a single pane
+  #[allow(clippy::too_many_arguments)]
   fn draw_pane(
     &self,
     stdout: &mut io::Stdout,
@@ -160,12 +161,12 @@ impl Editor {
     stdout: &mut io::Stdout,
     line: &str,
     buffer_idx: usize,
-    display_row: usize,
+    _display_row: usize,
     center_offset_string: &str,
     is_current_line: bool,
   ) -> IoResult<()> {
     // Apply centering if needed
-    if let Some(buffer) = self.buffers.get(buffer_idx) {
+    if let Some(_buffer) = self.buffers.get(buffer_idx) {
       // Always apply centering offset for consistency with main display
       let line_to_render = format!("{center_offset_string}{line}");
 

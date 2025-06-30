@@ -1,6 +1,6 @@
 use arboard::Clipboard;
 use std::collections::HashMap;
-use std::time::{Instant, Duration};
+use std::time::Instant;
 use crossterm::event::KeyEvent;
 
 use crate::highlights::HighlightData;
@@ -57,8 +57,6 @@ pub struct Editor {
   pub demo_hint_until: Option<Instant>,
   pub demo_typing_char_index: usize,
   pub demo_pending_keys: Vec<KeyEvent>,
-  pub tutorial_practice_start: usize,
-  pub tutorial_practice_lines: usize,
   pub current_tutorial_condition: Option<TutorialSuccessCondition>,
   pub tutorial_highlight_created: bool,
   pub tutorial_yank_performed: bool,
@@ -69,9 +67,6 @@ pub struct Editor {
   pub tutorial_backward_search_used: bool,
   pub last_executed_command: Option<String>,
   pub tutorial_step_completed: bool,
-  // Key event debouncing for remote desktop/VM issues
-  pub last_key_event: Option<(KeyEvent, Instant)>,
-  pub key_debounce_duration: Duration,
   // Track if initial setup is complete to avoid resize issues
   pub initial_setup_complete: bool,
   // Track last saved viewport offset to avoid duplicate saves
