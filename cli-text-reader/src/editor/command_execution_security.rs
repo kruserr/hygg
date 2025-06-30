@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::process::{Command, Stdio};
 use std::time::Duration;
+use super::command_translation::translate_command_for_windows;
 
 // Command output structure
 pub struct CommandOutput {
@@ -22,6 +23,16 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   if cmd.is_empty() {
     return Err("Empty command".to_string());
   }
+  
+  // On Windows, translate Unix commands to PowerShell
+  #[cfg(target_os = "windows")]
+  let cmd_string = translate_command_for_windows(cmd);
+  #[cfg(target_os = "windows")]
+  let cmd_to_parse = cmd_string.as_str();
+  
+  // For non-Windows, keep the original reference
+  #[cfg(not(target_os = "windows"))]
+  let cmd_to_parse = cmd;
 
   // Whitelist of allowed commands - focus on read-only, generally safe commands
   // Security Note: Even read-only commands can have security implications:
@@ -47,13 +58,19 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
     "ping", "dig", "nslookup", "curl", "wget",
     // Text utilities (path manipulation, generally safe)
     "echo", "printf", "basename", "dirname", "realpath", "readlink",
+    // PowerShell commands (Windows)
+    "Get-ChildItem", "Get-Content", "Get-Location", "Select-String",
+    "Get-Date", "Get-Process", "Get-Host", "Format-Table", "Select-Object",
+    "Measure-Object", "Where-Object", "Sort-Object",
+    // PowerShell.exe for Windows
+    "powershell.exe", "powershell",
   ]
   .iter()
   .cloned()
   .collect();
 
   // Split command into parts
-  let parts: Vec<&str> = cmd.split_whitespace().collect();
+  let parts: Vec<&str> = cmd_to_parse.split_whitespace().collect();
   if parts.is_empty() {
     return Err("Invalid command".to_string());
   }
@@ -87,6 +104,20 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
     return Err("Too many arguments (max 50)".to_string());
   }
 
+  // On Windows, if we have a PowerShell command, wrap it properly
+  #[cfg(target_os = "windows")]
+  {
+    // Check if this is a PowerShell cmdlet (contains hyphen)
+    if program.contains('-') || program.starts_with("Get-") || program.starts_with("Select-") {
+      // Reconstruct the full command for PowerShell
+      let full_cmd = parts.join(" ");
+      return Ok(SecureCommand {
+        program: "powershell.exe".to_string(),
+        args: vec!["-Command".to_string(), full_cmd],
+      });
+    }
+  }
+  
   Ok(SecureCommand {
     program: program.to_string(),
     args: parts[1..].iter().map(|s| s.to_string()).collect(),

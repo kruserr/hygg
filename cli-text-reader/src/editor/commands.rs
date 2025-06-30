@@ -9,7 +9,7 @@ impl Editor {
     &mut self,
     _stdout: &mut io::Stdout,
   ) -> Result<bool, Box<dyn std::error::Error>> {
-    let cmd = self.editor_state.command_buffer.trim().to_string();
+    let cmd = self.get_active_command_buffer().trim().to_string();
     self.debug_log_event("command", "execute_command", &format!("cmd='{cmd}'"));
     
     // Track command for tutorial will be done in specific command handlers
@@ -29,8 +29,8 @@ impl Editor {
       &format!("{:?}", self.view_mode),
     );
 
-    // Handle :q, :quit, :exit commands
-    if cmd == "q" || cmd == "quit" || cmd == "exit" {
+    // Handle :q, :q!, :quit, :exit commands
+    if cmd == "q" || cmd == "q!" || cmd == "quit" || cmd == "exit" {
       // Check if we're in horizontal split view
       let is_in_command_buffer = if self.tutorial_active {
         self.active_buffer == 2  // In tutorial mode, command buffer is at index 2
@@ -71,7 +71,19 @@ impl Editor {
           "quit_overlay",
           "closing overlay buffer",
         );
-        self.close_overlay();
+        
+        // Check if we're closing the tutorial overlay
+        if self.tutorial_active && self.active_buffer == 1 {
+          self.debug_log_event(
+            "command",
+            "quit_tutorial",
+            "properly completing tutorial on :q",
+          );
+          self.complete_tutorial_interactive();
+        } else {
+          self.close_overlay();
+        }
+        
         self.set_active_mode(super::core::EditorMode::Normal);
         self.editor_state.command_buffer.clear();
         self.editor_state.command_cursor_pos = 0;

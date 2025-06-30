@@ -8,6 +8,7 @@ mod char_navigation;
 mod command_execution;
 mod command_execution_core;
 mod command_execution_security;
+mod command_translation;
 mod command_mode;
 mod commands;
 mod commands_handlers;

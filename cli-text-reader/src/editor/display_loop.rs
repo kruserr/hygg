@@ -122,7 +122,7 @@ impl Editor {
         let timeout = if self.needs_redraw {
           std::time::Duration::from_millis(16) // ~60fps when animating
         } else if self.tutorial_demo_mode {
-          std::time::Duration::from_millis(100) // Moderate polling for demo mode to reduce flicker
+          std::time::Duration::from_millis(16) // Smooth 60fps for demo mode
         } else {
           std::time::Duration::from_millis(250) // Slower when idle
         };
@@ -151,7 +151,7 @@ impl Editor {
               self.debug_log("Exiting from demo action");
               break;
             }
-            self.mark_dirty();
+            // handle_event will mark dirty if needed
             continue;
           }
         }
@@ -252,7 +252,7 @@ impl Editor {
               self.debug_log("Exiting from demo action (non-terminal)");
               break;
             }
-            self.mark_dirty();
+            // handle_event will mark dirty if needed
           }
         }
         
