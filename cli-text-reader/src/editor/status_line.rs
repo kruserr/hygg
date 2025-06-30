@@ -1,4 +1,4 @@
-use crossterm::{cursor::MoveTo, execute};
+use crossterm::{cursor::MoveTo, execute, QueueableCommand};
 use std::io::{self, Write};
 
 use super::core::{Editor, EditorMode};
@@ -173,6 +173,86 @@ impl Editor {
       stdout,
       crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine)
     )?;
+
+    Ok(())
+  }
+
+  // Buffered version of draw_status_line
+  pub fn draw_status_line_buffered(
+    &mut self,
+    buffer: &mut Vec<u8>,
+  ) -> io::Result<()> {
+    // Draw mode indicators in the status line
+    self.draw_mode_indicator_buffered(buffer)?;
+
+    // Show progress indicator if enabled, in normal view mode, and not in demo
+    if self.show_progress 
+      && self.view_mode == super::core::ViewMode::Normal 
+      && !self.tutorial_demo_mode {
+      self.draw_progress_indicator_buffered(buffer)?;
+    }
+
+    Ok(())
+  }
+
+  // Buffered version of draw_mode_indicator
+  fn draw_mode_indicator_buffered(&mut self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    let effective_mode = self.get_active_mode();
+    
+    buffer.queue(MoveTo(0, (self.height - 1) as u16))?;
+    
+    match effective_mode {
+      EditorMode::Command => {
+        write!(buffer, ":{}", self.get_active_command_buffer())?;
+      }
+      EditorMode::CommandExecution => {
+        write!(buffer, ":{}", self.get_active_command_buffer())?;
+      }
+      EditorMode::Search => {
+        write!(buffer, "/{}", self.get_active_command_buffer())?;
+      }
+      EditorMode::ReverseSearch => {
+        write!(buffer, "?{}", self.get_active_command_buffer())?;
+      }
+      EditorMode::VisualChar => {
+        write!(buffer, "-- VISUAL --")?;
+      }
+      EditorMode::VisualLine => {
+        write!(buffer, "-- VISUAL LINE --")?;
+      }
+      EditorMode::Tutorial => {
+        write!(buffer, "-- TUTORIAL --")?;
+      }
+      _ => {
+        // Normal mode - just clear the line
+      }
+    }
+    
+    // Clear to end of line after any text
+    buffer.queue(crossterm::terminal::Clear(
+      crossterm::terminal::ClearType::UntilNewLine
+    ))?;
+    
+    Ok(())
+  }
+
+  // Buffered version of draw_progress_indicator
+  fn draw_progress_indicator_buffered(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    let progress =
+      (self.offset as f64 / self.total_lines as f64 * 100.0).round();
+    let message = format!("{progress}%");
+    
+    self.debug_log(&format!(
+      "Drawing progress indicator: {} (view_mode: {:?}, demo: {})",
+      message, self.view_mode, self.tutorial_demo_mode
+    ));
+    let x = self.width as u16 - message.len() as u16 - 2;
+    let y = self.height as u16 - 2;
+    buffer.queue(MoveTo(x, y))?;
+    write!(buffer, "{message}")?;
+    buffer.queue(crossterm::terminal::Clear(
+      crossterm::terminal::ClearType::UntilNewLine
+    ))?;
 
     Ok(())
   }

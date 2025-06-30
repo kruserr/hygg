@@ -39,76 +39,128 @@ impl Editor {
       // Only redraw if needed
       if self.check_needs_redraw() || first_iteration {
         if std::io::stdout().is_terminal() {
-          // Hide cursor during rendering to prevent jumping
-          execute!(stdout, Hide)?;
+          // Create a buffer to collect all rendering commands
+          let mut render_buffer = Vec::new();
+          
+          // Hide cursor at the very beginning - only once
+          use crossterm::QueueableCommand;
+          render_buffer.queue(Hide)?;
 
           // Only clear screen if forced or on first iteration
           if self.force_clear || first_iteration {
-            execute!(stdout, Clear(ClearType::All))?;
+            render_buffer.queue(Clear(ClearType::All))?;
             self.force_clear = false;
           }
-        }
 
-        // Center the cursor consistently - this will ensure the
-        // cursor stays in the middle with equal lines above and below
-        // Skip on first iteration if we loaded progress to preserve exact
-        // position
-        // Also skip centering when entering command/search modes to prevent layout shift
-        let should_skip_center = first_iteration && skip_first_center;
-        let is_mode_change_only = matches!(
-          self.editor_state.mode,
-          EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
-        ) && !self.cursor_moved;
-        
-        if !should_skip_center && !is_mode_change_only {
-          self.center_cursor();
-        }
+          // Center the cursor consistently - this will ensure the
+          // cursor stays in the middle with equal lines above and below
+          // Skip on first iteration if we loaded progress to preserve exact
+          // position
+          // Also skip centering when entering command/search modes to prevent layout shift
+          let should_skip_center = first_iteration && skip_first_center;
+          let is_mode_change_only = matches!(
+            self.editor_state.mode,
+            EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
+          ) && !self.cursor_moved;
+          
+          if !should_skip_center && !is_mode_change_only {
+            self.center_cursor();
+          }
 
-        // Calculate layout parameters
-        let term_width = terminal::size()?.0 as u16;
-        let center_offset = if self.width > self.col {
-          (self.width / 2) - self.col / 2
+          // Calculate layout parameters
+          let term_width = terminal::size()?.0 as u16;
+          let center_offset = if self.width > self.col {
+            (self.width / 2) - self.col / 2
+          } else {
+            0
+          };
+          let center_offset_string = " ".repeat(center_offset);
+
+          // Draw content based on view mode
+          self.debug_log(&format!(
+            "Drawing buffer {} in {:?} mode",
+            self.active_buffer, self.view_mode
+          ));
+
+          // Draw all content to the buffer instead of stdout
+          match self.view_mode {
+            ViewMode::Normal | ViewMode::Overlay => {
+              self.draw_content_buffered(&mut render_buffer, term_width, &center_offset_string)?;
+            }
+            ViewMode::HorizontalSplit => {
+              self.draw_split_view_buffered(&mut render_buffer, term_width, &center_offset_string)?;
+            }
+          }
+
+          // Show status line and position info
+          self.draw_status_line_buffered(&mut render_buffer)?;
+
+          // Render demo hint if active
+          if self.tutorial_demo_mode {
+            self.render_demo_hint_buffered(&mut render_buffer, self.width, self.height)?;
+          }
+
+          // Position cursor and show it at the final position
+          self.position_cursor_buffered(&mut render_buffer, center_offset)?;
+
+          // Write everything to stdout in one go
+          stdout.write_all(&render_buffer)?;
+          stdout.flush()?;
+          
+          // Reset cursor_moved flag after rendering
+          self.cursor_moved = false;
         } else {
-          0
-        };
-        let center_offset_string = " ".repeat(center_offset);
-
-        // Draw content based on view mode
-        self.debug_log(&format!(
-          "Drawing buffer {} in {:?} mode",
-          self.active_buffer, self.view_mode
-        ));
-
-        match self.view_mode {
-          ViewMode::Normal | ViewMode::Overlay => {
-            self.draw_content(stdout, term_width, &center_offset_string)?;
+          // Non-terminal rendering (keep original behavior)
+          // Center the cursor consistently
+          let should_skip_center = first_iteration && skip_first_center;
+          let is_mode_change_only = matches!(
+            self.editor_state.mode,
+            EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
+          ) && !self.cursor_moved;
+          
+          if !should_skip_center && !is_mode_change_only {
+            self.center_cursor();
           }
-          ViewMode::HorizontalSplit => {
-            self.draw_split_view(stdout, term_width, &center_offset_string)?;
+
+          // Calculate layout parameters
+          let term_width = 80u16; // Default width for non-terminal
+          let center_offset = if self.width > self.col {
+            (self.width / 2) - self.col / 2
+          } else {
+            0
+          };
+          let center_offset_string = " ".repeat(center_offset);
+
+          // Draw content based on view mode
+          match self.view_mode {
+            ViewMode::Normal | ViewMode::Overlay => {
+              self.draw_content(stdout, term_width, &center_offset_string)?;
+            }
+            ViewMode::HorizontalSplit => {
+              self.draw_split_view(stdout, term_width, &center_offset_string)?;
+            }
           }
+
+          // Show status line and position info
+          self.draw_status_line(stdout)?;
+
+          // Render demo hint if active
+          if self.tutorial_demo_mode {
+            self.render_demo_hint(stdout, self.width, self.height)?;
+          }
+
+          stdout.flush()?;
+          self.cursor_moved = false;
         }
-
-        // Show status line and position info
-        self.draw_status_line(stdout)?;
-
-        // Render demo hint if active
-        if self.tutorial_demo_mode {
-          self.render_demo_hint(stdout, self.width, self.height)?;
-        }
-
-        // Flush stdout to ensure all content is displayed
-        stdout.flush()?;
-
-        // Position and style the cursor
-        self.position_cursor(stdout, center_offset)?;
-        
-        // Reset cursor_moved flag after rendering
-        self.cursor_moved = false;
       } else {
-        // Even if not redrawing, ensure cursor is visible and positioned
-        // correctly
+        // Even if not redrawing, ensure cursor is visible and positioned correctly
+        // But do it efficiently with a single write
         if self.show_cursor && std::io::stdout().is_terminal() {
-          execute!(stdout, crossterm::cursor::Show)?;
+          use crossterm::QueueableCommand;
+          let mut buffer = Vec::new();
+          buffer.queue(crossterm::cursor::Show)?;
+          stdout.write_all(&buffer)?;
+          stdout.flush()?;
         }
       }
 

@@ -1,8 +1,8 @@
 use crossterm::{
   cursor::{Hide, MoveTo, SetCursorStyle, Show},
-  execute,
+  execute, QueueableCommand,
 };
-use std::io::{self, IsTerminal};
+use std::io::{self, IsTerminal, Write};
 
 use super::core::{Editor, EditorMode, ViewMode};
 
@@ -162,5 +162,81 @@ impl Editor {
       }
     }
     self.mark_dirty();
+  }
+
+  // Buffered version of position_cursor - positions and shows cursor in one go
+  pub fn position_cursor_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+    center_offset: usize,
+  ) -> io::Result<()> {
+    if !self.show_cursor {
+      // Cursor should remain hidden
+      return Ok(());
+    }
+    
+    let active_mode = self.get_active_mode();
+    
+    // Position the cursor at current position in text
+    if active_mode == EditorMode::Normal
+      || active_mode == EditorMode::VisualChar
+      || active_mode == EditorMode::VisualLine
+    {
+      // Calculate cursor position based on view mode
+      let cursor_y = if self.view_mode == ViewMode::HorizontalSplit {
+        // In split view, adjust cursor position based on active pane
+        if self.active_pane == 0 {
+          // Top pane - cursor is within the top pane's viewport
+          self.cursor_y
+        } else {
+          // Bottom pane - cursor is below the top pane and separator
+          let top_height = (self.height.saturating_sub(1) as f32
+            * self.split_ratio) as usize;
+          top_height + 1 + self.cursor_y // +1 for separator line
+        }
+      } else {
+        // Normal view - cursor position unchanged
+        self.cursor_y
+      };
+
+      // Position cursor exactly on the highlighted line
+      buffer.queue(MoveTo((center_offset + self.cursor_x) as u16, cursor_y as u16))?;
+
+      // Set appropriate cursor style for the mode and show cursor
+      match active_mode {
+        EditorMode::Normal => {
+          buffer.queue(SetCursorStyle::BlinkingBlock)?;
+        }
+        EditorMode::VisualChar | EditorMode::VisualLine => {
+          buffer.queue(SetCursorStyle::SteadyBlock)?;
+        }
+        _ => {}
+      }
+      
+      // Show cursor at the final position
+      buffer.queue(Show)?;
+    } else if active_mode == EditorMode::Command
+      || active_mode == EditorMode::CommandExecution
+      || active_mode == EditorMode::Search
+      || active_mode == EditorMode::ReverseSearch
+    {
+      // In command/search mode, position cursor at the correct position
+      let cmd_len = match active_mode {
+        EditorMode::Command | EditorMode::CommandExecution => {
+          1 + self.get_active_command_cursor_pos()
+        } /* ":" + cursor pos */
+        EditorMode::Search => 1 + self.get_active_command_cursor_pos(), /* "/" + cursor pos */
+        EditorMode::ReverseSearch => {
+          1 + self.get_active_command_cursor_pos()
+        } /* "?" + cursor pos */
+        _ => 0,
+      };
+
+      buffer.queue(MoveTo(cmd_len as u16, (self.height - 1) as u16))?;
+      buffer.queue(SetCursorStyle::BlinkingBar)?;
+      buffer.queue(Show)?;
+    }
+    
+    Ok(())
   }
 }

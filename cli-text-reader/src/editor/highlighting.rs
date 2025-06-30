@@ -1,6 +1,6 @@
 use crossterm::{
   cursor::MoveTo,
-  execute,
+  execute, QueueableCommand,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
 };
 use std::io::{Result as IoResult, Write};
@@ -85,5 +85,60 @@ impl Editor {
     }
   }
 
+  // Buffered version of highlight_current_line
+  pub fn highlight_current_line_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+    line_index: usize,
+    term_width: u16,
+  ) -> IoResult<bool> {
+    if self.show_highlighter && line_index == self.cursor_y {
+      self.debug_log(&format!(
+        "Highlighting line {} with width {} (view_mode: {:?})",
+        line_index, term_width, self.view_mode
+      ));
+      
+      // First, draw the background for the entire line
+      buffer.queue(MoveTo(0, line_index as u16))?;
+      buffer.queue(SetBackgroundColor(Color::Rgb { r: 40, g: 40, b: 40 }))?;
+
+      // Fill the entire width with background color
+      write!(buffer, "{}", " ".repeat(term_width as usize))?;
+
+      // Reset cursor position to beginning of line
+      buffer.queue(MoveTo(0, line_index as u16))?;
+
+      Ok(true)
+    } else {
+      Ok(false)
+    }
+  }
+
+  // Buffered version of highlight_search_match
+  pub fn highlight_search_match_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+    line_index: usize,
+    line: &str,
+    center_offset_string: &str,
+  ) -> IoResult<bool> {
+    if let Some((line_idx, start, end)) = self.editor_state.current_match {
+      if line_idx == self.offset + line_index {
+        write!(buffer, "{center_offset_string}")?;
+        write!(buffer, "{}", &line[..start])?;
+        buffer.queue(SetBackgroundColor(Color::Yellow))?;
+        buffer.queue(SetForegroundColor(Color::Black))?;
+        write!(buffer, "{}", &line[start..end])?;
+        buffer.queue(ResetColor)?;
+        write!(buffer, "{}", &line[end..])?;
+        buffer.queue(crossterm::terminal::Clear(
+          crossterm::terminal::ClearType::UntilNewLine
+        ))?;
+        return Ok(true);
+      }
+    }
+
+    Ok(false)
+  }
 
 }

@@ -84,7 +84,11 @@ fn translate_ls(parsed: &ParsedCommand) -> String {
     }
     
     if format_table {
+        // User explicitly wants detailed format
         ps_cmd.push_str(" | Format-Table Mode, LastWriteTime, Length, Name");
+    } else {
+        // Default behavior: one file per line, just like Linux ls
+        ps_cmd.push_str(" | Select-Object -ExpandProperty Name");
     }
     
     ps_cmd
@@ -204,9 +208,11 @@ mod tests {
 
     #[test]
     fn test_ls_translation() {
-        assert_eq!(translate_command_for_windows("ls"), "Get-ChildItem");
+        assert_eq!(translate_command_for_windows("ls"), "Get-ChildItem | Select-Object -ExpandProperty Name");
         assert_eq!(translate_command_for_windows("ls -la"), "Get-ChildItem -Force | Format-Table Mode, LastWriteTime, Length, Name");
         assert_eq!(translate_command_for_windows("ls -l /tmp"), "Get-ChildItem -Path /tmp | Format-Table Mode, LastWriteTime, Length, Name");
+        assert_eq!(translate_command_for_windows("ls /tmp"), "Get-ChildItem -Path /tmp | Select-Object -ExpandProperty Name");
+        assert_eq!(translate_command_for_windows("ls -a"), "Get-ChildItem -Force | Select-Object -ExpandProperty Name");
     }
 
     #[test]
