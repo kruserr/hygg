@@ -38,7 +38,7 @@ impl DemoScript {
             VimMotion("vip".to_string()),
             Wait(Duration::from_millis(2000)),
             
-            ShowHint("highlight selected text\nfor better readability".to_string(), Duration::from_millis(3500)),
+            ShowHint("highlight selected text".to_string(), Duration::from_millis(3500)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char(':')),
             Wait(Duration::from_millis(250)),
@@ -67,7 +67,7 @@ impl DemoScript {
             Key(KeyCode::Char('j')),
             Wait(Duration::from_millis(1000)),
             
-            ShowHint("copy command output\nwith keyboard shortcuts".to_string(), Duration::from_millis(3500)),
+            ShowHint("copy command output".to_string(), Duration::from_millis(3500)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char('y')),
             Wait(Duration::from_millis(250)),
