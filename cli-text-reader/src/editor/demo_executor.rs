@@ -1,4 +1,4 @@
-use super::core::{Editor, EditorMode};
+use super::core::{Editor, EditorMode, ViewMode};
 use super::demo_content::get_demo_content;
 use crate::demo_script::{DemoAction, DemoScript};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -14,7 +14,9 @@ impl Editor {
             self.load_demo_content();
         }
         
-        self.demo_script = Some(DemoScript::marketing_demo());
+        let demo = DemoScript::marketing_demo();
+        self.debug_log(&format!("Loaded marketing demo with {} actions", demo.actions.len()));
+        self.demo_script = Some(demo);
         self.demo_action_index = 0;
         self.demo_last_action_time = Some(Instant::now());
         self.demo_typing_char_index = 0;
@@ -58,8 +60,11 @@ impl Editor {
         self.debug_log(&format!("Demo progress: action {} of {}", self.demo_action_index, actions_len));
         
         if self.demo_action_index >= actions_len {
-            self.debug_log("Demo script complete");
+            self.debug_log(&format!("Demo script complete - action_index {} >= actions_len {}", 
+                self.demo_action_index, actions_len));
             self.complete_demo();
+            // Force immediate redraw so exit check happens right away
+            self.mark_dirty();
             return None;
         }
         
@@ -184,21 +189,98 @@ impl Editor {
     
     // Complete the demo
     fn complete_demo(&mut self) {
-        self.debug_log("Completing demo mode");
-        self.tutorial_demo_mode = false;
-        self.demo_script = None;
+        self.debug_log("Completing demo mode - performing comprehensive cleanup");
+        
+        // IMPORTANT: We need to maintain state that signals demo completion for exit
+        // The should_exit_after_demo() function checks:
+        // !self.tutorial_demo_mode && self.demo_script.is_none() && self.demo_action_index > 0
+        
+        // Clear demo-specific state but preserve exit signal
+        self.tutorial_demo_mode = false;  // This MUST be false for exit check
+        self.demo_script = None;          // This MUST be None for exit check
+        // Keep demo_action_index > 0 to signal demo completion for exit check
+        // DO NOT RESET: self.demo_action_index = 0;
+        
         self.demo_hint_text = None;
         self.demo_hint_until = None;
+        self.demo_typing_char_index = 0;
+        self.demo_pending_keys.clear();
+        self.demo_last_action_time = None;
         
-        // Mark for exit after demo completes
+        // Clear all highlights created during demo
+        self.highlights.clear_all_highlights();
+        
+        // Clear selection state
+        self.clear_selection();
+        
+        // Clear yanked text
+        self.editor_state.yank_buffer.clear();
+        
+        // Clear search state
+        self.editor_state.search_query.clear();
+        self.editor_state.current_match = None;
+        
+        // Clear bookmarks (optional - could preserve them)
+        // self.marks.clear();
+        
+        // Clear any command output buffers (keep only main buffer)
+        if self.buffers.len() > 1 {
+            self.buffers.truncate(1);
+        }
+        
+        // Reset to main buffer and normal view mode
+        self.active_buffer = 0;
+        self.active_pane = 0;
+        self.view_mode = ViewMode::Normal;
+        
+        // Clear other navigation state
+        self.number_prefix.clear();
+        self.last_find_char = None;
+        self.last_find_forward = false;
+        self.last_find_till = false;
+        self.previous_position = None;
+        
+        // Reset editor mode
         self.editor_state.mode = EditorMode::Normal;
+        self.editor_state.command_buffer.clear();
+        self.editor_state.command_cursor_pos = 0;
+        
+        // Sync buffer state
+        if let Some(buffer) = self.buffers.get_mut(0) {
+            buffer.selection_start = None;
+            buffer.selection_end = None;
+            buffer.search_query.clear();
+            buffer.current_match = None;
+            buffer.command_buffer.clear();
+            buffer.command_cursor_pos = 0;
+        }
+        
+        // Load the main buffer state
+        self.load_buffer_state(0);
+        
+        // Force full redraw
         self.mark_dirty();
+        self.force_clear = true;
+        
+        self.debug_log("Demo cleanup complete - demo should exit now");
     }
     
     // Check if demo should exit
     pub fn should_exit_after_demo(&self) -> bool {
         // If we started in demo mode and it's now complete, exit
-        !self.tutorial_demo_mode && self.demo_script.is_none() && self.demo_action_index > 0
+        let should_exit = !self.tutorial_demo_mode && self.demo_script.is_none() && self.demo_action_index > 0;
+        
+        if self.demo_action_index > 0 {
+            self.debug_log(&format!(
+                "should_exit_after_demo: tutorial_demo_mode={}, demo_script={}, demo_action_index={}, result={}",
+                self.tutorial_demo_mode,
+                self.demo_script.is_some(),
+                self.demo_action_index,
+                should_exit
+            ));
+        }
+        
+        should_exit
     }
     
     

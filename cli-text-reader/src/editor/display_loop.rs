@@ -154,6 +154,12 @@ impl Editor {
             // handle_event will mark dirty if needed
             continue;
           }
+          
+          // Check immediately after demo progress - demo might have just completed
+          if self.should_exit_after_demo() {
+            self.debug_log("Demo complete, exiting (immediate)");
+            break;
+          }
         }
         
         // Check if demo should exit (after demo completion)
