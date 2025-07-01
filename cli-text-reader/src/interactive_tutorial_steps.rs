@@ -7,10 +7,8 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
   
   vec![
     InteractiveTutorialStep {
-      title: "Welcome to hygg - Simplifying the way you read".to_string(),
+      title: "hygg - simplifying the way you read".to_string(),
       instructions: vec![
-        format!("{}hygg{} - Transform your terminal into a powerful document reader", 
-          SetForegroundColor(Color::Cyan), ResetColor),
         "".to_string(),
         "Why choose hygg?".to_string(),
         "• 📖 Universal document support - PDF, EPUB, and OCR".to_string(),

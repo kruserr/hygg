@@ -216,7 +216,7 @@ fn select_paragraph_component() -> DemoComponent {
         name: "Select Paragraph",
         description: "vip to select paragraph",
         actions: vec![
-            ShowHint("select entire paragraphs\nwith a single command".to_string(), Duration::from_millis(3500)),
+            ShowHint("select entire paragraphs".to_string(), Duration::from_millis(3500)),
             Wait(Duration::from_millis(500)),
             VimMotion("vip".to_string()),
             Wait(Duration::from_millis(2000)),
@@ -276,7 +276,7 @@ fn yank_line_component() -> DemoComponent {
         name: "Yank Line",
         description: "yy to yank line",
         actions: vec![
-            ShowHint("copy entire lines\nwith yy command".to_string(), Duration::from_millis(3000)),
+            ShowHint("copy from command output".to_string(), Duration::from_millis(3000)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char('y')),
             Wait(Duration::from_millis(250)),
@@ -354,7 +354,7 @@ fn execute_ls_component() -> DemoComponent {
         name: "Execute ls Command",
         description: "List files with :!ls",
         actions: vec![
-            ShowHint("execute any command\ndirectly from your reader".to_string(), Duration::from_millis(3500)),
+            ShowHint("execute commands".to_string(), Duration::from_millis(3500)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char(':')),
             Wait(Duration::from_millis(250)),
@@ -467,7 +467,7 @@ fn final_message_component() -> DemoComponent {
         name: "Final Message",
         description: "Closing with github link",
         actions: vec![
-            ShowHint("hygg - simplifying the way you read\n\nTransform your terminal into a powerful document reader\n\ngithub.com/kruserr/hygg".to_string(), Duration::from_millis(5000)),
+            ShowHint("hygg - simplifying the way you read\n\ngithub.com/kruserr/hygg".to_string(), Duration::from_millis(5000)),
             Wait(Duration::from_millis(4000)),
         ],
     }
@@ -514,14 +514,14 @@ fn search_cargo_component() -> DemoComponent {
     
     DemoComponent {
         id: "search_cargo",
-        name: "Search for Cargo",
-        description: "Search for Cargo.toml with /Cargo",
+        name: "Search in command output",
+        description: "Search in command output",
         actions: vec![
-            ShowHint("search for specific files\nwith the / command".to_string(), Duration::from_millis(3000)),
+            ShowHint("search in command output".to_string(), Duration::from_millis(3000)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char('/')),
             Wait(Duration::from_millis(250)),
-            TypeString("Cargo".to_string(), Duration::from_millis(100)),
+            TypeString("toml".to_string(), Duration::from_millis(100)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Enter),
             Wait(Duration::from_millis(1000)),
@@ -539,7 +539,7 @@ fn execute_cat_with_paste_component() -> DemoComponent {
         name: "Execute cat with Paste",
         description: ":!cat with Ctrl+V to paste yanked text",
         actions: vec![
-            ShowHint("view any file's contents\nby pasting its name".to_string(), Duration::from_millis(3500)),
+            ShowHint("paste into next command".to_string(), Duration::from_millis(3500)),
             Wait(Duration::from_millis(500)),
             Key(KeyCode::Char(':')),
             Wait(Duration::from_millis(250)),

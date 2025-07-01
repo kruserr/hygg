@@ -48,10 +48,9 @@ impl DemoScript {
             "select_paragraph",
             "highlight_selection",
             "execute_ls",
-            "simple_jjj_navigation",  // NEW: Just 3 j movements
-            "search_cargo",           // NEW: Search for Cargo
+            "search_cargo",
             "yank_line",
-            "execute_cat_with_paste", // NEW: Specific cat with paste
+            "execute_cat_with_paste",
             "final_message",
         ])
     }

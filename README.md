@@ -5,9 +5,7 @@
 </p>
 
 # hygg
-Simplifying the way you read
-
-## Transform your terminal into a powerful document reader
+simplifying the way you read
 
 Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
 
