@@ -109,8 +109,9 @@ impl Editor {
     
     // Show tutorial on first launch or start demo mode
     if self.tutorial_demo_mode {
-      self.debug_log("Starting marketing demo mode");
-      self.start_demo_mode();
+      let demo_id = self.demo_id.unwrap_or(0); // Default to marketing demo if no ID specified
+      self.debug_log(&format!("Starting demo mode with ID: {}", demo_id));
+      self.start_demo_mode(demo_id);
     } else if tutorial_enabled && !tutorial_shown && !self.tutorial_demo_mode {
       self.debug_log("Showing interactive tutorial for first-time user");
       self.show_interactive_tutorial()?;

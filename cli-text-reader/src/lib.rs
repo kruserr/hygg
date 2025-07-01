@@ -3,7 +3,10 @@ mod config;
 mod core_state;
 mod core_types;
 mod debug;
-mod demo_script;
+pub mod demo_components;
+mod demo_content;
+pub mod demo_registry;
+pub mod demo_script;
 mod demo_tutorial_test;
 mod editor;
 mod help;
@@ -59,6 +62,27 @@ pub fn run_cli_text_reader_with_content(
     Editor::new(lines, col)
   };
   editor.tutorial_demo_mode = demo_mode;
+  let result = editor.run();
+
+  debug::debug_log("main", "Editor run completed");
+  debug::flush_debug_log();
+  result
+}
+
+pub fn run_cli_text_reader_with_demo_id(
+  lines: Vec<String>,
+  col: usize,
+  demo_id: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+  // Initialize debug logging
+  debug::init_debug_logging()?;
+  debug::debug_log("main", "Starting cli-text-reader with demo");
+  debug::debug_log_state("main", "demo_id", &demo_id.to_string());
+  debug::debug_log_state("main", "col", &col.to_string());
+
+  let mut editor = Editor::new(lines, col);
+  editor.tutorial_demo_mode = true;
+  editor.demo_id = Some(demo_id);
   let result = editor.run();
 
   debug::debug_log("main", "Editor run completed");

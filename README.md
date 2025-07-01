@@ -13,7 +13,7 @@ Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free 
 
 ## ✨ Why hygg?
 
-- 📖 **Universal document support** - PDF, EPUB, and scanned documents with OCR
+- 📖 **Universal document support** - PDF, EPUB, DOCX, and many more formats via pandoc. Supports scanned documents with OCR
 - ⚡ **Lightning-fast keyboard based navigation** - Vim-inspired keybindings
 - 🔍 **Powerful search** - Find anything instantly, highlight important passages, add bookmarks
 - 💾 **Never lose your place** - Automatic progress saving
@@ -26,14 +26,23 @@ cargo install --locked hygg
 hygg doc.pdf
 ```
 
-for scanned document support
+### Additional formats via pandoc
 ```sh
-sudo apt install ocrmypdf tesseract-ocr-eng
+sudo apt install pandoc          # For Debian/Ubuntu
+hygg document.docx              # Direct reading
+pandoc doc.docx --to=plain | hygg  # Via pipe
 ```
 
-then use the `--ocr=true` flag
+### OCR for scanned documents
 ```sh
-hygg --ocr=true doc.pdf
+sudo apt install ocrmypdf tesseract-ocr-eng
+hygg --ocr=true scanned.pdf
+```
+
+### Reading from stdin
+```sh
+cat README.md | hygg            # Plain text
+curl example.com | hygg         # Web content
 ```
 
 For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)

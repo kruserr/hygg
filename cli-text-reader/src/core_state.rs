@@ -52,6 +52,7 @@ pub struct Editor {
   // Demo script execution
   pub demo_script: Option<DemoScript>,
   pub demo_action_index: usize,
+  pub demo_id: Option<usize>,
   pub demo_last_action_time: Option<Instant>,
   pub demo_hint_text: Option<String>,
   pub demo_hint_until: Option<Instant>,

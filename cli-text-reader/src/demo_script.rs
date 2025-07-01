@@ -1,5 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use std::time::Duration;
+use crate::demo_components::get_component;
 
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
@@ -23,84 +24,85 @@ pub enum DemoAction {
 #[allow(dead_code)]
 pub struct DemoScript {
     pub actions: Vec<DemoAction>,
-    pub total_duration: Duration,
 }
 
 impl DemoScript {
-    pub fn marketing_demo() -> Self {
-        use DemoAction::*;
+    // Build demo from component IDs
+    pub fn from_components(component_ids: &[&str]) -> Self {
+        let mut actions = vec![];
         
-        let actions = vec![
-            Wait(Duration::from_millis(2000)),
-
-            ShowHint("select entire paragraphs\nwith a single command".to_string(), Duration::from_millis(3500)),
-            Wait(Duration::from_millis(500)),
-            VimMotion("vip".to_string()),
-            Wait(Duration::from_millis(2000)),
-            
-            ShowHint("highlight selected text".to_string(), Duration::from_millis(3500)),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Char(':')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('h')),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Enter),
-            Wait(Duration::from_millis(1500)),
-            
-            ShowHint("execute any command\ndirectly from your reader".to_string(), Duration::from_millis(3500)),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Char(':')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('!')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('l')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('s')),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Enter),
-            Wait(Duration::from_millis(1000)),
-            
-            Key(KeyCode::Char('j')),
-            Wait(Duration::from_millis(400)),
-            Key(KeyCode::Char('j')),
-            Wait(Duration::from_millis(400)),
-            Key(KeyCode::Char('j')),
-            Wait(Duration::from_millis(1000)),
-            
-            ShowHint("copy command output".to_string(), Duration::from_millis(3500)),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Char('y')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('y')),
-            Wait(Duration::from_millis(1000)),
-            
-            ShowHint("paste output into\nyour next command".to_string(), Duration::from_millis(3500)),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Char(':')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('!')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('c')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('a')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char('t')),
-            Wait(Duration::from_millis(250)),
-            Key(KeyCode::Char(' ')),
-            Wait(Duration::from_millis(250)),
-            KeyWithModifiers(KeyCode::Char('v'), KeyModifiers::CONTROL),
-            Wait(Duration::from_millis(500)),
-            Key(KeyCode::Enter),
-            Wait(Duration::from_millis(2000)),
-
-            ShowHint("hygg - simplifying the way you read\n\nTransform your terminal into a powerful document reader\n\ngithub.com/kruserr/hygg".to_string(), Duration::from_millis(5000)),
-            Wait(Duration::from_millis(4000)),
-        ];
-        
-        Self {
-            actions,
-            total_duration: Duration::from_secs(35),
+        for id in component_ids {
+            if let Some(component) = get_component(id) {
+                actions.extend(component.actions);
+            } else {
+                eprintln!("Warning: Unknown demo component ID: {}", id);
+            }
         }
+        
+        Self { actions }
+    }
+
+    pub fn marketing_demo() -> Self {
+        Self::from_components(&[
+            "intro_message",
+            "select_paragraph",
+            "highlight_selection",
+            "execute_ls",
+            "simple_jjj_navigation",  // NEW: Just 3 j movements
+            "search_cargo",           // NEW: Search for Cargo
+            "yank_line",
+            "execute_cat_with_paste", // NEW: Specific cat with paste
+            "final_message",
+        ])
+    }
+    
+    pub fn speed_demo() -> Self {
+        Self::from_components(&[
+            "intro_message",
+            "basic_navigation",
+            "word_navigation",
+            "select_paragraph",
+            "highlight_selection",
+            "final_message_short",
+        ])
+    }
+    
+    pub fn power_user_demo() -> Self {
+        Self::from_components(&[
+            "intro_message",
+            "paragraph_navigation",
+            "search_navigation",
+            "visual_char_mode",
+            "yank_selection",
+            "execute_ls",
+            "yank_and_execute",
+            "execute_grep",
+            "final_message",
+        ])
+    }
+    
+    pub fn minimal_demo() -> Self {
+        Self::from_components(&[
+            "intro_message",
+            "basic_navigation",
+            "select_word",
+            "highlight_selection",
+            "clear_highlights",
+            "final_message_short",
+        ])
+    }
+    
+    pub fn workflow_demo() -> Self {
+        Self::from_components(&[
+            "intro_message",
+            "basic_navigation",
+            "visual_char_mode",
+            "yank_selection",
+            "execute_cat",
+            "select_line",
+            "highlight_selection",
+            "final_message",
+        ])
     }
     
     #[allow(dead_code)]
@@ -121,7 +123,6 @@ impl DemoScript {
         
         Self {
             actions,
-            total_duration: Duration::from_secs(60), // Much longer for learning
         }
     }
     
@@ -265,7 +266,31 @@ impl DemoScript {
         
         Self {
             actions,
-            total_duration: Duration::from_secs(20),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_from_components() {
+        let demo = DemoScript::from_components(&["intro_message", "final_message"]);
+        assert!(!demo.actions.is_empty());
+    }
+    
+    #[test]
+    fn test_marketing_demo_has_correct_components() {
+        let demo = DemoScript::marketing_demo();
+        assert!(!demo.actions.is_empty());
+    }
+    
+    #[test]
+    fn test_from_components_with_invalid_id() {
+        // Should handle invalid component IDs gracefully
+        let demo = DemoScript::from_components(&["intro_message", "invalid_component", "final_message"]);
+        // Should still have actions from valid components
+        assert!(!demo.actions.is_empty());
     }
 }

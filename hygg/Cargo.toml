@@ -24,5 +24,6 @@ cli-text-reader = { version = "0.1", path = "../cli-text-reader" }
 redirect-stderr = { version = "0.1", path = "../redirect-stderr" }
 
 uuid = { version = "1", features = ["v4"] }
+atty = "0.2"
 
 clap = { version = "4.0", features = ["derive"] }

@@ -102,6 +102,7 @@ impl Editor {
       tutorial_start_time: None,
       demo_script: None,
       demo_action_index: 0,
+      demo_id: None,
       demo_last_action_time: None,
       demo_hint_text: None,
       demo_hint_until: None,

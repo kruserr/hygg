@@ -1,35 +1,38 @@
 use super::core::{Editor, EditorMode, ViewMode};
-use super::demo_content::get_demo_content;
+use crate::demo_registry::{get_demo_by_id, get_demo_content_by_id};
 use crate::demo_script::{DemoAction, DemoScript};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::time::{Duration, Instant};
 
 impl Editor {
-    // Initialize demo mode with the marketing script
-    pub fn start_demo_mode(&mut self) {
-        self.debug_log("Starting demo mode");
+    // Initialize demo mode with specified demo ID
+    pub fn start_demo_mode(&mut self, demo_id: usize) {
+        self.debug_log(&format!("Starting demo mode with ID: {}", demo_id));
         
         // Load demo content if the document is empty or inappropriate for demo
         if self.lines.is_empty() || self.lines.len() < 10 {
-            self.load_demo_content();
+            self.load_demo_content(demo_id);
         }
         
-        let demo = DemoScript::marketing_demo();
-        self.debug_log(&format!("Loaded marketing demo with {} actions", demo.actions.len()));
-        self.demo_script = Some(demo);
-        self.demo_action_index = 0;
-        self.demo_last_action_time = Some(Instant::now());
-        self.demo_typing_char_index = 0;
-        self.tutorial_demo_mode = true;
-        self.tutorial_start_time = Some(Instant::now());
-        
-        // Don't use overlay mode - we want to show the actual document
-        self.tutorial_active = false;
+        if let Some(demo) = get_demo_by_id(demo_id) {
+            self.debug_log(&format!("Loaded demo {} with {} actions", demo_id, demo.actions.len()));
+            self.demo_script = Some(demo);
+            self.demo_action_index = 0;
+            self.demo_last_action_time = Some(Instant::now());
+            self.demo_typing_char_index = 0;
+            self.tutorial_demo_mode = true;
+            self.tutorial_start_time = Some(Instant::now());
+            
+            // Don't use overlay mode - we want to show the actual document
+            self.tutorial_active = false;
+        } else {
+            self.debug_log(&format!("Demo with ID {} not found", demo_id));
+        }
     }
     
     // Load demo-specific content
-    fn load_demo_content(&mut self) {
-        let demo_text = get_demo_content();
+    fn load_demo_content(&mut self, demo_id: usize) {
+        let demo_text = get_demo_content_by_id(demo_id);
         self.lines = demo_text;
         self.buffers[0].lines = self.lines.clone();
         self.total_lines = self.lines.len();

@@ -15,7 +15,7 @@ mod commands_handlers;
 mod commands_search;
 mod core;
 mod cursor;
-mod demo_content;
+pub mod demo_content;
 mod demo_executor;
 mod demo_renderer;
 mod display;

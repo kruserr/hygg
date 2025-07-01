@@ -1,5 +1,6 @@
 use clap::Parser;
-use std::{env, fmt::format};
+use std::env;
+use std::io::{self, Read};
 
 /// Simplifying the way you read
 #[derive(Parser)]
@@ -47,6 +48,22 @@ struct Args {
   /// Run interactive tutorial in demo mode for marketing (7 seconds total)
   #[arg(long, default_value = "false")]
   tutorial_demo: bool,
+
+  /// Run demo by ID (e.g., --demo 0)
+  #[arg(long, conflicts_with = "tutorial_demo")]
+  demo: Option<usize>,
+
+  /// List all available demos
+  #[arg(long)]
+  list_demos: bool,
+
+  /// List all demo components
+  #[arg(long)]
+  list_components: bool,
+
+  /// Run custom demo from component list
+  #[arg(long)]
+  demo_compose: Option<String>,
 }
 
 pub fn which(binary: &str) -> Option<std::path::PathBuf> {
@@ -63,6 +80,23 @@ pub fn which(binary: &str) -> Option<std::path::PathBuf> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
   let args = Args::parse();
+
+  // Check if stdin has content
+  let stdin_content = if atty::is(atty::Stream::Stdin) {
+    None
+  } else {
+    let mut buffer = String::new();
+    match io::stdin().read_to_string(&mut buffer) {
+      Ok(_) => {
+        if buffer.is_empty() {
+          None
+        } else {
+          Some(buffer)
+        }
+      }
+      Err(_) => None
+    }
+  };
 
   // Only redirect stderr after we've validated the file
   // This ensures error messages are visible to users
@@ -84,7 +118,43 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   //   return Ok(());
   // }
 
-  // For demo mode, we don't need a file
+  // Handle list demos
+  if args.list_demos {
+    use cli_text_reader::demo_registry::list_all_demos;
+    println!("Available demos:");
+    for (id, name, description) in list_all_demos() {
+      println!("  {} - {} : {}", id, name, description);
+    }
+    return Ok(());
+  }
+
+  // Handle list components
+  if args.list_components {
+    use cli_text_reader::demo_components::list_all_components;
+    println!("Available demo components:");
+    for component in list_all_components() {
+      println!("  {} - {} : {}", component.id, component.name, component.description);
+    }
+    return Ok(());
+  }
+
+  // Handle demo compose
+  if let Some(component_list) = args.demo_compose {
+    // For custom composed demos, we'll use the existing demo infrastructure
+    // Since we can't dynamically register demos, we'll print a message
+    println!("Demo composition from command line is not yet fully implemented.");
+    println!("Components requested: {}", component_list);
+    println!("Please use predefined demos with --demo <ID>");
+    return Ok(());
+  }
+
+  // Handle specific demo ID
+  if let Some(demo_id) = args.demo {
+    cli_text_reader::run_cli_text_reader_with_demo_id(vec![], args.col, demo_id)?;
+    return Ok(());
+  }
+
+  // For tutorial demo mode (backward compatibility)
   if args.tutorial_demo {
     // Run demo with empty content - the demo will load its own content
     cli_text_reader::run_cli_text_reader_with_demo(vec![], args.col, true)?;
@@ -94,7 +164,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // Get the file to process - either from args or from command line
   let file = if let Some(file) = args.file {
     Some(file)
-  } else {
+  } else if stdin_content.is_none() {
+    // Only check for extra arguments if there's no stdin content
     // If no file provided via clap, check if there's an extra argument
     // (for backward compatibility with direct file paths)
     let args_vec: Vec<String> = std::env::args().collect();
@@ -105,10 +176,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       // Get the last argument that isn't the program name
       args_vec.last().cloned()
     }
+  } else {
+    None
   };
 
-  // If no file provided, start with empty content to allow tutorial access
-  let (lines, temp_file, raw_content) = if let Some(file) = file {
+  // If stdin has content, use it directly
+  let (lines, temp_file, raw_content) = if let Some(content) = stdin_content {
+    let lines = cli_justify::justify(&content, args.col);
+    (lines, None, Some(content))
+  } else if let Some(file) = file {
     let temp_file = format!("{file}-{}", uuid::Uuid::new_v4());
     
     let content = if (args.ocr && which("ocrmypdf").is_some()) {
@@ -143,13 +219,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
       cli_pdf_to_text::pdf_to_text(&temp_file)?
     } else {
-      match cli_epub_to_text::epub_to_text(&file)
+      match pandoc_to_text(&file)
+        .or_else(|_| cli_epub_to_text::epub_to_text(&file))
         .or_else(|_| cli_pdf_to_text::pdf_to_text(&file)) {
         Ok(content) => content,
-        Err(_) => {
-          eprintln!("Error: Unable to read file '{file}'");
-          eprintln!("Supported formats: PDF, EPUB");
-          eprintln!("The file may not be in a supported format or may be corrupted.");
+        Err(e) => {
+          eprintln!("Error:\nUnable to read file '{file}'\n");
+
+          eprintln!("Details:\n{e}\n");
+
+          if which("pandoc").is_none() {
+            eprintln!("pandoc not installed!\nFor additional formats, install pandoc:\nsudo apt install pandoc");
+          }
           std::process::exit(1);
         }
       }
@@ -223,4 +304,34 @@ fn validate_file_path(file_path: &str) -> Result<(), String> {
   }
 
   Ok(())
+}
+
+// Convert document to text using pandoc
+fn pandoc_to_text(file_path: &str) -> Result<String, Box<dyn std::error::Error>> {
+  // Check if pandoc is available
+  if which("pandoc").is_none() {
+    return Err("pandoc not found. Install with: sudo apt install pandoc".into());
+  }
+
+  // Validate file path
+  validate_file_path(file_path)?;
+
+  // Run pandoc with plain text output
+  let mut cmd = std::process::Command::new("pandoc");
+  cmd.arg("--to=plain")
+    .arg("--wrap=none")
+    .arg("--")
+    .arg(file_path)
+    .stdin(std::process::Stdio::null())
+    .stdout(std::process::Stdio::piped())
+    .stderr(std::process::Stdio::piped());
+
+  let output = cmd.output()?;
+
+  if !output.status.success() {
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    return Err(format!("pandoc failed: {}", stderr).into());
+  }
+
+  Ok(String::from_utf8(output.stdout)?)
 }

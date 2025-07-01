@@ -135,7 +135,6 @@ pub fn create_tutorial_test_script() -> DemoScript {
     
     DemoScript {
         actions,
-        total_duration: Duration::from_secs(20),
     }
 }
 
