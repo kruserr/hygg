@@ -24,25 +24,6 @@ cargo install --locked hygg
 hygg doc.pdf
 ```
 
-### Additional formats via pandoc
-```sh
-sudo apt install pandoc          # For Debian/Ubuntu
-hygg document.docx              # Direct reading
-pandoc doc.docx --to=plain | hygg  # Via pipe
-```
-
-### OCR for scanned documents
-```sh
-sudo apt install ocrmypdf tesseract-ocr-eng
-hygg --ocr=true scanned.pdf
-```
-
-### Reading from stdin
-```sh
-cat README.md | hygg            # Plain text
-curl example.com | hygg         # Web content
-```
-
 For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)
 
 ## 📚 Features

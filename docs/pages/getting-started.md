@@ -40,29 +40,21 @@ cargo install --locked --path hygg
 hygg test-data/pdf/pdfreference1.7old-1-50.pdf
 ```
 
-### Using with pandoc for additional formats
-Hygg supports PDF and EPUB files natively. For other document formats (DOCX, ODT, RTF, HTML, Markdown, etc.), you can use pandoc:
-
-#### Install pandoc on Debian 12
+## Additional formats via pandoc
 ```sh
 sudo apt install pandoc
+hygg doc.docx
 ```
 
-#### Usage examples
-With pandoc installed, hygg can automatically handle many more formats:
+## OCR for scanned documents
 ```sh
-# Direct file reading (pandoc will be used automatically)
-hygg document.docx
-hygg presentation.pptx
-hygg webpage.html
-hygg article.md
-
-# Explicit conversion using pipes
-pandoc document.docx --to=plain | hygg
-
-# Reading from stdin (already plain text)
-echo "Hello, World!" | hygg
-cat readme.txt | hygg
+sudo apt install ocrmypdf tesseract-ocr-eng
+hygg --ocr=true doc.pdf
 ```
 
-When pandoc is not installed, hygg will provide a helpful message suggesting installation for unsupported formats.
+## Reading from stdin
+```sh
+cat README.md | hygg
+curl example.com | hygg
+pandoc doc.docx --to=plain | hygg
+```
