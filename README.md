@@ -7,7 +7,7 @@
 # hygg
 📚 Simplifying the way you read.
 <br>
-Minimalistic vim-like tui document reader.
+Minimalistic Vim-like TUI document reader.
 
 Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
 
