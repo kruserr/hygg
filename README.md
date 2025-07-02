@@ -11,6 +11,12 @@ Minimalistic Vim-like TUI document reader.
 
 Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
 
+<p align="center">
+  <a href="https://github.com/kruserr/hygg" target="_blank">
+    <img width="300" src="https://raw.githubusercontent.com/kruserr/hygg/main/assets/screenshot-0.png">
+  </a>
+</p>
+
 ## Why hygg?
 
 - **Universal document support** - PDF, EPUB, DOCX, and many more formats via pandoc. Supports scanned documents with OCR
