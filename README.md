@@ -9,13 +9,12 @@
 <br>
 Minimalistic Vim-like TUI document reader.
 
-Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
+<br>
+<br>
 
-<p align="center">
-  <a href="https://github.com/kruserr/hygg" target="_blank">
-    <img width="300" src="https://raw.githubusercontent.com/kruserr/hygg/main/assets/screenshot-0.png">
-  </a>
-</p>
+![](https://raw.githubusercontent.com/kruserr/hygg/main/assets/screenshot-0.png)
+
+<br>
 
 ## Why hygg?
 
