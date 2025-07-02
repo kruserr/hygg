@@ -5,20 +5,20 @@
 </p>
 
 # hygg
-simplifying the way you read
+📚 Simplifying the way you read
 
 Read PDFs, EPUBs and documents with vim-like efficiency. Enjoy distraction-free reading, and keep your progress forever.
 
-## ✨ Why hygg?
+## Why hygg?
 
-- 📖 **Universal document support** - PDF, EPUB, DOCX, and many more formats via pandoc. Supports scanned documents with OCR
-- ⚡ **Lightning-fast keyboard based navigation** - Vim-inspired keybindings
-- 🔍 **Powerful search** - Find anything instantly, highlight important passages, add bookmarks
-- 💾 **Never lose your place** - Automatic progress saving
-- 🛠️ **Extensible workflows** - Execute commands directly from copied text
-- 🔒 **Privacy-first** - Your documents stay on your machine
+- **Universal document support** - PDF, EPUB, DOCX, and many more formats via pandoc. Supports scanned documents with OCR
+- **Lightning-fast keyboard based navigation** - Vim-inspired keybindings
+- **Powerful search** - Find anything instantly, highlight important passages, add bookmarks
+- **Never lose your place** - Automatic progress saving
+- **Extensible workflows** - Execute commands directly from copied text
+- **Privacy-first** - Your documents stay on your machine
 
-## 🚀 Quick start guide
+## Quick start guide
 ```sh
 cargo install --locked hygg
 hygg doc.pdf
@@ -26,7 +26,7 @@ hygg doc.pdf
 
 For further install instructions read the [Getting started page](https://github.com/kruserr/hygg/blob/main/docs/pages/getting-started.md)
 
-## 📚 Features
+## Features
 
 ### Core Reading Experience
 - **Minimalist interface** - Nothing between you and your content
@@ -42,7 +42,7 @@ For further install instructions read the [Getting started page](https://github.
 - **Interactive tutorial** - Learn everything in under 5 minutes
 - **Cross-platform** - Works on Linux, macOS, and Windows
 
-## 🗺️ Roadmap
+## Roadmap
 - [x] Plain text format support
 - [x] PDF format support
 - [x] EPUB format support
@@ -65,16 +65,16 @@ For further install instructions read the [Getting started page](https://github.
 - [ ] AI-powered document summarization
 - [ ] Reading statistics and insights
 
-## 📖 Documentation
+## Documentation
 Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.md)
 
-## 🌟 Community
+## Community
 
 **hygg** is built by readers, for readers. Join our growing community:
 
-- 🐛 [Report issues](https://github.com/kruserr/hygg/issues)
-- 💡 [Request features](https://github.com/kruserr/hygg/issues)
-- 🤝 [Contribute code](https://github.com/kruserr/hygg/pulls)
+- [Report issues](https://github.com/kruserr/hygg/issues)
+- [Request features](https://github.com/kruserr/hygg/issues)
+- [Contribute code](https://github.com/kruserr/hygg/pulls)
 
 ## Star History
 
