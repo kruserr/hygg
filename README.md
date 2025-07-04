@@ -23,7 +23,7 @@ Minimalistic Vim-like TUI document reader.
 - **Powerful search** - Find anything instantly, highlight important passages, add bookmarks
 - **Never lose your place** - Automatic progress saving
 - **Extensible workflows** - Execute commands directly from copied text
-- **Privacy-first** - Your documents stay on your machine
+- **Respects your privacy** - Run locally without server, or selfhost the sync server
 
 ## Quick start guide
 ```sh
