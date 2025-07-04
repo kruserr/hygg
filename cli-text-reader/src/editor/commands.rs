@@ -32,19 +32,13 @@ impl Editor {
     // Handle :q, :q!, :quit, :exit commands
     if cmd == "q" || cmd == "q!" || cmd == "quit" || cmd == "exit" {
       // Check if we're in horizontal split view
-      let is_in_command_buffer = if self.tutorial_active {
-        self.active_buffer == 2  // In tutorial mode, command buffer is at index 2
-      } else {
-        self.active_buffer == 1  // In normal mode, command buffer is at index 1
-      };
-      
-      if self.view_mode == ViewMode::HorizontalSplit && is_in_command_buffer
+      if self.view_mode == ViewMode::HorizontalSplit
       {
-        // In split buffer, :q closes the split
+        // In split view, :q closes the split from either pane
         self.debug_log_event(
           "command",
           "quit_split",
-          "closing horizontal split",
+          &format!("closing horizontal split from buffer {}", self.active_buffer),
         );
         
         // Check if we're in tutorial mode - if so, return to tutorial overlay

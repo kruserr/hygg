@@ -29,11 +29,13 @@ impl Editor {
         self.editor_state.mode, self.editor_state.command_buffer
       ));
       self.debug_log(&format!(
-        "  Active buffer lines: {}, cursor: ({}, {}), offset: {}",
+        "  Active buffer lines: {}, cursor: ({}, {}), offset: {}, needs_redraw: {}, cursor_moved: {}",
         self.lines.len(),
         self.cursor_x,
         self.cursor_y,
-        self.offset
+        self.offset,
+        self.needs_redraw,
+        self.cursor_moved
       ));
 
       // Only redraw if needed
@@ -67,8 +69,15 @@ impl Editor {
             EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
           
-          if !should_skip_center && !is_mode_change_only {
+          // Skip centering if we just switched buffers
+          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched {
             self.center_cursor();
+          }
+          
+          // Clear the buffer switch flag after checking
+          if self.buffer_just_switched {
+            self.debug_log("Skipping center_cursor due to buffer switch");
+            self.buffer_just_switched = false;
           }
 
           // Calculate layout parameters
@@ -122,8 +131,15 @@ impl Editor {
             EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
           
-          if !should_skip_center && !is_mode_change_only {
+          // Skip centering if we just switched buffers
+          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched {
             self.center_cursor();
+          }
+          
+          // Clear the buffer switch flag after checking
+          if self.buffer_just_switched {
+            self.debug_log("Skipping center_cursor due to buffer switch (non-terminal)");
+            self.buffer_just_switched = false;
           }
 
           // Calculate layout parameters

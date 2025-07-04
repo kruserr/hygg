@@ -42,12 +42,19 @@ impl Editor {
 
   // Load buffer state into the editor
   pub fn load_buffer_state(&mut self, buffer_idx: usize) {
-    self.debug_log(&format!("Loading buffer {buffer_idx} state"));
+    self.debug_log(&format!("=== load_buffer_state for buffer {} ===", buffer_idx));
 
     if let Some(buffer) = self.buffers.get(buffer_idx) {
+      self.debug_log(&format!("  Buffer found: lines={}, viewport_height={}, split_height={:?}", 
+        buffer.lines.len(), buffer.viewport_height, buffer.split_height));
+      
       // Load document content
       self.lines = buffer.lines.clone();
       self.total_lines = buffer.lines.len();
+      self.debug_log(&format!("  Loaded lines: count={}, first_line={:?}", 
+        self.lines.len(), 
+        self.lines.first().map(|l| &l[..l.len().min(50)]))
+      );
 
       // Load position and display state
       self.offset = buffer.offset;
@@ -67,14 +74,43 @@ impl Editor {
       self.editor_state.command_buffer = buffer.command_buffer.clone();
       self.editor_state.command_cursor_pos = buffer.command_cursor_pos;
 
+      // Validate cursor position is within viewport
+      let viewport_height = if self.view_mode == super::core::ViewMode::HorizontalSplit {
+        buffer.viewport_height
+      } else {
+        self.height.saturating_sub(1)
+      };
+      
+      // Only validate if cursor_y is beyond the viewport
+      // This preserves the exact position when switching buffers
+      if self.cursor_y >= viewport_height {
+        let old_cursor_y = self.cursor_y;
+        self.cursor_y = viewport_height.saturating_sub(1);
+        self.debug_log(&format!("  WARNING: Adjusted cursor_y from {} to {} (viewport_height={})", 
+          old_cursor_y, self.cursor_y, viewport_height));
+      }
+      
+      // Only adjust offset if the cursor would be beyond the document
+      if self.offset + self.cursor_y >= self.total_lines && self.total_lines > 0 {
+        let old_offset = self.offset;
+        self.offset = self.total_lines.saturating_sub(viewport_height).min(self.offset);
+        self.cursor_y = self.total_lines.saturating_sub(self.offset).saturating_sub(1);
+        self.debug_log(&format!("  WARNING: Adjusted offset from {} to {} and cursor_y to {}", 
+          old_offset, self.offset, self.cursor_y));
+      }
+
       self.debug_log(&format!(
-        "Loaded buffer {} state: lines={}, offset={}, cursor=({},{}), mode={:?}, cmd_buf='{}'",
-        buffer_idx, self.lines.len(), self.offset, self.cursor_x, self.cursor_y,
+        "  Loaded state: lines={}, offset={}, cursor=({},{}), mode={:?}, cmd_buf='{}'",
+        self.lines.len(), self.offset, self.cursor_x, self.cursor_y,
         self.editor_state.mode, self.editor_state.command_buffer
       ));
+      self.debug_log(&format!("  is_split_buffer={}, split_position={:?}", 
+        buffer.is_split_buffer, buffer.split_position));
     } else {
-      self.debug_log(&format!("ERROR: Buffer {buffer_idx} not found!"));
+      self.debug_log(&format!("  ERROR: Buffer {} not found!", buffer_idx));
     }
+    
+    self.debug_log("=== load_buffer_state complete ===");
   }
 
   // Get the active buffer

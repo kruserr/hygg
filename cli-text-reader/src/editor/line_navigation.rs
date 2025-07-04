@@ -1,4 +1,4 @@
-use super::core::Editor;
+use super::core::{Editor, ViewMode};
 
 impl Editor {
   // Helper to find the start of the next non-empty line
@@ -71,8 +71,8 @@ impl Editor {
     // Clamp target line to valid range
     let target_line = target_line.min(self.total_lines.saturating_sub(1));
 
-    // Always use full viewport height
-    let viewport_height = self.height.saturating_sub(1);
+    // Use effective viewport height
+    let viewport_height = self.get_effective_viewport_height();
     let center_y = viewport_height / 2;
 
     // Always try to center the target line (overscroll behavior)
@@ -97,6 +97,12 @@ impl Editor {
       ));
       self.cursor_y = max_cursor_y;
     }
+    
+    // Save state back to buffer if in split view
+    if self.view_mode == ViewMode::HorizontalSplit {
+      self.save_current_buffer_state();
+    }
+    
     self.mark_dirty();
 
     // Set cursor to beginning of line
@@ -117,7 +123,7 @@ impl Editor {
   // Ctrl+U - half page up (vim-like behavior)
   pub fn half_page_up(&mut self) {
     let current_line = self.offset + self.cursor_y;
-    let viewport_height = self.height.saturating_sub(1);
+    let viewport_height = self.get_effective_viewport_height();
     let half_page = (viewport_height / 2).max(1);
 
     let target_line = current_line.saturating_sub(half_page);
@@ -127,7 +133,7 @@ impl Editor {
   // Ctrl+D - half page down (vim-like behavior)
   pub fn half_page_down(&mut self) {
     let current_line = self.offset + self.cursor_y;
-    let viewport_height = self.height.saturating_sub(1);
+    let viewport_height = self.get_effective_viewport_height();
     let half_page = (viewport_height / 2).max(1);
 
     let target_line =

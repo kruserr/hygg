@@ -121,6 +121,7 @@ impl Editor {
       initial_setup_complete: false,
       last_saved_viewport_offset: 0,
       cursor_currently_visible: true,
+      buffer_just_switched: false,
     }
   }
 
@@ -246,5 +247,18 @@ impl Editor {
     let needs = self.needs_redraw;
     self.needs_redraw = false;
     needs
+  }
+
+  // Get the effective viewport height for the current buffer
+  pub fn get_effective_viewport_height(&self) -> usize {
+    if self.view_mode == ViewMode::HorizontalSplit {
+      if let Some(buffer) = self.buffers.get(self.active_buffer) {
+        buffer.viewport_height
+      } else {
+        self.height.saturating_sub(1)
+      }
+    } else {
+      self.height.saturating_sub(1)
+    }
   }
 }

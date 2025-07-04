@@ -1,4 +1,4 @@
-use super::core::Editor;
+use super::core::{Editor, ViewMode};
 use crossterm::event::{KeyCode, KeyModifiers};
 
 impl Editor {
@@ -11,7 +11,7 @@ impl Editor {
       KeyCode::PageDown => {
         // Move cursor down by page height to get overscroll behavior
         let current_line = self.offset + self.cursor_y;
-        let viewport_height = self.height.saturating_sub(1);
+        let viewport_height = self.get_effective_viewport_height();
         let page_size = viewport_height.saturating_sub(3); // Leave some overlap
         let target_line =
           (current_line + page_size).min(self.total_lines.saturating_sub(1));
@@ -24,7 +24,7 @@ impl Editor {
       KeyCode::PageUp => {
         // Move cursor up by page height to get overscroll behavior
         let current_line = self.offset + self.cursor_y;
-        let viewport_height = self.height.saturating_sub(1);
+        let viewport_height = self.get_effective_viewport_height();
         let page_size = viewport_height.saturating_sub(3); // Leave some overlap
         let target_line = current_line.saturating_sub(page_size);
 

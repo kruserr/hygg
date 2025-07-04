@@ -11,6 +11,17 @@ impl Editor {
     if self.active_buffer < self.buffers.len() {
       self.save_current_buffer_state();
     }
+    
+    // Debug: Check buffer 0 state
+    if let Some(buf0) = self.buffers.get(0) {
+      self.debug_log(&format!("  Buffer 0 state before split: lines={}, viewport_height={}, mode={:?}", 
+        buf0.lines.len(), buf0.viewport_height, buf0.mode));
+      if buf0.lines.is_empty() {
+        self.debug_log("  WARNING: Buffer 0 has no lines!");
+      }
+    } else {
+      self.debug_log("  WARNING: Buffer 0 does not exist!");
+    }
 
     // Calculate split heights
     let terminal_height = self.height.saturating_sub(1); // Subtract status line
@@ -135,6 +146,7 @@ impl Editor {
 
     // Load the restored buffer state
     self.load_buffer_state(restore_buffer_idx);
+    self.buffer_just_switched = true;
 
     self.debug_log("  Returned to normal view");
     self.debug_log("=== close_split complete ===");
@@ -148,6 +160,8 @@ impl Editor {
     }
 
     self.debug_log(&format!("=== switch_split_pane to {pane} ==="));
+    self.debug_log(&format!("  Current state: active_buffer={}, active_pane={}, buffers.len()={}", 
+      self.active_buffer, self.active_pane, self.buffers.len()));
 
     // Save current buffer state
     self.save_current_buffer_state();
@@ -161,13 +175,25 @@ impl Editor {
       pane
     };
 
-    // Switch to requested pane
-    self.active_pane = pane;
+    self.debug_log(&format!("  Target: pane={}, buffer_idx={}", pane, buffer_idx));
+
+    // Update active buffer first, then pane
     self.active_buffer = buffer_idx;
+    self.active_pane = pane;
 
     // Load new buffer state
     self.load_buffer_state(buffer_idx);
 
+    // Log the loaded state
+    self.debug_log(&format!("  After switch: mode={:?}, lines={}, cursor=({},{}), offset={}", 
+      self.get_active_mode(), self.lines.len(), self.cursor_x, self.cursor_y, self.offset));
+    self.debug_log(&format!("  Viewport height: {}", self.get_effective_viewport_height()));
+    
+    // Force redraw to ensure cursor position is updated
+    self.mark_dirty();
+    self.cursor_moved = true;
+    self.buffer_just_switched = true;
+    
     self.debug_log(&format!("  Switched to pane {pane} (buffer {buffer_idx})"));
   }
 

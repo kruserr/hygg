@@ -27,8 +27,16 @@ impl Editor {
       {
         // Calculate cursor position based on view mode
         let cursor_y = if self.view_mode == ViewMode::HorizontalSplit {
-          // In split view, adjust cursor position based on active pane
-          if self.active_pane == 0 {
+          // In split view, determine which pane the active buffer is in
+          let is_in_top_pane = if self.tutorial_active && self.buffers.len() > 2 {
+            // Tutorial mode: buffer 1 is in top pane, buffer 2 is in bottom
+            self.active_buffer == 1
+          } else {
+            // Normal mode: buffer 0 is in top pane, buffer 1 is in bottom
+            self.active_buffer == 0
+          };
+          
+          if is_in_top_pane {
             // Top pane - cursor is within the top pane's viewport
             self.cursor_y
           } else {
@@ -184,8 +192,16 @@ impl Editor {
     {
       // Calculate cursor position based on view mode
       let cursor_y = if self.view_mode == ViewMode::HorizontalSplit {
-        // In split view, adjust cursor position based on active pane
-        if self.active_pane == 0 {
+        // In split view, determine which pane the active buffer is in
+        let is_in_top_pane = if self.tutorial_active && self.buffers.len() > 2 {
+          // Tutorial mode: buffer 1 is in top pane, buffer 2 is in bottom
+          self.active_buffer == 1
+        } else {
+          // Normal mode: buffer 0 is in top pane, buffer 1 is in bottom
+          self.active_buffer == 0
+        };
+        
+        if is_in_top_pane {
           // Top pane - cursor is within the top pane's viewport
           self.cursor_y
         } else {

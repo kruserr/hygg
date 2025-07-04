@@ -84,17 +84,26 @@ impl Editor {
     buffer_idx: usize,
     start_row: usize,
     height: usize,
-    term_width: u16,
+    _term_width: u16,
     center_offset_string: &str,
-    is_active: bool,
+    _is_active: bool,
   ) -> IoResult<()> {
     self.debug_log(&format!(
-      "Drawing pane - buffer: {buffer_idx}, start_row: {start_row}, height: {height}, active: {is_active}"
+      "Drawing pane - buffer: {buffer_idx}, start_row: {start_row}, height: {height}, active: {_is_active}"
     ));
 
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      let offset = buffer.offset;
-      let cursor_y = buffer.cursor_y;
+      // Use current editor state for active buffer, stored state for inactive buffer
+      let offset = if buffer_idx == self.active_buffer {
+        self.offset
+      } else {
+        buffer.offset
+      };
+      let cursor_y = if buffer_idx == self.active_buffer {
+        self.cursor_y
+      } else {
+        buffer.cursor_y
+      };
       self.debug_log(&format!(
         "  Buffer {buffer_idx}: offset={offset}, cursor_y={cursor_y}, lines={}",
         buffer.lines.len()
@@ -116,7 +125,7 @@ impl Editor {
             stdout,
             &line,
             buffer_idx,
-            i,
+            i, // Pass viewport line index
             center_offset_string,
             is_current_line,
           )?;
@@ -147,22 +156,21 @@ impl Editor {
     stdout: &mut io::Stdout,
     line: &str,
     buffer_idx: usize,
-    display_row: usize,
+    viewport_line_idx: usize, // Line index within the pane's viewport
     center_offset_string: &str,
     is_current_line: bool,
   ) -> IoResult<()> {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
       // Check if this line has visual selection
-      let line_index = display_row.saturating_sub(if buffer_idx == 0 { 0 } else { self.height / 2 });
-      let has_selection = self.has_pane_selection_on_line(buffer_idx, line_index);
+      let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
       
       // If line has visual selection, render with selection highlighting
       if has_selection && !is_current_line {
         if self.render_pane_selection(
           stdout,
           buffer_idx,
-          line_index,
+          viewport_line_idx,
           line,
           center_offset_string,
         )? {
@@ -174,22 +182,26 @@ impl Editor {
       let line_to_render = format!("{center_offset_string}{line}");
 
       // Get the buffer's own search match
-      let match_to_highlight = if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-        // For the active buffer, prefer preview match if in search preview mode
-        if buffer_idx == self.active_buffer && self.editor_state.search_preview_active {
+      let match_to_highlight = if buffer_idx == self.active_buffer {
+        // For the active buffer, use current editor state
+        if self.editor_state.search_preview_active {
           self.editor_state.search_preview_match
         } else {
-          // Otherwise use the buffer's own current match
-          pane_buffer.current_match
+          self.editor_state.current_match
         }
+      } else if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
+        // For inactive buffer, use stored state
+        pane_buffer.current_match
       } else {
         None
       };
       
       // Check if this line has the match
       if let Some((match_line_idx, start, end)) = match_to_highlight {
-        let actual_line_idx = if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-          pane_buffer.offset + display_row
+        let actual_line_idx = if buffer_idx == self.active_buffer {
+          self.offset + viewport_line_idx
+        } else if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
+          pane_buffer.offset + viewport_line_idx
         } else {
           0
         };
@@ -317,17 +329,26 @@ impl Editor {
     buffer_idx: usize,
     start_row: usize,
     height: usize,
-    term_width: u16,
+    _term_width: u16,
     center_offset_string: &str,
-    is_active: bool,
+    _is_active: bool,
   ) -> IoResult<()> {
     self.debug_log(&format!(
-      "Drawing pane buffered - buffer: {buffer_idx}, start_row: {start_row}, height: {height}, active: {is_active}"
+      "Drawing pane buffered - buffer: {buffer_idx}, start_row: {start_row}, height: {height}, active: {_is_active}"
     ));
 
     if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-      let offset = pane_buffer.offset;
-      let cursor_y = pane_buffer.cursor_y;
+      // Use current editor state for active buffer, stored state for inactive buffer
+      let offset = if buffer_idx == self.active_buffer {
+        self.offset
+      } else {
+        pane_buffer.offset
+      };
+      let cursor_y = if buffer_idx == self.active_buffer {
+        self.cursor_y
+      } else {
+        pane_buffer.cursor_y
+      };
       self.debug_log(&format!(
         "  Buffer {buffer_idx}: offset={offset}, cursor_y={cursor_y}, lines={}",
         pane_buffer.lines.len()
@@ -350,7 +371,7 @@ impl Editor {
             buffer,
             line,
             buffer_idx,
-            display_row,
+            i, // Pass viewport line index, not display row
             center_offset_string,
             is_current_line,
           )?;
@@ -380,28 +401,27 @@ impl Editor {
     buffer: &mut Vec<u8>,
     line: &str,
     buffer_idx: usize,
-    display_row: usize,
+    viewport_line_idx: usize, // Line index within the pane's viewport
     center_offset_string: &str,
     is_current_line: bool,
   ) -> IoResult<()> {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
       // Check if this line has visual selection
-      let start_row = if buffer_idx == 0 { 0 } else {
+      let _start_row = if buffer_idx == 0 { 0 } else {
         // For bottom pane, calculate start row based on split ratio
         let terminal_height = self.height.saturating_sub(1);
         let top_height = (terminal_height as f32 * self.split_ratio) as usize;
         top_height + 1
       };
-      let line_index = display_row.saturating_sub(start_row);
-      let has_selection = self.has_pane_selection_on_line(buffer_idx, line_index);
+      let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
       
       // If line has visual selection, render with selection highlighting
       if has_selection && !is_current_line {
         if self.render_pane_selection_buffered(
           buffer,
           buffer_idx,
-          line_index,
+          viewport_line_idx,
           line,
           center_offset_string,
         )? {
@@ -413,22 +433,27 @@ impl Editor {
       let line_to_render = format!("{center_offset_string}{line}");
 
       // Get the buffer's own search match
-      let match_to_highlight = if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-        // For the active buffer, prefer preview match if in search preview mode
-        if buffer_idx == self.active_buffer && self.editor_state.search_preview_active {
+      let match_to_highlight = if buffer_idx == self.active_buffer {
+        // For the active buffer, use current editor state
+        if self.editor_state.search_preview_active {
           self.editor_state.search_preview_match
         } else {
-          // Otherwise use the buffer's own current match
-          pane_buffer.current_match
+          self.editor_state.current_match
         }
+      } else if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
+        // For inactive buffer, use stored state
+        pane_buffer.current_match
       } else {
         None
       };
       
       // Check if this line has the match
       if let Some((match_line_idx, start, end)) = match_to_highlight {
-        let actual_line_idx = if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-          pane_buffer.offset + line_index
+        // Calculate the actual line index in the buffer
+        let actual_line_idx = if buffer_idx == self.active_buffer {
+          self.offset + viewport_line_idx
+        } else if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
+          pane_buffer.offset + viewport_line_idx
         } else {
           0
         };
@@ -479,24 +504,40 @@ impl Editor {
 
   // Check if a line in a pane has visual selection
   fn has_pane_selection_on_line(&self, buffer_idx: usize, line_index: usize) -> bool {
-    if let Some(buffer) = self.buffers.get(buffer_idx) {
-      // Check buffer's selection state
-      if buffer.selection_start.is_none() || buffer.selection_end.is_none() {
+    // Check if selection exists
+    let (has_selection, current_line_idx, start, end) = if buffer_idx == self.active_buffer {
+      // For active buffer, use current editor state
+      let has_sel = self.editor_state.selection_start.is_some() && self.editor_state.selection_end.is_some();
+      if !has_sel {
         return false;
       }
-      
-      let current_line_idx = buffer.offset + line_index;
-      let start = buffer.selection_start.unwrap();
-      let end = buffer.selection_end.unwrap();
-      
-      // Check if line is in selection range
-      let (min_line, _) = if start.0 <= end.0 { start } else { end };
-      let (max_line, _) = if start.0 > end.0 { start } else { end };
-      
-      current_line_idx >= min_line && current_line_idx <= max_line
+      (
+        has_sel,
+        self.offset + line_index,
+        self.editor_state.selection_start.unwrap(),
+        self.editor_state.selection_end.unwrap()
+      )
+    } else if let Some(buffer) = self.buffers.get(buffer_idx) {
+      // For inactive buffer, use stored state
+      let has_sel = buffer.selection_start.is_some() && buffer.selection_end.is_some();
+      if !has_sel {
+        return false;
+      }
+      (
+        has_sel,
+        buffer.offset + line_index,
+        buffer.selection_start.unwrap(),
+        buffer.selection_end.unwrap()
+      )
     } else {
-      false
-    }
+      return false;
+    };
+    
+    // Check if line is in selection range
+    let (min_line, _) = if start.0 <= end.0 { start } else { end };
+    let (max_line, _) = if start.0 > end.0 { start } else { end };
+    
+    current_line_idx >= min_line && current_line_idx <= max_line
   }
 
   // Render visual selection for a pane line
@@ -509,9 +550,29 @@ impl Editor {
     center_offset_string: &str,
   ) -> IoResult<bool> {
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      if let (Some(start), Some(end)) = (buffer.selection_start, buffer.selection_end) {
-        let current_line_idx = buffer.offset + line_index;
-        let is_line_mode = buffer.mode == super::core::EditorMode::VisualLine;
+      let (start, end, current_line_idx, is_line_mode) = if buffer_idx == self.active_buffer {
+        // For active buffer, use current editor state
+        match (self.editor_state.selection_start, self.editor_state.selection_end) {
+          (Some(s), Some(e)) => (
+            s, 
+            e, 
+            self.offset + line_index,
+            self.editor_state.mode == super::core::EditorMode::VisualLine
+          ),
+          _ => return Ok(false),
+        }
+      } else {
+        // For inactive buffer, use stored state
+        match (buffer.selection_start, buffer.selection_end) {
+          (Some(s), Some(e)) => (
+            s,
+            e,
+            buffer.offset + line_index,
+            buffer.mode == super::core::EditorMode::VisualLine
+          ),
+          _ => return Ok(false),
+        }
+      };
         
         // Check if this line is in selection
         let (min_line, _) = if start.0 <= end.0 { start } else { end };
@@ -576,7 +637,6 @@ impl Editor {
             return Ok(true);
           }
         }
-      }
     }
     Ok(false)
   }
@@ -591,9 +651,29 @@ impl Editor {
     center_offset_string: &str,
   ) -> IoResult<bool> {
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      if let (Some(start), Some(end)) = (buffer.selection_start, buffer.selection_end) {
-        let current_line_idx = buffer.offset + line_index;
-        let is_line_mode = buffer.mode == super::core::EditorMode::VisualLine;
+      let (start, end, current_line_idx, is_line_mode) = if buffer_idx == self.active_buffer {
+        // For active buffer, use current editor state
+        match (self.editor_state.selection_start, self.editor_state.selection_end) {
+          (Some(s), Some(e)) => (
+            s, 
+            e, 
+            self.offset + line_index,
+            self.editor_state.mode == super::core::EditorMode::VisualLine
+          ),
+          _ => return Ok(false),
+        }
+      } else {
+        // For inactive buffer, use stored state
+        match (buffer.selection_start, buffer.selection_end) {
+          (Some(s), Some(e)) => (
+            s,
+            e,
+            buffer.offset + line_index,
+            buffer.mode == super::core::EditorMode::VisualLine
+          ),
+          _ => return Ok(false),
+        }
+      };
         
         // Check if this line is in selection
         let (min_line, _) = if start.0 <= end.0 { start } else { end };
@@ -652,7 +732,6 @@ impl Editor {
             return Ok(true);
           }
         }
-      }
     }
     Ok(false)
   }

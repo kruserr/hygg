@@ -7,12 +7,19 @@ impl Editor {
     &mut self,
     key_code: KeyCode,
   ) -> Result<Option<bool>, Box<dyn std::error::Error>> {
+    self.debug_log(&format!(
+      "handle_basic_movement_keys: key={:?}, active_buffer={}, view_mode={:?}",
+      key_code, self.active_buffer, self.view_mode
+    ));
+    
     match key_code {
       KeyCode::Char('j') | KeyCode::Down => {
+        self.debug_log("  Calling move_cursor_down");
         self.move_cursor_down();
         Ok(Some(false))
       }
       KeyCode::Char('k') | KeyCode::Up => {
+        self.debug_log("  Calling move_cursor_up");
         self.move_cursor_up();
         Ok(Some(false))
       }

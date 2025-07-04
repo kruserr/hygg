@@ -74,4 +74,6 @@ pub struct Editor {
   pub last_saved_viewport_offset: usize,
   // Track cursor visibility state to optimize hide/show operations
   pub cursor_currently_visible: bool,
+  // Track if we just switched buffers to skip centering
+  pub buffer_just_switched: bool,
 }
