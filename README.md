@@ -92,3 +92,10 @@ Visit the [Documentation](https://github.com/kruserr/hygg/blob/main/docs/README.
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kruserr/hygg&type=Date" />
  </picture>
 </a>
+
+## Contributors
+<a href="https://github.com/kruserr/hygg/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=kruserr/hygg" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
