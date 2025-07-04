@@ -186,7 +186,7 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "        - Type :q to close the split".to_string(),
         "".to_string(),
         "Step 3: Create a new command using the output:".to_string(),
-        "        - Type :!echo ".to_string(),
+        "        - Type :!echo<space> (but don't press Enter yet) ".to_string(),
         "        - Press Ctrl+V or Ctrl+R 0 to paste".to_string(),
         "        - Press Enter to execute".to_string(),
         "".to_string(),
