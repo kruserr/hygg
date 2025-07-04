@@ -120,6 +120,7 @@ impl Editor {
       tutorial_step_completed: false,
       initial_setup_complete: false,
       last_saved_viewport_offset: 0,
+      cursor_currently_visible: true,
     }
   }
 

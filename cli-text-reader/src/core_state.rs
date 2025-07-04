@@ -72,4 +72,6 @@ pub struct Editor {
   pub initial_setup_complete: bool,
   // Track last saved viewport offset to avoid duplicate saves
   pub last_saved_viewport_offset: usize,
+  // Track cursor visibility state to optimize hide/show operations
+  pub cursor_currently_visible: bool,
 }

@@ -49,7 +49,14 @@ impl Editor {
     line: &str,
     center_offset_string: &str,
   ) -> IoResult<bool> {
-    if let Some((line_idx, start, end)) = self.editor_state.current_match {
+    // Check for preview match first (during search mode)
+    let match_to_highlight = if self.editor_state.search_preview_active {
+      self.editor_state.search_preview_match
+    } else {
+      self.editor_state.current_match
+    };
+    
+    if let Some((line_idx, start, end)) = match_to_highlight {
       if line_idx == self.offset + line_index {
         write!(stdout, "{center_offset_string}")?;
         write!(stdout, "{}", &line[..start])?;
@@ -78,7 +85,14 @@ impl Editor {
 
   // Check if a line has search match
   pub fn has_search_match_on_line(&self, line_index: usize) -> bool {
-    if let Some((line_idx, _, _)) = self.editor_state.current_match {
+    // Check for preview match first (during search mode)
+    let match_to_check = if self.editor_state.search_preview_active {
+      self.editor_state.search_preview_match
+    } else {
+      self.editor_state.current_match
+    };
+    
+    if let Some((line_idx, _, _)) = match_to_check {
       line_idx == self.offset + line_index
     } else {
       false
@@ -122,7 +136,14 @@ impl Editor {
     line: &str,
     center_offset_string: &str,
   ) -> IoResult<bool> {
-    if let Some((line_idx, start, end)) = self.editor_state.current_match {
+    // Check for preview match first (during search mode)
+    let match_to_highlight = if self.editor_state.search_preview_active {
+      self.editor_state.search_preview_match
+    } else {
+      self.editor_state.current_match
+    };
+    
+    if let Some((line_idx, start, end)) = match_to_highlight {
       if line_idx == self.offset + line_index {
         write!(buffer, "{center_offset_string}")?;
         write!(buffer, "{}", &line[..start])?;

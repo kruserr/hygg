@@ -166,7 +166,7 @@ impl Editor {
 
   // Buffered version of position_cursor - positions and shows cursor in one go
   pub fn position_cursor_buffered(
-    &self,
+    &mut self,
     buffer: &mut Vec<u8>,
     center_offset: usize,
   ) -> io::Result<()> {
@@ -213,8 +213,9 @@ impl Editor {
         _ => {}
       }
       
-      // Show cursor at the final position
+      // Show cursor at the final position and track state
       buffer.queue(Show)?;
+      self.cursor_currently_visible = true;
     } else if active_mode == EditorMode::Command
       || active_mode == EditorMode::CommandExecution
       || active_mode == EditorMode::Search
@@ -235,6 +236,7 @@ impl Editor {
       buffer.queue(MoveTo(cmd_len as u16, (self.height - 1) as u16))?;
       buffer.queue(SetCursorStyle::BlinkingBar)?;
       buffer.queue(Show)?;
+      self.cursor_currently_visible = true;
     }
     
     Ok(())

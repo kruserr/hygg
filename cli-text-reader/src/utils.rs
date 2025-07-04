@@ -4,10 +4,27 @@ use std::path::PathBuf;
 
 /// Get the base Hygg configuration directory, creating it if it doesn't exist
 pub fn get_hygg_config_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
-  let mut config_path =
-    config_dir().ok_or("Unable to find config directory")?;
+  let config_base = config_dir().ok_or("Unable to find config directory")?;
+  
+  // Log the config directory path for debugging
+  crate::debug::debug_log("config", &format!("Base config directory: {:?}", config_base));
+  
+  let mut config_path = config_base;
   config_path.push("hygg");
-  std::fs::create_dir_all(&config_path)?;
+  
+  // Log the full path and attempt to create it
+  crate::debug::debug_log("config", &format!("Creating hygg config directory: {:?}", config_path));
+  
+  match std::fs::create_dir_all(&config_path) {
+    Ok(_) => {
+      crate::debug::debug_log("config", "Config directory created successfully");
+    }
+    Err(e) => {
+      crate::debug::debug_log("config", &format!("Failed to create config directory: {}", e));
+      return Err(Box::new(e));
+    }
+  }
+  
   Ok(config_path)
 }
 

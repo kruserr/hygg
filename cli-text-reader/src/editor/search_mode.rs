@@ -24,6 +24,15 @@ impl Editor {
 
     match key_event.code {
       KeyCode::Esc => {
+        // Restore original cursor position
+        if let (Some((y, x)), Some(offset)) = (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+          self.cursor_y = y;
+          self.cursor_x = x;
+          self.offset = offset;
+          self.cursor_moved = true;
+        }
+        self.editor_state.search_preview_active = false;
+        self.editor_state.search_preview_match = None;
         self.set_active_mode(EditorMode::Normal);
         self.editor_state.command_buffer.clear();
         if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
@@ -35,10 +44,21 @@ impl Editor {
       KeyCode::Enter => {
         self.editor_state.search_query =
           self.editor_state.command_buffer.clone();
-        // Start from current position using find_first_match
-        // Use stored search_direction which was set when entering search mode
-        self.find_first_match(self.editor_state.search_direction);
-        self.center_on_match();
+        // Move cursor to the preview match if found
+        if let Some((_line, _col, _)) = self.editor_state.search_preview_match {
+          // Set current_match from preview
+          self.editor_state.current_match = self.editor_state.search_preview_match;
+          // Also update active buffer's current_match
+          if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
+            buffer.current_match = self.editor_state.search_preview_match;
+          }
+          // Move cursor to match
+          self.center_on_match();
+        } else {
+          // No match found, just exit search mode without moving
+        }
+        self.editor_state.search_preview_active = false;
+        self.editor_state.search_preview_match = None;
         self.set_active_mode(EditorMode::Normal);
         self.editor_state.command_buffer.clear();
         if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
@@ -57,8 +77,20 @@ impl Editor {
             buffer.command_buffer = self.editor_state.command_buffer.clone();
             buffer.command_cursor_pos = self.editor_state.command_buffer.len();
           }
+          // Update preview match
+          let query = self.editor_state.command_buffer.clone();
+          let direction = self.editor_state.search_direction;
+          self.find_preview_match(&query, direction);
         } else {
-          // If search buffer is already empty, exit search mode
+          // If search buffer is already empty, exit search mode and restore cursor
+          if let (Some((y, x)), Some(offset)) = (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+            self.cursor_y = y;
+            self.cursor_x = x;
+            self.offset = offset;
+            self.cursor_moved = true;
+          }
+          self.editor_state.search_preview_active = false;
+          self.editor_state.search_preview_match = None;
           self.set_active_mode(EditorMode::Normal);
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
             buffer.command_buffer.clear();
@@ -74,6 +106,10 @@ impl Editor {
           buffer.command_buffer = self.editor_state.command_buffer.clone();
           buffer.command_cursor_pos = self.editor_state.command_buffer.len();
         }
+        // Update preview match for real-time highlighting
+        let query = self.editor_state.command_buffer.clone();
+        let direction = self.editor_state.search_direction;
+        self.find_preview_match(&query, direction);
         self.mark_dirty();
       }
       _ => {}

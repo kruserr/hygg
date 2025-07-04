@@ -19,6 +19,11 @@ impl Editor {
           buffer.command_cursor_pos = 0;
         }
         self.editor_state.search_direction = true;
+        // Save current cursor position for preview mode
+        self.editor_state.search_preview_active = true;
+        self.editor_state.search_original_cursor = Some((self.cursor_y, self.cursor_x));
+        self.editor_state.search_original_offset = Some(self.offset);
+        self.editor_state.search_preview_match = None;
         // Track for tutorial
         if self.tutorial_active {
           self.tutorial_forward_search_used = true;
@@ -36,6 +41,11 @@ impl Editor {
           buffer.command_cursor_pos = 0;
         }
         self.editor_state.search_direction = false;
+        // Save current cursor position for preview mode
+        self.editor_state.search_preview_active = true;
+        self.editor_state.search_original_cursor = Some((self.cursor_y, self.cursor_x));
+        self.editor_state.search_original_offset = Some(self.offset);
+        self.editor_state.search_preview_match = None;
         // Track for tutorial
         if self.tutorial_active {
           self.tutorial_backward_search_used = true;

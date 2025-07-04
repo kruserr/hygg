@@ -107,6 +107,11 @@ pub struct EditorState {
   pub last_visual_start: Option<(usize, usize)>,
   pub last_visual_end: Option<(usize, usize)>,
   pub last_visual_mode: Option<EditorMode>, // VisualChar or VisualLine
+  // Search preview state for vim-like behavior
+  pub search_preview_active: bool,
+  pub search_original_cursor: Option<(usize, usize)>, // (cursor_y, cursor_x)
+  pub search_original_offset: Option<usize>,
+  pub search_preview_match: Option<(usize, usize, usize)>, // (line, start, end) for highlighting
 }
 
 impl EditorState {
@@ -129,6 +134,10 @@ impl EditorState {
       last_visual_start: None,
       last_visual_end: None,
       last_visual_mode: None,
+      search_preview_active: false,
+      search_original_cursor: None,
+      search_original_offset: None,
+      search_preview_match: None,
     }
   }
 }

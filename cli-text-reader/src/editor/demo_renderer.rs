@@ -7,6 +7,16 @@ use crossterm::{
 use std::io::Write;
 
 impl Editor {
+    // Calculate the height needed for demo hint display
+    pub fn calculate_demo_hint_height(&self) -> usize {
+        match &self.demo_hint_text {
+            Some(text) if !text.is_empty() => {
+                let hint_lines: Vec<&str> = text.split('\n').collect();
+                hint_lines.len() + 2 // +2 for top/bottom borders
+            }
+            _ => 0,
+        }
+    }
     // Render demo hint if active - minimalistic box with text
     pub fn render_demo_hint(&self, stdout: &mut std::io::Stdout, width: usize, height: usize) -> std::io::Result<()> {
         // Only render if we have hint text
@@ -26,17 +36,9 @@ impl Editor {
         
         // Calculate position - centered horizontally, near bottom
         let box_x = (width.saturating_sub(box_width)) / 2;
+        let box_y = height.saturating_sub(box_height + 2); // Position near bottom with some margin
         
-        // Position the box near the bottom but ensure it's visible
-        // Use a large fixed offset that should work for most terminals
-        let bottom_offset = 8; // 8 lines from bottom
-        let box_y = if height > 20 {
-            // For normal terminals, position from bottom
-            height.saturating_sub(bottom_offset + box_height)
-        } else {
-            // For very small terminals, center it
-            (height.saturating_sub(box_height)) / 2
-        };
+        // No clearing - render with background directly to create true overlay
         
         // Dark background color for the box
         let bg_color = Color::Rgb { r: 20, g: 20, b: 20 };
@@ -110,17 +112,9 @@ impl Editor {
         
         // Calculate position - centered horizontally, near bottom
         let box_x = (width.saturating_sub(box_width)) / 2;
+        let box_y = height.saturating_sub(box_height + 2); // Position near bottom with some margin
         
-        // Position the box near the bottom but ensure it's visible
-        // Use a large fixed offset that should work for most terminals
-        let bottom_offset = 8; // 8 lines from bottom
-        let box_y = if height > 20 {
-            // For normal terminals, position from bottom
-            height.saturating_sub(bottom_offset + box_height)
-        } else {
-            // For very small terminals, center it
-            (height.saturating_sub(box_height)) / 2
-        };
+        // No clearing - render with background directly to create true overlay
         
         // Dark background color for the box
         let bg_color = Color::Rgb { r: 20, g: 20, b: 20 };

@@ -157,8 +157,13 @@ impl Editor {
 
   // Draw progress indicator in the status line area
   fn draw_progress_indicator(&self, stdout: &mut io::Stdout) -> io::Result<()> {
-    let progress =
-      (self.offset as f64 / self.total_lines as f64 * 100.0).round();
+    // Calculate actual position in document (offset + cursor position + 1 for 1-based indexing)
+    let current_position = (self.offset + self.cursor_y + 1).min(self.total_lines);
+    let progress = if self.total_lines > 0 {
+      (current_position as f64 / self.total_lines as f64 * 100.0).round().min(100.0)
+    } else {
+      100.0 // Empty document is 100% read
+    };
     let message = format!("{progress}%");
     
     self.debug_log(&format!(
@@ -238,8 +243,13 @@ impl Editor {
 
   // Buffered version of draw_progress_indicator
   fn draw_progress_indicator_buffered(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
-    let progress =
-      (self.offset as f64 / self.total_lines as f64 * 100.0).round();
+    // Calculate actual position in document (offset + cursor position + 1 for 1-based indexing)
+    let current_position = (self.offset + self.cursor_y + 1).min(self.total_lines);
+    let progress = if self.total_lines > 0 {
+      (current_position as f64 / self.total_lines as f64 * 100.0).round().min(100.0)
+    } else {
+      100.0 // Empty document is 100% read
+    };
     let message = format!("{progress}%");
     
     self.debug_log(&format!(

@@ -42,9 +42,13 @@ impl Editor {
           // Create a buffer to collect all rendering commands
           let mut render_buffer = Vec::new();
           
-          // Hide cursor at the very beginning - only once
+          // Only hide cursor if it's currently visible
+          // This reduces flicker on Windows terminals
           use crossterm::QueueableCommand;
-          render_buffer.queue(Hide)?;
+          if self.cursor_currently_visible && self.show_cursor {
+            render_buffer.queue(Hide)?;
+            self.cursor_currently_visible = false;
+          }
 
           // Only clear screen if forced or on first iteration
           if self.force_clear || first_iteration {
@@ -237,6 +241,15 @@ impl Editor {
                   key_event.kind
                 ));
                 continue;
+              }
+              
+              // Enhanced debug logging for Windows key events
+              #[cfg(target_os = "windows")]
+              {
+                self.debug_log(&format!(
+                  "Windows key event details - code: {:?}, modifiers: {:?}, kind: {:?}, state: {:?}",
+                  key_event.code, key_event.modifiers, key_event.kind, key_event.state
+                ));
               }
 
               // Get the active buffer's mode
