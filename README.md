@@ -40,8 +40,8 @@ For further install instructions read the [Getting started page](https://github.
 - **Smart text justification** - Perfectly formatted for your terminal width
 - **Vim keybindings** - Navigate with the efficiency you already know
 - **Visual selection** - Select, copy, highlight text
-- **Persistent highlights** - Mark important passages across sessions
 - **Bookmarks** - Set bookmark points and jump between them instantly
+- **Persistent** - Progress and bookmarks persist
 
 ### Advanced Workflows
 - **Command execution** - Run shell commands from copied text, also works for previous command output
