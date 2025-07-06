@@ -13,7 +13,7 @@ Minimalistic Vim-like TUI document reader.
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/kruserr/hygg/main/assets/demo-0.gif" alt="animated" width="75%" />
+  <img src="https://raw.githubusercontent.com/kruserr/hygg/main/assets/demo-0.gif" alt="animated" />
 </p>
 
 <br>
