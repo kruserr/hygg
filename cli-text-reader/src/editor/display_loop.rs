@@ -69,8 +69,9 @@ impl Editor {
             EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
           
-          // Skip centering if we just switched buffers
-          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched {
+          // Skip centering if we just switched buffers or demo hint is active
+          let skip_for_demo_hint = self.tutorial_demo_mode && self.demo_hint_text.is_some();
+          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched && !skip_for_demo_hint {
             self.center_cursor();
           }
           
@@ -131,8 +132,9 @@ impl Editor {
             EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
           
-          // Skip centering if we just switched buffers
-          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched {
+          // Skip centering if we just switched buffers or demo hint is active
+          let skip_for_demo_hint = self.tutorial_demo_mode && self.demo_hint_text.is_some();
+          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched && !skip_for_demo_hint {
             self.center_cursor();
           }
           
