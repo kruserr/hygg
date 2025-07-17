@@ -1,163 +1,113 @@
 // Demo content for marketing demonstration
 
-pub fn get_marketing_demo_content() -> Vec<String> {
-    vec![
-        "# The Art of Reading in the Digital Age".to_string(),
-        "".to_string(),
-        "In an era where information flows ceaselessly through countless channels,".to_string(),
-        "the simple act of reading has become both more crucial and more challenging".to_string(),
-        "than ever before. We find ourselves navigating between the need for deep,".to_string(),
-        "focused comprehension and the relentless pull of digital distractions.".to_string(),
-        "".to_string(),
-        "The modern reader faces a paradox: while we have unprecedented access to".to_string(),
-        "the world's knowledge, our tools often work against our ability to truly".to_string(),
-        "absorb and understand what we read. Notifications interrupt our flow,".to_string(),
-        "advertisements compete for our attention, and interfaces designed for".to_string(),
-        "engagement rather than comprehension fragment our focus into ever-smaller".to_string(),
-        "pieces.".to_string(),
-        "".to_string(),
-        "Yet within this chaos, a movement toward intentional, mindful reading has".to_string(),
-        "emerged. Readers are rediscovering the power of simplicity, seeking tools".to_string(),
-        "that enhance rather than hinder their connection with text. They understand".to_string(),
-        "that true comprehension requires not just access to information, but an".to_string(),
-        "environment that respects the cognitive demands of deep reading.".to_string(),
-        "".to_string(),
-        "## The Evolution of Text Display".to_string(),
-        "".to_string(),
-        "The journey from physical to digital text represents one of humanity's most".to_string(),
-        "profound technological shifts. What began as crude phosphorescent characters".to_string(),
-        "on monochrome monitors has evolved into a sophisticated ecosystem of reading".to_string(),
-        "technologies. Modern terminal-based readers, paradoxically, represent both a".to_string(),
-        "return to simplicity and an embrace of advanced text processing capabilities.".to_string(),
-        "They strip away the visual noise of contemporary interfaces while leveraging".to_string(),
-        "decades of refinement in text rendering, navigation paradigms, and user".to_string(),
-        "interaction models. This fusion of minimalism and power creates an environment".to_string(),
-        "where focus becomes the default state, where reading transforms from passive".to_string(),
-        "consumption to active engagement, and where the boundaries between reader and".to_string(),
-        "text dissolve into a seamless flow of information and understanding.".to_string(),
-        "".to_string(),
-        "".to_string(),
-        "".to_string(),
-        "".to_string(),
-        "### Terminal-Based Reading".to_string(),
-        "".to_string(),
-        "Despite the availability of graphical interfaces, terminal-based reading".to_string(),
-        "applications have maintained a dedicated following. The reasons include:".to_string(),
-        "".to_string(),
-        "- **Minimal distractions**: No ads, popups, or visual clutter".to_string(),
-        "- **Keyboard efficiency**: Navigate without reaching for the mouse".to_string(),
-        "- **Resource efficiency**: Low CPU and memory usage".to_string(),
-        "- **Universal compatibility**: Works on any system with a terminal".to_string(),
-        "- **Customization**: Complete control over appearance and behavior".to_string(),
-        "".to_string(),
-        "## Navigation Paradigms".to_string(),
-        "".to_string(),
-        "Different reading applications employ various navigation paradigms, each".to_string(),
-        "with its own philosophy and target audience. The most influential of".to_string(),
-        "these paradigms comes from the vi/vim text editor tradition.".to_string(),
-        "".to_string(),
-        "### The Vi Philosophy".to_string(),
-        "".to_string(),
-        "Vi's modal editing approach, where different modes serve different".to_string(),
-        "purposes, translates beautifully to reading applications. In normal mode,".to_string(),
-        "every key becomes a navigation command, allowing for incredibly efficient".to_string(),
-        "movement through text without modifier keys.".to_string(),
-        "".to_string(),
-        "Common navigation patterns include:".to_string(),
-        "".to_string(),
-        "- **Character movement**: h, j, k, l for left, down, up, right".to_string(),
-        "- **Word movement**: w (next word), b (previous word), e (end of word)".to_string(),
-        "- **Line movement**: 0 (start), $ (end), ^ (first non-blank)".to_string(),
-        "- **Screen movement**: H (top), M (middle), L (bottom)".to_string(),
-        "- **Document movement**: gg (beginning), G (end), Ctrl-f/b (page)".to_string(),
-        "".to_string(),
-        "## Document Formats and Processing".to_string(),
-        "".to_string(),
-        "Modern document readers must handle a variety of formats, each with its".to_string(),
-        "own structure and rendering requirements. The most common formats include:".to_string(),
-        "".to_string(),
-        "### PDF (Portable Document Format)".to_string(),
-        "".to_string(),
-        "PDFs preserve exact layout and formatting, making them ideal for documents".to_string(),
-        "that need to maintain their appearance across different systems. However,".to_string(),
-        "extracting text from PDFs can be challenging due to:".to_string(),
-        "".to_string(),
-        "- Complex layout structures".to_string(),
-        "- Embedded fonts and encodings".to_string(),
-        "- Multi-column layouts".to_string(),
-        "- Headers, footers, and page numbers".to_string(),
-        "- Images and diagrams interspersed with text".to_string(),
-        "".to_string(),
-        "### EPUB (Electronic Publication)".to_string(),
-        "".to_string(),
-        "EPUB files are essentially ZIP archives containing HTML, CSS, and metadata.".to_string(),
-        "This format is designed specifically for e-readers and offers:".to_string(),
-        "".to_string(),
-        "- Reflowable text that adapts to screen size".to_string(),
-        "- Support for multiple chapters and navigation".to_string(),
-        "- Embedded fonts and styles".to_string(),
-        "- Metadata including author, title, and cover images".to_string(),
-        "".to_string(),
-        "## Text Processing Pipeline".to_string(),
-        "".to_string(),
-        "Converting documents for terminal display involves several stages:".to_string(),
-        "".to_string(),
-        "1. **Extraction**: Pulling raw text from the source format".to_string(),
-        "2. **Cleaning**: Removing artifacts and normalizing whitespace".to_string(),
-        "3. **Formatting**: Applying word wrapping and justification".to_string(),
-        "4. **Enhancement**: Adding navigation aids and bookmarks".to_string(),
-        "".to_string(),
-        "### Text Justification".to_string(),
-        "".to_string(),
-        "Proper text justification improves readability by creating even margins".to_string(),
-        "and consistent spacing. The algorithm must balance several factors:".to_string(),
-        "".to_string(),
-        "- Minimizing rivers of whitespace".to_string(),
-        "- Avoiding excessive letter spacing".to_string(),
-        "- Handling hyphenation appropriately".to_string(),
-        "- Preserving paragraph structure".to_string(),
-        "".to_string(),
-        "## Reading Comprehension and Speed".to_string(),
-        "".to_string(),
-        "Research has shown that reading speed and comprehension are influenced by".to_string(),
-        "numerous factors, including line length, font choice, and contrast ratio.".to_string(),
-        "Terminal-based readers can optimize these factors for individual preferences.".to_string(),
-        "".to_string(),
-        "### Optimal Line Length".to_string(),
-        "".to_string(),
-        "Studies suggest that line lengths between 50-75 characters provide the best".to_string(),
-        "balance between reading speed and comprehension. Shorter lines require more".to_string(),
-        "eye movements, while longer lines make it difficult to track from one line".to_string(),
-        "to the next.".to_string(),
-        "".to_string(),
-        "## Future Directions".to_string(),
-        "".to_string(),
-        "As technology continues to evolve, terminal-based readers are incorporating".to_string(),
-        "new features while maintaining their core simplicity:".to_string(),
-        "".to_string(),
-        "- **Cloud synchronization**: Seamless reading across devices".to_string(),
-        "- **AI-powered summaries**: Quick document overview".to_string(),
-        "- **Voice integration**: Text-to-speech capabilities".to_string(),
-        "- **Collaborative annotations**: Shared notes and highlights".to_string(),
-        "- **Advanced search**: Semantic and fuzzy matching".to_string(),
-        "".to_string(),
-        "The future of digital reading lies not in replacing traditional methods,".to_string(),
-        "but in providing readers with choices that match their preferences and".to_string(),
-        "workflows. Whether you prefer a feature-rich GUI application or a minimal".to_string(),
-        "terminal interface, the goal remains the same: efficient, enjoyable access".to_string(),
-        "to the world's written knowledge.".to_string(),
-        "".to_string(),
-        "## Conclusion".to_string(),
-        "".to_string(),
-        "Terminal-based document readers represent a unique approach to digital".to_string(),
-        "reading that prioritizes efficiency, minimalism, and keyboard-driven".to_string(),
-        "navigation. By embracing the constraints of the terminal environment,".to_string(),
-        "these applications offer a focused, distraction-free reading experience".to_string(),
-        "that many users find more productive than their graphical counterparts.".to_string(),
-        "".to_string(),
-        "As we continue to navigate the digital transformation of reading, tools".to_string(),
-        "that respect user preferences and provide genuine value will endure. The".to_string(),
-        "terminal may seem like an anachronism in our graphical age, but for those".to_string(),
-        "who value efficiency and focus, it remains an ideal reading environment.".to_string(),
-    ]
+pub fn get_marketing_demo_content() -> String {
+    r#"# The Art of Reading in the Digital Age
+
+In an era where information flows ceaselessly through countless channels, the simple act of reading has become both more crucial and more challenging than ever before. We find ourselves navigating between the need for deep, focused comprehension and the relentless pull of digital distractions.
+
+The modern reader faces a paradox: while we have unprecedented access to the world's knowledge, our tools often work against our ability to truly absorb and understand what we read. Notifications interrupt our flow, advertisements compete for our attention, and interfaces designed for engagement rather than comprehension fragment our focus into ever-smaller pieces.
+
+The modern reader faces a paradox: while we have unprecedented access to the world's knowledge, our tools often work against our ability to truly absorb and understand what we read. Notifications interrupt our flow, advertisements compete for our attention, and interfaces designed for engagement rather than comprehension fragment our focus into ever-smaller pieces.
+
+Yet within this chaos, a movement toward intentional, mindful reading has emerged. Readers are rediscovering the power of simplicity, seeking tools that enhance rather than hinder their connection with text. They understand that true comprehension requires not just access to information, but an environment that respects the cognitive demands of deep reading.
+
+## The Evolution of Text Display
+
+The journey from physical to digital text represents one of humanity's most profound technological shifts. What began as crude phosphorescent characters on monochrome monitors has evolved into a sophisticated ecosystem of reading technologies. Modern terminal-based readers, paradoxically, represent both a return to simplicity and an embrace of advanced text processing capabilities. They strip away the visual noise of contemporary interfaces while leveraging decades of refinement in text rendering, navigation paradigms, and user interaction models. This fusion of minimalism and power creates an environment where focus becomes the default state, where reading transforms from passive consumption to active engagement, and where the boundaries between reader and text dissolve into a seamless flow of information and understanding.
+
+
+
+
+### Terminal-Based Reading
+
+Despite the availability of graphical interfaces, terminal-based reading applications have maintained a dedicated following. The reasons include:
+
+- **Minimal distractions**: No ads, popups, or visual clutter
+- **Keyboard efficiency**: Navigate without reaching for the mouse
+- **Resource efficiency**: Low CPU and memory usage
+- **Universal compatibility**: Works on any system with a terminal
+- **Customization**: Complete control over appearance and behavior
+
+## Navigation Paradigms
+
+Different reading applications employ various navigation paradigms, each with its own philosophy and target audience. The most influential of these paradigms comes from the vi/vim text editor tradition.
+
+### The Vi Philosophy
+
+Vi's modal editing approach, where different modes serve different purposes, translates beautifully to reading applications. In normal mode, every key becomes a navigation command, allowing for incredibly efficient movement through text without modifier keys.
+
+Common navigation patterns include:
+
+- **Character movement**: h, j, k, l for left, down, up, right
+- **Word movement**: w (next word), b (previous word), e (end of word)
+- **Line movement**: 0 (start), $ (end), ^ (first non-blank)
+- **Screen movement**: H (top), M (middle), L (bottom)
+- **Document movement**: gg (beginning), G (end), Ctrl-f/b (page)
+
+## Document Formats and Processing
+
+Modern document readers must handle a variety of formats, each with its own structure and rendering requirements. The most common formats include:
+
+### PDF (Portable Document Format)
+
+PDFs preserve exact layout and formatting, making them ideal for documents that need to maintain their appearance across different systems. However, extracting text from PDFs can be challenging due to:
+
+- Complex layout structures
+- Embedded fonts and encodings
+- Multi-column layouts
+- Headers, footers, and page numbers
+- Images and diagrams interspersed with text
+
+### EPUB (Electronic Publication)
+
+EPUB files are essentially ZIP archives containing HTML, CSS, and metadata. This format is designed specifically for e-readers and offers:
+
+- Reflowable text that adapts to screen size
+- Support for multiple chapters and navigation
+- Embedded fonts and styles
+- Metadata including author, title, and cover images
+
+## Text Processing Pipeline
+
+Converting documents for terminal display involves several stages:
+
+1. **Extraction**: Pulling raw text from the source format
+2. **Cleaning**: Removing artifacts and normalizing whitespace
+3. **Formatting**: Applying word wrapping and justification
+4. **Enhancement**: Adding navigation aids and bookmarks
+
+### Text Justification
+
+Proper text justification improves readability by creating even margins and consistent spacing. The algorithm must balance several factors:
+
+- Minimizing rivers of whitespace
+- Avoiding excessive letter spacing
+- Handling hyphenation appropriately
+- Preserving paragraph structure
+
+## Reading Comprehension and Speed
+
+Research has shown that reading speed and comprehension are influenced by numerous factors, including line length, font choice, and contrast ratio. Terminal-based readers can optimize these factors for individual preferences.
+
+### Optimal Line Length
+
+Studies suggest that line lengths between 50-75 characters provide the best balance between reading speed and comprehension. Shorter lines require more eye movements, while longer lines make it difficult to track from one line to the next.
+
+## Future Directions
+
+As technology continues to evolve, terminal-based readers are incorporating new features while maintaining their core simplicity:
+
+- **Cloud synchronization**: Seamless reading across devices
+- **AI-powered summaries**: Quick document overview
+- **Voice integration**: Text-to-speech capabilities
+- **Collaborative annotations**: Shared notes and highlights
+- **Advanced search**: Semantic and fuzzy matching
+
+The future of digital reading lies not in replacing traditional methods, but in providing readers with choices that match their preferences and workflows. Whether you prefer a feature-rich GUI application or a minimal terminal interface, the goal remains the same: efficient, enjoyable access to the world's written knowledge.
+
+## Conclusion
+
+Terminal-based document readers represent a unique approach to digital reading that prioritizes efficiency, minimalism, and keyboard-driven navigation. By embracing the constraints of the terminal environment, these applications offer a focused, distraction-free reading experience that many users find more productive than their graphical counterparts.
+
+As we continue to navigate the digital transformation of reading, tools that respect user preferences and provide genuine value will endure. The terminal may seem like an anachronism in our graphical age, but for those who value efficiency and focus, it remains an ideal reading environment."#.to_string()
 }

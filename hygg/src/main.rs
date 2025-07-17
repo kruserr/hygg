@@ -24,7 +24,7 @@ struct Args {
   file: Option<String>,
 
   /// Set the column width
-  #[arg(short, long, default_value = "110")]
+  #[arg(short, long, default_value = "80")]
   col: usize,
 
   /// Use OCR to extract text from scanned PDF documents

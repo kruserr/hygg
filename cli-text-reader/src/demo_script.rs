@@ -51,7 +51,7 @@ impl DemoScript {
             "search_cargo",
             "yank_line",
             "execute_cat_with_paste",
-            "final_message",
+            // "final_message",
         ])
     }
     

@@ -33,7 +33,9 @@ impl Editor {
     // Load demo-specific content
     fn load_demo_content(&mut self, demo_id: usize) {
         let demo_text = get_demo_content_by_id(demo_id);
-        self.lines = demo_text;
+        // Apply justification to the demo content
+        let justified_lines = cli_justify::justify(&demo_text, self.col);
+        self.lines = justified_lines;
         self.buffers[0].lines = self.lines.clone();
         self.total_lines = self.lines.len();
         self.offset = 0;

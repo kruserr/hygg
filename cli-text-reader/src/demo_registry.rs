@@ -25,7 +25,7 @@ pub fn get_demo_by_id(id: usize) -> Option<DemoScript> {
 }
 
 // Get demo content by ID
-pub fn get_demo_content_by_id(_id: usize) -> Vec<String> {
+pub fn get_demo_content_by_id(_id: usize) -> String {
     // All demos use the same marketing content
     get_marketing_demo_content()
 }
