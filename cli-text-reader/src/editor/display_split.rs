@@ -6,6 +6,7 @@ use crossterm::{
 use std::io::{self, Result as IoResult, Write};
 
 use super::core::{Editor, ViewMode};
+use super::highlighting_persistent::HighlightType;
 
 impl Editor {
   // Draw split view with two panes
@@ -128,6 +129,8 @@ impl Editor {
             i, // Pass viewport line index
             center_offset_string,
             is_current_line,
+            offset, // Pass the offset
+            &buffer.lines, // Pass buffer lines
           )?;
 
           // Clear to end of line to prevent bleeding
@@ -159,22 +162,61 @@ impl Editor {
     viewport_line_idx: usize, // Line index within the pane's viewport
     center_offset_string: &str,
     is_current_line: bool,
+    offset: usize, // Offset to use for highlight calculations
+    buffer_lines: &[String], // Lines from the buffer being rendered
   ) -> IoResult<()> {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
       // Check if this line has visual selection
       let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
       
-      // If line has visual selection, render with selection highlighting
-      if has_selection && !is_current_line {
-        if self.render_pane_selection(
-          stdout,
-          buffer_idx,
-          viewport_line_idx,
-          line,
-          center_offset_string,
-        )? {
-          return Ok(());
+      // Check if this line has persistent highlights (only for main buffer)
+      let has_persistent = if buffer_idx == 0 {
+        let result = self.has_persistent_highlights_on_line_with_offset_and_lines(viewport_line_idx, offset, buffer_lines);
+        result
+      } else {
+        false
+      };
+      
+      // If we have multiple types of highlights, use combined rendering
+      if (has_selection || has_persistent) && !is_current_line {
+        if has_selection && has_persistent {
+          // Handle combined highlights
+          if self.render_pane_combined_highlights(
+            stdout,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+            offset,
+            buffer_lines,
+          )? {
+            return Ok(());
+          }
+        } else if has_selection {
+          // Selection only
+          if self.render_pane_selection(
+            stdout,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+          )? {
+            return Ok(());
+          }
+        } else if has_persistent {
+          // Persistent highlights only
+          if self.render_pane_persistent_highlights(
+            stdout,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+            offset,
+            buffer_lines,
+          )? {
+            return Ok(());
+          }
         }
       }
       
@@ -374,6 +416,8 @@ impl Editor {
             i, // Pass viewport line index, not display row
             center_offset_string,
             is_current_line,
+            offset, // Pass the offset
+            &pane_buffer.lines, // Pass buffer lines
           )?;
           
           // Clear to end of line
@@ -404,6 +448,8 @@ impl Editor {
     viewport_line_idx: usize, // Line index within the pane's viewport
     center_offset_string: &str,
     is_current_line: bool,
+    offset: usize, // Offset to use for highlight calculations
+    buffer_lines: &[String], // Lines from the buffer being rendered
   ) -> IoResult<()> {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
@@ -416,16 +462,53 @@ impl Editor {
       };
       let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
       
-      // If line has visual selection, render with selection highlighting
-      if has_selection && !is_current_line {
-        if self.render_pane_selection_buffered(
-          buffer,
-          buffer_idx,
-          viewport_line_idx,
-          line,
-          center_offset_string,
-        )? {
-          return Ok(());
+      // Check if this line has persistent highlights (only for main buffer)
+      let has_persistent = if buffer_idx == 0 {
+        let result = self.has_persistent_highlights_on_line_with_offset_and_lines(viewport_line_idx, offset, buffer_lines);
+        result
+      } else {
+        false
+      };
+      
+      // If we have multiple types of highlights, use combined rendering
+      if (has_selection || has_persistent) && !is_current_line {
+        if has_selection && has_persistent {
+          // Handle combined highlights
+          if self.render_pane_combined_highlights_buffered(
+            buffer,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+            offset,
+            buffer_lines,
+          )? {
+            return Ok(());
+          }
+        } else if has_selection {
+          // Selection only
+          if self.render_pane_selection_buffered(
+            buffer,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+          )? {
+            return Ok(());
+          }
+        } else if has_persistent {
+          // Persistent highlights only
+          if self.render_pane_persistent_highlights_buffered(
+            buffer,
+            buffer_idx,
+            viewport_line_idx,
+            line,
+            center_offset_string,
+            offset,
+            buffer_lines,
+          )? {
+            return Ok(());
+          }
         }
       }
       
@@ -502,10 +585,496 @@ impl Editor {
     Ok(())
   }
 
+  // Render combined highlights (selection + persistent) for a pane line
+  fn render_pane_combined_highlights(
+    &self,
+    stdout: &mut io::Stdout,
+    buffer_idx: usize,
+    viewport_line_idx: usize,
+    line: &str,
+    center_offset_string: &str,
+    offset: usize,
+    buffer_lines: &[String],
+  ) -> IoResult<bool> {
+    // Only main buffer has persistent highlights
+    if buffer_idx != 0 {
+      return self.render_pane_selection(stdout, buffer_idx, viewport_line_idx, line, center_offset_string);
+    }
+
+    let current_line_idx = offset + viewport_line_idx;
+    
+    // Get all highlight ranges for this line
+    let mut ranges: Vec<(usize, usize, HighlightType)> = Vec::new();
+
+    // Add visual selection range if present
+    if let (Some(start), Some(end)) = (self.editor_state.selection_start, self.editor_state.selection_end) {
+      let is_line_mode = self.editor_state.mode == super::core::EditorMode::VisualLine;
+
+      if is_line_mode && current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+        ranges.push((0, line.len(), HighlightType::Selection));
+      } else if !is_line_mode {
+        // Handle character mode selection
+        if start.0 == end.0 && current_line_idx == start.0 {
+          let start_col = start.1.min(end.1);
+          let end_col = start.1.max(end.1).min(line.len());
+          if start_col < end_col {
+            ranges.push((start_col, end_col, HighlightType::Selection));
+          }
+        } else if current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+          // Multi-line selection logic
+          if current_line_idx == start.0.min(end.0) {
+            let col = if start.0 < end.0 { start.1 } else { end.1 };
+            ranges.push((col, line.len(), HighlightType::Selection));
+          } else if current_line_idx == start.0.max(end.0) {
+            let col = if start.0 > end.0 { start.1 } else { end.1 };
+            ranges.push((0, col.min(line.len()), HighlightType::Selection));
+          } else {
+            ranges.push((0, line.len(), HighlightType::Selection));
+          }
+        }
+      }
+    }
+
+    // Add persistent highlight ranges
+    let mut abs_line_start = 0;
+    for i in 0..current_line_idx {
+      if i < buffer_lines.len() {
+        abs_line_start += buffer_lines[i].len() + 1;
+      }
+    }
+    let abs_line_end = abs_line_start + line.len();
+
+    let line_highlights = self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+    for highlight in line_highlights {
+      let start = if highlight.start <= abs_line_start {
+        0
+      } else {
+        highlight.start - abs_line_start
+      };
+      let end = if highlight.end >= abs_line_end {
+        line.len()
+      } else {
+        highlight.end - abs_line_start
+      };
+
+      if end > start && start < line.len() {
+        ranges.push((start.min(line.len()), end.min(line.len()), HighlightType::Persistent));
+      }
+    }
+
+    if ranges.is_empty() {
+      return Ok(false);
+    }
+
+    // Sort ranges by start position
+    ranges.sort_by_key(|r| r.0);
+
+    // Render the line with all highlights
+    write!(stdout, "{center_offset_string}")?;
+    let mut last_end = 0;
+
+    for (start, end, highlight_type) in ranges {
+      // Print unhighlighted text before this highlight
+      if start > last_end {
+        write!(stdout, "{}", &line[last_end..start])?;
+      }
+
+      // Print highlighted text with appropriate style
+      match highlight_type {
+        HighlightType::Selection => {
+          execute!(
+            stdout,
+            SetBackgroundColor(Color::DarkBlue),
+            SetForegroundColor(Color::White)
+          )?;
+        }
+        HighlightType::Persistent => {
+          execute!(
+            stdout,
+            SetBackgroundColor(Color::Yellow),
+            SetForegroundColor(Color::Black)
+          )?;
+        }
+      }
+
+      // Handle overlapping ranges - use the max end
+      let actual_end = if last_end > start { last_end.max(end) } else { end };
+      let actual_start = last_end.max(start);
+
+      if actual_start < actual_end && actual_start < line.len() {
+        write!(stdout, "{}", &line[actual_start..actual_end.min(line.len())])?;
+      }
+
+      execute!(stdout, ResetColor)?;
+      last_end = actual_end;
+    }
+
+    // Print remaining unhighlighted text
+    if last_end < line.len() {
+      write!(stdout, "{}", &line[last_end..])?;
+    }
+    
+    // Clear to end of line to match normal view rendering
+    execute!(
+      stdout,
+      Clear(ClearType::UntilNewLine)
+    )?;
+
+    Ok(true)
+  }
+
+  // Buffered version of render_pane_combined_highlights
+  fn render_pane_combined_highlights_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+    buffer_idx: usize,
+    viewport_line_idx: usize,
+    line: &str,
+    center_offset_string: &str,
+    offset: usize,
+    buffer_lines: &[String],
+  ) -> IoResult<bool> {
+    // Only main buffer has persistent highlights
+    if buffer_idx != 0 {
+      return self.render_pane_selection_buffered(buffer, buffer_idx, viewport_line_idx, line, center_offset_string);
+    }
+
+    let current_line_idx = offset + viewport_line_idx;
+    
+    // Get all highlight ranges for this line
+    let mut ranges: Vec<(usize, usize, HighlightType)> = Vec::new();
+
+    // Add visual selection range if present
+    if let (Some(start), Some(end)) = (self.editor_state.selection_start, self.editor_state.selection_end) {
+      let is_line_mode = self.editor_state.mode == super::core::EditorMode::VisualLine;
+
+      if is_line_mode && current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+        ranges.push((0, line.len(), HighlightType::Selection));
+      } else if !is_line_mode {
+        // Handle character mode selection
+        if start.0 == end.0 && current_line_idx == start.0 {
+          let start_col = start.1.min(end.1);
+          let end_col = start.1.max(end.1).min(line.len());
+          if start_col < end_col {
+            ranges.push((start_col, end_col, HighlightType::Selection));
+          }
+        } else if current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+          // Multi-line selection logic
+          if current_line_idx == start.0.min(end.0) {
+            let col = if start.0 < end.0 { start.1 } else { end.1 };
+            ranges.push((col, line.len(), HighlightType::Selection));
+          } else if current_line_idx == start.0.max(end.0) {
+            let col = if start.0 > end.0 { start.1 } else { end.1 };
+            ranges.push((0, col.min(line.len()), HighlightType::Selection));
+          } else {
+            ranges.push((0, line.len(), HighlightType::Selection));
+          }
+        }
+      }
+    }
+
+    // Add persistent highlight ranges
+    let mut abs_line_start = 0;
+    for i in 0..current_line_idx {
+      if i < buffer_lines.len() {
+        abs_line_start += buffer_lines[i].len() + 1;
+      }
+    }
+    let abs_line_end = abs_line_start + line.len();
+
+    let line_highlights = self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+    for highlight in line_highlights {
+      let start = if highlight.start <= abs_line_start {
+        0
+      } else {
+        highlight.start - abs_line_start
+      };
+      let end = if highlight.end >= abs_line_end {
+        line.len()
+      } else {
+        highlight.end - abs_line_start
+      };
+
+      if end > start && start < line.len() {
+        ranges.push((start.min(line.len()), end.min(line.len()), HighlightType::Persistent));
+      }
+    }
+
+    if ranges.is_empty() {
+      return Ok(false);
+    }
+
+    // Sort ranges by start position
+    ranges.sort_by_key(|r| r.0);
+
+    // Render the line with all highlights
+    write!(buffer, "{center_offset_string}")?;
+    let mut last_end = 0;
+
+    for (start, end, highlight_type) in ranges {
+      // Print unhighlighted text before this highlight
+      if start > last_end {
+        write!(buffer, "{}", &line[last_end..start])?;
+      }
+
+      // Print highlighted text with appropriate style
+      match highlight_type {
+        HighlightType::Selection => {
+          buffer.queue(SetBackgroundColor(Color::DarkBlue))?;
+          buffer.queue(SetForegroundColor(Color::White))?;
+        }
+        HighlightType::Persistent => {
+          buffer.queue(SetBackgroundColor(Color::Yellow))?;
+          buffer.queue(SetForegroundColor(Color::Black))?;
+        }
+      }
+
+      // Handle overlapping ranges - use the max end
+      let actual_end = if last_end > start { last_end.max(end) } else { end };
+      let actual_start = last_end.max(start);
+
+      if actual_start < actual_end && actual_start < line.len() {
+        write!(buffer, "{}", &line[actual_start..actual_end.min(line.len())])?;
+      }
+
+      buffer.queue(ResetColor)?;
+      last_end = actual_end;
+    }
+
+    // Print remaining unhighlighted text
+    if last_end < line.len() {
+      write!(buffer, "{}", &line[last_end..])?;
+    }
+    
+    // Clear to end of line to match normal view rendering
+    buffer.queue(Clear(ClearType::UntilNewLine))?;
+
+    Ok(true)
+  }
+
+  // Render persistent highlights for a pane line
+  fn render_pane_persistent_highlights(
+    &self,
+    stdout: &mut io::Stdout,
+    buffer_idx: usize,
+    viewport_line_idx: usize,
+    line: &str,
+    center_offset_string: &str,
+    offset: usize,
+    buffer_lines: &[String],
+  ) -> IoResult<bool> {
+    // Only main buffer has persistent highlights
+    if buffer_idx != 0 {
+      return Ok(false);
+    }
+
+    // Get the actual line index in the main buffer
+    let current_line_idx = offset + viewport_line_idx;
+
+    // Calculate absolute position range for this line
+    let mut abs_line_start = 0;
+    for i in 0..current_line_idx {
+      if i < buffer_lines.len() {
+        abs_line_start += buffer_lines[i].len() + 1; // +1 for newline
+      }
+    }
+    let abs_line_end = abs_line_start + line.len();
+
+    // Get highlights that overlap with this line
+    let line_highlights =
+      self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+
+    if line_highlights.is_empty() {
+      return Ok(false);
+    }
+
+    // Convert highlights to line-relative positions and merge overlapping ranges
+    let mut ranges: Vec<(usize, usize)> = Vec::new();
+    for highlight in line_highlights {
+      let start = if highlight.start <= abs_line_start {
+        0
+      } else {
+        highlight.start - abs_line_start
+      };
+
+      let end = if highlight.end >= abs_line_end {
+        line.len()
+      } else {
+        highlight.end - abs_line_start
+      };
+
+      if end > start && start < line.len() {
+        ranges.push((start.min(line.len()), end.min(line.len())));
+      }
+    }
+
+    if ranges.is_empty() {
+      return Ok(false);
+    }
+
+    // Sort and merge overlapping ranges
+    ranges.sort_by_key(|r| r.0);
+    let mut merged_ranges: Vec<(usize, usize)> = Vec::new();
+    for range in ranges {
+      if let Some(last) = merged_ranges.last_mut() {
+        if range.0 <= last.1 {
+          // Overlapping or adjacent, merge
+          last.1 = last.1.max(range.1);
+        } else {
+          merged_ranges.push(range);
+        }
+      } else {
+        merged_ranges.push(range);
+      }
+    }
+
+    // Render the line with highlights
+    
+    write!(stdout, "{center_offset_string}")?;
+    let mut last_end = 0;
+
+    for (start, end) in merged_ranges {
+      // Print unhighlighted text before this highlight
+      if start > last_end {
+        write!(stdout, "{}", &line[last_end..start])?;
+      }
+
+      // Print highlighted text
+      execute!(
+        stdout,
+        SetBackgroundColor(Color::Yellow),
+        SetForegroundColor(Color::Black)
+      )?;
+      write!(stdout, "{}", &line[start..end])?;
+      execute!(stdout, ResetColor)?;
+
+      last_end = end;
+    }
+
+    // Print remaining unhighlighted text
+    if last_end < line.len() {
+      write!(stdout, "{}", &line[last_end..])?;
+    }
+    
+    // Clear to end of line to match normal view rendering
+    execute!(
+      stdout,
+      Clear(ClearType::UntilNewLine)
+    )?;
+
+    Ok(true)
+  }
+
+  // Buffered version of render_pane_persistent_highlights
+  fn render_pane_persistent_highlights_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+    buffer_idx: usize,
+    viewport_line_idx: usize,
+    line: &str,
+    center_offset_string: &str,
+    offset: usize,
+    buffer_lines: &[String],
+  ) -> IoResult<bool> {
+    // Only main buffer has persistent highlights
+    if buffer_idx != 0 {
+      return Ok(false);
+    }
+
+    // Get the actual line index in the main buffer
+    let current_line_idx = offset + viewport_line_idx;
+
+    // Calculate absolute position range for this line
+    let mut abs_line_start = 0;
+    for i in 0..current_line_idx {
+      if i < buffer_lines.len() {
+        abs_line_start += buffer_lines[i].len() + 1; // +1 for newline
+      }
+    }
+    let abs_line_end = abs_line_start + line.len();
+
+    // Get highlights that overlap with this line
+    let line_highlights =
+      self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+
+    if line_highlights.is_empty() {
+      return Ok(false);
+    }
+
+    // Convert highlights to line-relative positions and merge overlapping ranges
+    let mut ranges: Vec<(usize, usize)> = Vec::new();
+    for highlight in line_highlights {
+      let start = if highlight.start <= abs_line_start {
+        0
+      } else {
+        highlight.start - abs_line_start
+      };
+
+      let end = if highlight.end >= abs_line_end {
+        line.len()
+      } else {
+        highlight.end - abs_line_start
+      };
+
+      if end > start && start < line.len() {
+        ranges.push((start.min(line.len()), end.min(line.len())));
+      }
+    }
+
+    if ranges.is_empty() {
+      return Ok(false);
+    }
+
+    // Sort and merge overlapping ranges
+    ranges.sort_by_key(|r| r.0);
+    let mut merged_ranges: Vec<(usize, usize)> = Vec::new();
+    for range in ranges {
+      if let Some(last) = merged_ranges.last_mut() {
+        if range.0 <= last.1 {
+          // Overlapping or adjacent, merge
+          last.1 = last.1.max(range.1);
+        } else {
+          merged_ranges.push(range);
+        }
+      } else {
+        merged_ranges.push(range);
+      }
+    }
+
+    // Render the line with highlights
+    write!(buffer, "{center_offset_string}")?;
+    let mut last_end = 0;
+
+    for (start, end) in merged_ranges {
+      // Print unhighlighted text before this highlight
+      if start > last_end {
+        write!(buffer, "{}", &line[last_end..start])?;
+      }
+
+      // Print highlighted text
+      buffer.queue(SetBackgroundColor(Color::Yellow))?;
+      buffer.queue(SetForegroundColor(Color::Black))?;
+      write!(buffer, "{}", &line[start..end])?;
+      buffer.queue(ResetColor)?;
+
+      last_end = end;
+    }
+
+    // Print remaining unhighlighted text
+    if last_end < line.len() {
+      write!(buffer, "{}", &line[last_end..])?;
+    }
+    
+    // Clear to end of line to match normal view rendering
+    buffer.queue(Clear(ClearType::UntilNewLine))?;
+
+    Ok(true)
+  }
+
   // Check if a line in a pane has visual selection
   fn has_pane_selection_on_line(&self, buffer_idx: usize, line_index: usize) -> bool {
     // Check if selection exists
-    let (has_selection, current_line_idx, start, end) = if buffer_idx == self.active_buffer {
+    let (_has_selection, current_line_idx, start, end) = if buffer_idx == self.active_buffer {
       // For active buffer, use current editor state
       let has_sel = self.editor_state.selection_start.is_some() && self.editor_state.selection_end.is_some();
       if !has_sel {

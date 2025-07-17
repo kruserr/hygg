@@ -229,27 +229,43 @@ impl Editor {
 
   // Check if a line has persistent highlights
   pub fn has_persistent_highlights_on_line(&self, line_index: usize) -> bool {
-    let current_line_idx = self.offset + line_index;
+    self.has_persistent_highlights_on_line_with_offset(line_index, self.offset)
+  }
+
+  // Check if a line has persistent highlights with custom offset
+  pub fn has_persistent_highlights_on_line_with_offset(&self, line_index: usize, offset: usize) -> bool {
+    self.has_persistent_highlights_on_line_with_offset_and_lines(line_index, offset, &self.lines)
+  }
+
+  // Check if a line has persistent highlights with custom offset and lines
+  pub fn has_persistent_highlights_on_line_with_offset_and_lines(
+    &self, 
+    line_index: usize, 
+    offset: usize,
+    lines: &[String]
+  ) -> bool {
+    let current_line_idx = offset + line_index;
 
     // Calculate absolute position range for this line
     let mut abs_line_start = 0;
     for i in 0..current_line_idx {
-      if i < self.lines.len() {
-        abs_line_start += self.lines[i].len() + 1;
+      if i < lines.len() {
+        abs_line_start += lines[i].len() + 1;
       }
     }
 
-    let abs_line_end = if current_line_idx < self.lines.len() {
-      abs_line_start + self.lines[current_line_idx].len()
+    let abs_line_end = if current_line_idx < lines.len() {
+      abs_line_start + lines[current_line_idx].len()
     } else {
       abs_line_start
     };
 
     // Check if any highlights overlap with this line
-    !self
+    let highlights_in_range = self
       .highlights
-      .get_highlights_for_range(abs_line_start, abs_line_end)
-      .is_empty()
+      .get_highlights_for_range(abs_line_start, abs_line_end);
+    
+    !highlights_in_range.is_empty()
   }
 
   // Render combined highlights (visual selection + persistent highlights)

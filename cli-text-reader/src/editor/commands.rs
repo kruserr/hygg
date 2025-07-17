@@ -155,12 +155,17 @@ impl Editor {
       "p" => self.handle_progress_command(),
       "cursor" | "c" => self.handle_cursor_command(),
       "help" | "commands" => self.handle_help_command(),
+      "notutorial" => self.handle_notutorial_command(),
       cmd if cmd.starts_with("tutorial") => {
-        // Check if there's a step number after "tutorial"
-        if let Some(step_str) = cmd.strip_prefix("tutorial").map(|s| s.trim()) {
-          if !step_str.is_empty() {
-            // Parse the step number
-            if let Ok(step_num) = step_str.parse::<usize>() {
+        // Check if there's a parameter after "tutorial"
+        if let Some(param_str) = cmd.strip_prefix("tutorial").map(|s| s.trim()) {
+          if param_str == "on" {
+            self.handle_tutorial_toggle_command(true)
+          } else if param_str == "off" {
+            self.handle_tutorial_toggle_command(false)
+          } else if !param_str.is_empty() {
+            // Try to parse as step number
+            if let Ok(step_num) = param_str.parse::<usize>() {
               self.handle_tutorial_command_with_step(step_num)
             } else {
               self.handle_tutorial_command()
