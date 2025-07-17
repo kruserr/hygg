@@ -14,7 +14,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.15"
+version = "0.1.16"
 authors = ["kruserr"]
 license = "AGPL-3.0"
 readme = "README.md"

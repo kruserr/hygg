@@ -320,7 +320,7 @@ checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "cli-epub-to-text"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "epub",
  "html2text",
@@ -330,14 +330,14 @@ dependencies = [
 
 [[package]]
 name = "cli-justify"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "getopts",
 ]
 
 [[package]]
 name = "cli-pdf-to-text"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "getopts",
  "libc",
@@ -350,7 +350,7 @@ dependencies = [
 
 [[package]]
 name = "cli-text-reader"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "arboard",
  "chrono",
@@ -811,7 +811,7 @@ dependencies = [
 
 [[package]]
 name = "hygg"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "atty",
  "clap",
@@ -1574,7 +1574,7 @@ dependencies = [
 
 [[package]]
 name = "redirect-stderr"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "libc",
  "winapi",
