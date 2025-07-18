@@ -1,13 +1,15 @@
 [package]
 name = "hygg"
-version.workspace = true
-edition = "2024"
-authors.workspace = true
+description = "Simplifying the way you read"
 default-run = "hygg"
+
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
 license.workspace = true
 readme.workspace = true
 repository.workspace = true
-description = "Simplifying the way you read"
 keywords.workspace = true
 categories.workspace = true
 

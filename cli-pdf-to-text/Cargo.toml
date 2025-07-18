@@ -1,11 +1,14 @@
 [package]
 name = "cli-pdf-to-text"
+description = "A CLI pdf to plain text converter"
+
 version.workspace = true
-edition = "2024"
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
 license.workspace = true
 readme.workspace = true
 repository.workspace = true
-description = "A CLI pdf to plain text converter"
 keywords.workspace = true
 categories.workspace = true
 

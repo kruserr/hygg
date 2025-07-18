@@ -1,11 +1,14 @@
 [package]
 name = "cli-text-reader"
+description = "A less like CLI text reader"
+
 version.workspace = true
-edition = "2021"
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
 license.workspace = true
 readme.workspace = true
 repository.workspace = true
-description = "A less like CLI text reader"
 keywords.workspace = true
 categories.workspace = true
 
