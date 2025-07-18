@@ -219,19 +219,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
       cli_pdf_to_text::pdf_to_text(&temp_file)?
     } else {
-      match pandoc_to_text(&file)
-        .or_else(|_| cli_epub_to_text::epub_to_text(&file))
-        .or_else(|_| cli_pdf_to_text::pdf_to_text(&file)) {
-        Ok(content) => content,
-        Err(e) => {
-          eprintln!("Error:\nUnable to read file '{file}'\n");
-
-          eprintln!("Details:\n{e}\n");
-
-          if which("pandoc").is_none() {
-            eprintln!("pandoc not installed!\nFor additional formats, install pandoc:\nsudo apt install pandoc");
+      // Check file extension first for better format routing
+      let extension = std::path::Path::new(&file)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.to_lowercase());
+      
+      match extension.as_deref() {
+        Some("epub") => {
+          match cli_epub_to_text::epub_to_text(&file) {
+            Ok(content) => content,
+            Err(e) => {
+              eprintln!("Error:\nUnable to read EPUB file '{file}'\n");
+              eprintln!("Details:\n{e}\n");
+              std::process::exit(1);
+            }
           }
-          std::process::exit(1);
+        },
+        Some("pdf") => {
+          match cli_pdf_to_text::pdf_to_text(&file) {
+            Ok(content) => content,
+            Err(e) => {
+              eprintln!("Error:\nUnable to read PDF file '{file}'\n");
+              eprintln!("Details:\n{e}\n");
+              std::process::exit(1);
+            }
+          }
+        },
+        _ => {
+          // For other formats, try pandoc first, then fall back to other converters
+          match pandoc_to_text(&file)
+            .or_else(|_| cli_epub_to_text::epub_to_text(&file))
+            .or_else(|_| cli_pdf_to_text::pdf_to_text(&file)) {
+            Ok(content) => content,
+            Err(e) => {
+              eprintln!("Error:\nUnable to read file '{file}'\n");
+              eprintln!("Details:\n{e}\n");
+              
+              if which("pandoc").is_none() {
+                eprintln!("pandoc not installed!\nFor additional formats, install pandoc:\nsudo apt install pandoc");
+              }
+              std::process::exit(1);
+            }
+          }
         }
       }
     };

@@ -30,13 +30,20 @@ pub fn justify(text: &str, line_width: usize) -> Vec<String> {
     let mut len = 0;
 
     for word in words {
-      if len + word.len() > line_width {
+      // Calculate the length if we add this word
+      let word_len = word.len();
+      let space_len = if line.is_empty() { 0 } else { 1 };
+      let new_len = len + space_len + word_len;
+      
+      // If adding this word would exceed the line width and we have words on the line
+      if new_len > line_width && !line.is_empty() {
         lines.push(justify_line(&line, line_width));
         line.clear();
         len = 0;
       }
+      
       line.push(word);
-      len += word.len() + 1; // +1 for space
+      len = if line.len() == 1 { word_len } else { len + space_len + word_len };
     }
 
     // Add the last line of the paragraph
@@ -53,6 +60,13 @@ pub fn justify(text: &str, line_width: usize) -> Vec<String> {
 
 fn justify_line(line: &[&str], line_width: usize) -> String {
   let word_len: usize = line.iter().map(|s| s.len()).sum();
+  
+  // If the words are already longer than or equal to line width,
+  // or if there's only one word, just join them with single spaces
+  if word_len >= line_width || line.len() <= 1 {
+    return line.join(" ");
+  }
+  
   let spaces = line_width - word_len;
 
   let line_len_div = if (line.len() > 1) { (line.len() - 1) } else { 1 };
@@ -83,6 +97,44 @@ mod tests {
   fn test_handles_long_words() {
     let input_text = r#"some text and a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong word but no cause to panic"#;
     let pretty_short_line_width = 10;
-    justify(input_text, pretty_short_line_width);
+    let result = justify(input_text, pretty_short_line_width);
+    assert!(!result.is_empty());
+  }
+
+  #[test]
+  fn test_handles_line_longer_than_width() {
+    let input_text = "This is a line that is definitely longer than the requested width";
+    let result = justify(input_text, 20);
+    assert!(!result.is_empty());
+    // Should not panic
+  }
+
+  #[test]
+  fn test_single_word_longer_than_width() {
+    let input_text = "supercalifragilisticexpialidocious";
+    let result = justify(input_text, 10);
+    assert!(!result.is_empty());
+    // Word should be split into multiple lines
+    assert!(result.len() > 1);
+  }
+
+  #[test]
+  fn test_normal_justification() {
+    // Test with multiple lines to see justification
+    let input_text = "This is a test of the justification system. It should properly justify lines that need to be wrapped.";
+    let result = justify(input_text, 20);
+    assert!(!result.is_empty());
+    
+    // Find a line that was justified (not the last line)
+    let mut found_justified = false;
+    for (i, line) in result.iter().enumerate() {
+      if !line.is_empty() && i < result.len() - 2 { // Not the last line or blank line
+        if line.len() == 20 {
+          found_justified = true;
+          break;
+        }
+      }
+    }
+    assert!(found_justified, "Should have at least one justified line");
   }
 }
