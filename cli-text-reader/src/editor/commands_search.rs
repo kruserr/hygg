@@ -129,6 +129,7 @@ impl Editor {
     }
   }
   // Find first match from current cursor position (for new searches)
+  #[allow(dead_code)]
   pub fn find_first_match(&mut self, forward: bool) {
     if self.editor_state.search_query.is_empty() {
       return;

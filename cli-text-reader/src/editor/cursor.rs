@@ -9,6 +9,7 @@ use super::core::{Editor, EditorMode, ViewMode};
 
 impl Editor {
   // Position and style the cursor based on editor mode
+  #[allow(dead_code)]
   pub fn position_cursor(
     &self,
     stdout: &mut io::Stdout,

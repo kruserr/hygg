@@ -226,10 +226,8 @@ impl Editor {
       if std::io::stdout().is_terminal() {
         self.debug_log("Waiting for keyboard event...");
         // Use longer timeout when idle to reduce CPU usage
-        let timeout = if self.needs_redraw {
-          std::time::Duration::from_millis(16) // ~60fps when animating
-        } else if self.tutorial_demo_mode {
-          std::time::Duration::from_millis(16) // Smooth 60fps for demo mode
+        let timeout = if self.needs_redraw || self.tutorial_demo_mode {
+          std::time::Duration::from_millis(16) // ~60fps when animating or in demo mode
         } else {
           std::time::Duration::from_millis(250) // Slower when idle
         };

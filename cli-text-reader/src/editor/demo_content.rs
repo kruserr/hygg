@@ -1,5 +1,6 @@
 // Demo content for marketing demonstration
 
+#[allow(dead_code)]
 pub fn get_demo_content() -> Vec<String> {
   vec![
         "# The Art of Reading in the Digital Age".to_string(),

@@ -158,6 +158,7 @@ impl Editor {
   }
 
   // Render a single line in a pane
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_line(
     &self,
     stdout: &mut io::Stdout,
@@ -281,6 +282,7 @@ impl Editor {
   }
 
   // Render line with search term highlighted
+  #[allow(dead_code)]
   fn render_line_with_search_highlight(
     &self,
     stdout: &mut io::Stdout,
@@ -452,6 +454,7 @@ impl Editor {
   }
 
   // Buffered version of render_pane_line
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_line_buffered(
     &self,
     buffer: &mut Vec<u8>,
@@ -581,6 +584,7 @@ impl Editor {
   }
 
   // Buffered version of render_line_with_search_highlight
+  #[allow(dead_code)]
   fn render_line_with_search_highlight_buffered(
     &self,
     buffer: &mut Vec<u8>,
@@ -604,6 +608,7 @@ impl Editor {
   }
 
   // Render combined highlights (selection + persistent) for a pane line
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_combined_highlights(
     &self,
     stdout: &mut io::Stdout,
@@ -758,6 +763,7 @@ impl Editor {
   }
 
   // Buffered version of render_pane_combined_highlights
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_combined_highlights_buffered(
     &self,
     buffer: &mut Vec<u8>,
@@ -906,6 +912,7 @@ impl Editor {
   }
 
   // Render persistent highlights for a pane line
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_persistent_highlights(
     &self,
     stdout: &mut io::Stdout,
@@ -1017,6 +1024,7 @@ impl Editor {
   }
 
   // Buffered version of render_pane_persistent_highlights
+  #[allow(clippy::too_many_arguments)]
   fn render_pane_persistent_highlights_buffered(
     &self,
     buffer: &mut Vec<u8>,

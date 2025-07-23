@@ -12,6 +12,7 @@ use std::io::Write;
 
 impl Editor {
   // Calculate the height needed for demo hint display
+  #[allow(dead_code)]
   pub fn calculate_demo_hint_height(&self) -> usize {
     match &self.demo_hint_text {
       Some(text) if !text.is_empty() => {
