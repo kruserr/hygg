@@ -5,37 +5,148 @@ impl Editor {
   pub fn create_overlay(&mut self, cmd: &str, lines: Vec<String>) {
     self.debug_log("=== create_overlay ===");
     self.debug_log(&format!("  Command: '{}', Lines: {}", cmd, lines.len()));
+    self.debug_log(&format!("  Current state: buffers={}, active={}, view_mode={:?}", 
+      self.buffers.len(), self.active_buffer, self.view_mode));
 
-    // Save current buffer state before switching
+    // Enhanced input validation with string content checking
+    let validated_lines = if lines.is_empty() {
+      self.debug_log("  WARNING: Empty lines provided to create_overlay, using placeholder");
+      vec!["No content available".to_string(), "Press :q to exit".to_string()]
+    } else {
+      // Validate each line to ensure it's properly formed
+      let mut validated = Vec::with_capacity(lines.len());
+      for (i, line) in lines.into_iter().enumerate() {
+        // Check if the string is valid UTF-8 and handle any issues
+        match line.chars().count() {
+          0 => {
+            // Empty line is OK
+            validated.push(line);
+          }
+          _ => {
+            // Non-empty line - ensure it's valid
+            if line.as_bytes().iter().all(|&b| b != 0) {
+              validated.push(line);
+            } else {
+              self.debug_log(&format!("  WARNING: Line {} contains null bytes, replacing", i));
+              validated.push("INVALID_LINE".to_string());
+            }
+          }
+        }
+      }
+      if validated.is_empty() {
+        self.debug_log("  WARNING: All lines were invalid, using placeholder");
+        vec!["No content available".to_string(), "Press :q to exit".to_string()]
+      } else {
+        validated
+      }
+    };
+
+    // Save current buffer state before ANY modifications
     if self.active_buffer < self.buffers.len() {
+      self.debug_log(&format!("  Saving state for buffer {} before overlay creation", self.active_buffer));
       self.save_current_buffer_state();
+    } else {
+      self.debug_log(&format!("  WARNING: Active buffer {} out of range, cannot save state", self.active_buffer));
+    }
+
+    // Ensure we have a main buffer (index 0)
+    if self.buffers.is_empty() {
+      self.debug_log("  ERROR: No main buffer exists, creating minimal buffer");
+      // Create a minimal main buffer to prevent crash
+      let minimal_buffer = BufferState::new(vec!["".to_string()]);
+      self.buffers.push(minimal_buffer);
+    }
+
+    // Validate main buffer exists and has content
+    if let Some(main_buffer) = self.buffers.get(0) {
+      if main_buffer.lines.is_empty() {
+        self.debug_log("  WARNING: Main buffer has no lines");
+      }
     }
 
     // Check if we have an overlay buffer (index 1)
     if self.buffers.len() > 1 {
       // Update existing overlay buffer
       self.debug_log("  Updating existing overlay buffer");
-      self.buffers[1].lines = lines;
-      self.buffers[1].command = Some(cmd.to_string());
-      self.buffers[1].offset = 0;
-      // Don't reset cursor position - let it remain where user positioned it
-      self.total_lines = self.buffers[1].lines.len();
+      
+      // Log details about the lines we're about to assign
+      self.debug_log(&format!("  About to update overlay buffer with {} lines", validated_lines.len()));
+      if !validated_lines.is_empty() {
+        self.debug_log(&format!("  First line preview: {:?}", 
+          validated_lines.first().map(|l| &l[..l.len().min(30)])));
+        self.debug_log(&format!("  Last line preview: {:?}", 
+          validated_lines.last().map(|l| &l[..l.len().min(30)])));
+      }
+      
+      if let Some(overlay_buffer) = self.buffers.get_mut(1) {
+        let prev_lines_count = overlay_buffer.lines.len();
+        
+        overlay_buffer.lines = validated_lines;
+        overlay_buffer.command = Some(cmd.to_string());
+        overlay_buffer.offset = 0;
+        
+        // Enhanced cursor bounds validation
+        let max_y = overlay_buffer.lines.len().saturating_sub(1);
+        let old_cursor_y = overlay_buffer.cursor_y;
+        if overlay_buffer.cursor_y > max_y {
+          overlay_buffer.cursor_y = max_y;
+        }
+        
+        // Validate cursor_x within line bounds
+        let cursor_y = overlay_buffer.cursor_y;
+        if let Some(line) = overlay_buffer.lines.get(cursor_y) {
+          let max_x = line.len();
+          let _old_cursor_x = overlay_buffer.cursor_x;
+          if overlay_buffer.cursor_x > max_x {
+            overlay_buffer.cursor_x = max_x;
+          }
+        }
+        
+        self.total_lines = overlay_buffer.lines.len();
+        
+        // Extract final cursor values for logging
+        let _final_cursor_x = overlay_buffer.cursor_x;
+        let final_cursor_y = overlay_buffer.cursor_y;
+        self.debug_log(&format!("  Updated overlay: prev_lines={}, new_lines={}", prev_lines_count, self.total_lines));
+        
+        // Log cursor adjustments if any
+        if old_cursor_y != final_cursor_y {
+          self.debug_log(&format!("  Adjusted cursor_y from {} to {}", old_cursor_y, final_cursor_y));
+        }
+      } else {
+        self.debug_log("  ERROR: Cannot access overlay buffer at index 1");
+        return;
+      }
     } else {
       // Create new overlay buffer
       self.debug_log("  Creating new overlay buffer");
-      let mut buffer = BufferState::new(lines);
+      let mut buffer = BufferState::new(validated_lines);
       buffer.command = Some(cmd.to_string());
-      buffer.viewport_height = self.height.saturating_sub(1);
+      buffer.viewport_height = self.height.saturating_sub(1).max(1);
       buffer.viewport_start = 0;
       buffer.overlay_level = 1;
+      
+      // Ensure cursor is within bounds for new buffer
+      buffer.cursor_y = 0;
+      buffer.cursor_x = 0;
+      
       self.buffers.push(buffer);
+      self.debug_log(&format!("  Created overlay buffer, total buffers now: {}", self.buffers.len()));
+    }
+
+    // Final validation before switching
+    if self.buffers.len() <= 1 {
+      self.debug_log("  ERROR: Failed to create/update overlay buffer");
+      return;
     }
 
     // Switch to overlay buffer
+    self.debug_log(&format!("  Switching from buffer {} to overlay buffer 1", self.active_buffer));
     self.active_buffer = 1;
     self.view_mode = ViewMode::Overlay;
 
-    // Load the overlay buffer's state
+    // Load the overlay buffer's state with validation
+    self.debug_log("  Loading overlay buffer state");
     self.load_buffer_state(1);
 
     // Reset to normal mode
@@ -44,7 +155,9 @@ impl Editor {
     self.editor_state.command_cursor_pos = 0;
 
     self.debug_log(&format!("  Now showing overlay with command: {cmd}"));
-    self.debug_log("=== create_or_update_overlay complete ===");
+    self.debug_log(&format!("  Final state: buffers={}, active={}, view_mode={:?}", 
+      self.buffers.len(), self.active_buffer, self.view_mode));
+    self.debug_log("=== create_overlay complete ===");
   }
 
   // Close overlay and return to main buffer
