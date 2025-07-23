@@ -133,31 +133,88 @@ impl Editor {
   // Handle :next/:continue command for tutorial
   pub fn handle_next_command(&mut self) -> Result<bool, Box<dyn std::error::Error>> {
     if self.tutorial_active {
+      self.debug_log(&format!("handle_next_command: tutorial_step={}, buffers={}, step_completed={}", 
+        self.tutorial_step, self.buffers.len(), self.tutorial_step_completed));
+      
+      // Enhanced buffer validation with detailed logging
+      if self.buffers.is_empty() {
+        self.debug_log("ERROR: No buffers available during tutorial next command");
+        self.complete_tutorial_interactive();
+        return Ok(false);
+      }
+      
+      // Validate we have at least 2 buffers (main + overlay) for tutorial
+      if self.buffers.len() < 2 {
+        self.debug_log(&format!("WARNING: Only {} buffers, expected at least 2 for tutorial", self.buffers.len()));
+      }
+      
+      // Log buffer states for debugging
+      for (i, buffer) in self.buffers.iter().enumerate() {
+        self.debug_log(&format!("  Buffer {}: lines={}, command={:?}, overlay_level={}", 
+          i, buffer.lines.len(), buffer.command, buffer.overlay_level));
+      }
+      
       let steps = crate::interactive_tutorial::get_interactive_tutorial_steps();
       
-      // Special handling for specific steps
+      // Validate tutorial step is within bounds
+      if self.tutorial_step >= steps.len() {
+        self.debug_log(&format!("ERROR: Tutorial step {} out of bounds (max: {})", self.tutorial_step, steps.len() - 1));
+        self.complete_tutorial_interactive();
+        return Ok(false);
+      }
+      
+      // Special handling for specific steps with enhanced logging
       let is_welcome = self.tutorial_step == 0;
       let is_congratulations = self.tutorial_step == steps.len() - 2; // Step before credits
       let is_credits = self.tutorial_step == steps.len() - 1;
       
+      self.debug_log(&format!("  Step type: welcome={}, congratulations={}, credits={}", 
+        is_welcome, is_congratulations, is_credits));
+      
+      // Special handling for step 3 (Text Objects - Paragraph Selection)
+      if self.tutorial_step == 3 {
+        self.debug_log("  Special handling for step 3 - ensuring state is saved");
+        // Force save state before advancing from step 3
+        self.save_current_buffer_state();
+      }
+      
       if is_credits {
         // From credits screen, complete tutorial
+        self.debug_log("  Completing tutorial from credits screen");
         self.complete_tutorial_interactive();
       } else if is_welcome || is_congratulations || self.tutorial_step_completed {
         // Allow advancement from welcome, congratulations (always), or any completed step
+        self.debug_log(&format!("  Advancing tutorial (welcome: {}, congrats: {}, completed: {})", 
+          is_welcome, is_congratulations, self.tutorial_step_completed));
+        
+        // Extra validation before advancing
+        if self.active_buffer >= self.buffers.len() {
+          self.debug_log(&format!("WARNING: Active buffer {} out of range, resetting", self.active_buffer));
+          self.active_buffer = self.buffers.len().saturating_sub(1);
+        }
+        
         self.advance_tutorial();
       } else {
         // Step not completed yet
-        self.debug_log("Tutorial step not completed yet");
+        self.debug_log("  Tutorial step not completed yet, cannot advance");
       }
+    } else {
+      self.debug_log("  Not in tutorial mode, ignoring :next command");
     }
+    
+    // Clear command state consistently
     self.set_active_mode(EditorMode::Normal);
     self.editor_state.command_buffer.clear();
     self.editor_state.command_cursor_pos = 0;
-    if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
-      buffer.command_buffer.clear();
-      buffer.command_cursor_pos = 0;
+    
+    // Clear command buffer in active buffer if it exists
+    if self.active_buffer < self.buffers.len() {
+      if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
+        buffer.command_buffer.clear();
+        buffer.command_cursor_pos = 0;
+      }
     }
+    
     Ok(false)
   }
 
