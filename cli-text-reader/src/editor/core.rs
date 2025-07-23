@@ -1,21 +1,31 @@
-pub use crate::core_types::{SplitPosition, BufferState, ViewMode, EditorMode, EditorState};
 pub use crate::core_state::Editor;
+pub use crate::core_types::{
+  BufferState, EditorMode, EditorState, SplitPosition, ViewMode,
+};
 
-use arboard::Clipboard;
-use crossterm::terminal;
 use crate::highlights::HighlightData;
 use crate::progress::generate_hash;
+use arboard::Clipboard;
+use crossterm::terminal;
 
 impl Editor {
   pub fn new(lines: Vec<String>, col: usize) -> Self {
     Self::new_internal(lines, col, None)
   }
 
-  pub fn new_with_content(lines: Vec<String>, col: usize, raw_content: String) -> Self {
+  pub fn new_with_content(
+    lines: Vec<String>,
+    col: usize,
+    raw_content: String,
+  ) -> Self {
     Self::new_internal(lines, col, Some(raw_content))
   }
 
-  fn new_internal(lines: Vec<String>, col: usize, raw_content: Option<String>) -> Self {
+  fn new_internal(
+    lines: Vec<String>,
+    col: usize,
+    raw_content: Option<String>,
+  ) -> Self {
     crate::debug::debug_log("editor", "Creating new Editor instance");
 
     // Generate hash from raw content if provided, otherwise from lines
@@ -26,7 +36,7 @@ impl Editor {
       crate::debug::debug_log("editor", "Generating hash from justified lines");
       generate_hash(&lines)
     };
-    
+
     let total_lines = lines.len();
     let (width, height) = terminal::size()
       .map(|(w, h)| (w as usize, h as usize))

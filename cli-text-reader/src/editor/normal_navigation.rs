@@ -1,5 +1,5 @@
-use crossterm::event;
 use super::core::Editor;
+use crossterm::event;
 
 impl Editor {
   // Handle navigation-related key events in normal mode
@@ -23,7 +23,9 @@ impl Editor {
     }
 
     // Try page movement keys
-    if let Ok(Some(result)) = self.handle_page_movement_keys(key_event.code, key_event.modifiers) {
+    if let Ok(Some(result)) =
+      self.handle_page_movement_keys(key_event.code, key_event.modifiers)
+    {
       return Ok(Some(result));
     }
 

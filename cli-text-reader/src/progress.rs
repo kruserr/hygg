@@ -10,7 +10,8 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize)]
 pub struct Progress {
   pub document_hash: u64,
-  pub offset: usize, // This stores the actual line number (not viewport offset)
+  pub offset: usize, /* This stores the actual line number (not viewport
+                      * offset) */
   pub total_lines: usize,
   pub percentage: f64,
   #[serde(default)]
@@ -102,15 +103,14 @@ pub fn load_progress(
     } = event;
 
     if hash == document_hash {
-      latest_progress =
-        Some(Progress { 
-          document_hash: hash, 
-          offset, 
-          total_lines, 
-          percentage,
-          viewport_offset,
-          cursor_y,
-        });
+      latest_progress = Some(Progress {
+        document_hash: hash,
+        offset,
+        total_lines,
+        percentage,
+        viewport_offset,
+        cursor_y,
+      });
     }
   }
 

@@ -1,5 +1,5 @@
-use crossterm::event;
 use super::core::Editor;
+use crossterm::event;
 
 impl Editor {
   // Handle key events in visual mode (char and line)
@@ -8,12 +8,16 @@ impl Editor {
     key_event: event::KeyEvent,
   ) -> Result<bool, Box<dyn std::error::Error>> {
     // Try visual control keys first
-    if let Ok(Some(_)) = self.handle_visual_control_keys(key_event.code, key_event.modifiers) {
+    if let Ok(Some(_)) =
+      self.handle_visual_control_keys(key_event.code, key_event.modifiers)
+    {
       return Ok(false);
     }
 
     // Try movement keys
-    if let Ok(Some(_)) = self.handle_visual_movement_keys(key_event.code, key_event.modifiers) {
+    if let Ok(Some(_)) =
+      self.handle_visual_movement_keys(key_event.code, key_event.modifiers)
+    {
       return Ok(false);
     }
 

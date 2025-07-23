@@ -1,10 +1,14 @@
-use crossterm::style::{Color, SetForegroundColor, SetAttribute, Attribute, ResetColor};
-use crate::interactive_tutorial_buffer::{InteractiveTutorialStep, TutorialSuccessCondition};
+use crate::interactive_tutorial_buffer::{
+  InteractiveTutorialStep, TutorialSuccessCondition,
+};
 use crate::interactive_tutorial_utils::fetch_github_stars;
+use crossterm::style::{
+  Attribute, Color, ResetColor, SetAttribute, SetForegroundColor,
+};
 
 pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
   let stars_text = fetch_github_stars();
-  
+
   vec![
     InteractiveTutorialStep {
       title: "hygg - simplifying the way you read".to_string(),
@@ -18,13 +22,21 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "• 🛠️ Extensible workflows - execute commands from text".to_string(),
         "• 🔒 Privacy-first - your documents stay on your machine".to_string(),
         "".to_string(),
-        format!("{}github.com/kruserr/hygg{} | {}", 
-          SetForegroundColor(Color::Blue), ResetColor, stars_text),
+        format!(
+          "{}github.com/kruserr/hygg{} | {}",
+          SetForegroundColor(Color::Blue),
+          ResetColor,
+          stars_text
+        ),
         "".to_string(),
-        "This interactive tutorial will teach you everything in ~5 minutes.".to_string(),
+        "This interactive tutorial will teach you everything in ~5 minutes."
+          .to_string(),
         "".to_string(),
-        format!("{}Don't want the tutorial? Type :notutorial to disable it permanently.{}", 
-          SetForegroundColor(Color::Yellow), ResetColor),
+        format!(
+          "{}Don't want the tutorial? Type :notutorial to disable it permanently.{}",
+          SetForegroundColor(Color::Yellow),
+          ResetColor
+        ),
         "".to_string(),
         "→ Type :next to begin your journey...".to_string(),
       ],
@@ -39,7 +51,8 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "The area below is interactive - you can practice here!".to_string(),
         "".to_string(),
         "Movement keys:".to_string(),
-        "  • h/← = left    • j/↓ = down    • k/↑ = up    • l/→ = right".to_string(),
+        "  • h/← = left    • j/↓ = down    • k/↑ = up    • l/→ = right"
+          .to_string(),
         "".to_string(),
         "Advanced movement:".to_string(),
         "  • w/b = forward/backward by word".to_string(),
@@ -146,7 +159,8 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "• 'a = jump to bookmark 'a'".to_string(),
         "• '' = return to previous position".to_string(),
         "".to_string(),
-        "→ Set bookmark 'a' with 'ma', move away, then jump back with 'a...".to_string(),
+        "→ Set bookmark 'a' with 'ma', move away, then jump back with 'a..."
+          .to_string(),
       ],
       practice_text: vec![
         "Set a bookmark on this line with 'ma'.".to_string(),
@@ -195,7 +209,9 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "".to_string(),
         "This powerful workflow lets you chain commands!".to_string(),
       ],
-      success_check: TutorialSuccessCondition::CommandExecutedYankedAndPasted("!echo".to_string()),
+      success_check: TutorialSuccessCondition::CommandExecutedYankedAndPasted(
+        "!echo".to_string(),
+      ),
     },
     InteractiveTutorialStep {
       title: "Congratulations! 🎉".to_string(),
@@ -209,10 +225,16 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
         "• ✓ Command execution".to_string(),
         "".to_string(),
         "Resources:".to_string(),
-        format!("• Type {}:help{} to see all available commands", 
-          SetForegroundColor(Color::Yellow), ResetColor),
-        format!("• Documentation: {}github.com/kruserr/hygg{}", 
-          SetForegroundColor(Color::Blue), ResetColor),
+        format!(
+          "• Type {}:help{} to see all available commands",
+          SetForegroundColor(Color::Yellow),
+          ResetColor
+        ),
+        format!(
+          "• Documentation: {}github.com/kruserr/hygg{}",
+          SetForegroundColor(Color::Blue),
+          ResetColor
+        ),
         "".to_string(),
       ],
       practice_text: vec![
@@ -238,18 +260,33 @@ pub fn get_interactive_tutorial_steps() -> Vec<InteractiveTutorialStep> {
     InteractiveTutorialStep {
       title: "Credits".to_string(),
       instructions: vec![
-        format!("{}About the Author{}", SetAttribute(Attribute::Bold), ResetColor),
+        format!(
+          "{}About the Author{}",
+          SetAttribute(Attribute::Bold),
+          ResetColor
+        ),
         "".to_string(),
         "hygg is created and maintained by Ragnar Kruse (kruserr),".to_string(),
         "a passionate open-source developer dedicated to building".to_string(),
         "high-quality tools that enhance productivity and make".to_string(),
         "computing more enjoyable.".to_string(),
         "".to_string(),
-        format!("{}Connect & Follow:{}", SetAttribute(Attribute::Bold), ResetColor),
-        format!("• GitHub: {}github.com/kruserr{}", 
-          SetForegroundColor(Color::Blue), ResetColor),
+        format!(
+          "{}Connect & Follow:{}",
+          SetAttribute(Attribute::Bold),
+          ResetColor
+        ),
+        format!(
+          "• GitHub: {}github.com/kruserr{}",
+          SetForegroundColor(Color::Blue),
+          ResetColor
+        ),
         "".to_string(),
-        format!("{}Support the Project:{}", SetAttribute(Attribute::Bold), ResetColor),
+        format!(
+          "{}Support the Project:{}",
+          SetAttribute(Attribute::Bold),
+          ResetColor
+        ),
         "If hygg has improved your reading experience, consider".to_string(),
         "supporting its continued development. Your contribution".to_string(),
         "helps maintain and improve hygg for everyone!".to_string(),

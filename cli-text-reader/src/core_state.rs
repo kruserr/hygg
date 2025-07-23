@@ -1,12 +1,12 @@
 use arboard::Clipboard;
+use crossterm::event::KeyEvent;
 use std::collections::HashMap;
 use std::time::Instant;
-use crossterm::event::KeyEvent;
 
-use crate::highlights::HighlightData;
-use crate::demo_script::DemoScript;
-use crate::interactive_tutorial_buffer::TutorialSuccessCondition;
 use super::core_types::{BufferState, EditorState, ViewMode};
+use crate::demo_script::DemoScript;
+use crate::highlights::HighlightData;
+use crate::interactive_tutorial_buffer::TutorialSuccessCondition;
 
 pub struct Editor {
   pub lines: Vec<String>,
@@ -21,20 +21,20 @@ pub struct Editor {
   #[allow(dead_code)]
   pub progress_display_until: Option<Instant>,
   pub show_progress: bool,
-  pub cursor_x: usize,              
-  pub cursor_y: usize,              
-  pub clipboard: Option<Clipboard>, 
-  pub buffers: Vec<BufferState>,    
-  pub active_buffer: usize,         
-  pub view_mode: ViewMode,          
-  pub show_cursor: bool,            
-  pub last_find_char: Option<char>, 
-  pub last_find_forward: bool,      
-  pub last_find_till: bool,         
-  pub marks: HashMap<char, (usize, usize)>, 
-  pub previous_position: Option<(usize, usize)>, 
-  pub number_prefix: String, 
-  pub highlights: HighlightData, 
+  pub cursor_x: usize,
+  pub cursor_y: usize,
+  pub clipboard: Option<Clipboard>,
+  pub buffers: Vec<BufferState>,
+  pub active_buffer: usize,
+  pub view_mode: ViewMode,
+  pub show_cursor: bool,
+  pub last_find_char: Option<char>,
+  pub last_find_forward: bool,
+  pub last_find_till: bool,
+  pub marks: HashMap<char, (usize, usize)>,
+  pub previous_position: Option<(usize, usize)>,
+  pub number_prefix: String,
+  pub highlights: HighlightData,
   // Split view management
   pub active_pane: usize, // 0 = top pane, 1 = bottom pane
   pub split_ratio: f32,   // Percentage for top pane (0.0-1.0)

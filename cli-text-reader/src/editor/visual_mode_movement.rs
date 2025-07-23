@@ -1,5 +1,5 @@
-use crossterm::event::{KeyCode, KeyModifiers};
 use super::core::Editor;
+use crossterm::event::{KeyCode, KeyModifiers};
 
 impl Editor {
   // Handle movement keys in visual mode with selection updates

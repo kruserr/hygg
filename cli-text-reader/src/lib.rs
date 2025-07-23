@@ -14,10 +14,10 @@ mod highlights;
 mod highlights_core;
 mod highlights_persistence;
 mod interactive_tutorial;
-mod interactive_tutorial_utils;
-mod interactive_tutorial_steps;
 mod interactive_tutorial_buffer;
+mod interactive_tutorial_steps;
 mod interactive_tutorial_tests;
+mod interactive_tutorial_utils;
 mod progress;
 mod tutorial;
 mod utils;
@@ -30,7 +30,6 @@ pub fn run_cli_text_reader(
 ) -> Result<(), Box<dyn std::error::Error>> {
   run_cli_text_reader_with_demo(lines, col, false)
 }
-
 
 pub fn run_cli_text_reader_with_demo(
   lines: Vec<String>,

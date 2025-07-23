@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event as CEvent, KeyCode};
 use super::core::Editor;
+use crossterm::event::{self, Event as CEvent, KeyCode};
 
 impl Editor {
   // Handle text object keys in visual mode (i/a prefix commands)

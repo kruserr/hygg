@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event as CEvent, KeyCode};
 use super::core::Editor;
+use crossterm::event::{self, Event as CEvent, KeyCode};
 
 impl Editor {
   // Handle character finding keys (f/F/t/T)
@@ -22,13 +22,13 @@ impl Editor {
             _ => return Ok(None),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, true, false) {
-            self.cursor_x = pos;
-            self.last_find_char = Some(c);
-            self.last_find_forward = true;
-            self.last_find_till = false;
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, true, false)
+        {
+          self.cursor_x = pos;
+          self.last_find_char = Some(c);
+          self.last_find_forward = true;
+          self.last_find_till = false;
         }
         Ok(Some(false))
       }
@@ -46,13 +46,13 @@ impl Editor {
             _ => return Ok(None),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, false, false) {
-            self.cursor_x = pos;
-            self.last_find_char = Some(c);
-            self.last_find_forward = false;
-            self.last_find_till = false;
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, false, false)
+        {
+          self.cursor_x = pos;
+          self.last_find_char = Some(c);
+          self.last_find_forward = false;
+          self.last_find_till = false;
         }
         Ok(Some(false))
       }
@@ -70,13 +70,13 @@ impl Editor {
             _ => return Ok(None),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, true, true) {
-              self.cursor_x = pos;
-              self.last_find_char = Some(c);
-              self.last_find_forward = true;
-              self.last_find_till = true;
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, true, true)
+        {
+          self.cursor_x = pos;
+          self.last_find_char = Some(c);
+          self.last_find_forward = true;
+          self.last_find_till = true;
         }
         Ok(Some(false))
       }
@@ -94,13 +94,13 @@ impl Editor {
             _ => return Ok(None),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, false, true) {
-            self.cursor_x = pos;
-            self.last_find_char = Some(c);
-            self.last_find_forward = false;
-            self.last_find_till = true;
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, false, true)
+        {
+          self.cursor_x = pos;
+          self.last_find_char = Some(c);
+          self.last_find_forward = false;
+          self.last_find_till = true;
         }
         Ok(Some(false))
       }

@@ -1,5 +1,5 @@
 use crossterm::{
-  execute, QueueableCommand,
+  QueueableCommand, execute,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
 };
 use std::io::{Result as IoResult, Write};
@@ -222,7 +222,9 @@ impl Editor {
     if last_end < line.len() {
       write!(buffer, "{}", &line[last_end..])?;
     }
-    buffer.queue(crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine))?;
+    buffer.queue(crossterm::terminal::Clear(
+      crossterm::terminal::ClearType::UntilNewLine,
+    ))?;
 
     Ok(true)
   }
@@ -233,16 +235,24 @@ impl Editor {
   }
 
   // Check if a line has persistent highlights with custom offset
-  pub fn has_persistent_highlights_on_line_with_offset(&self, line_index: usize, offset: usize) -> bool {
-    self.has_persistent_highlights_on_line_with_offset_and_lines(line_index, offset, &self.lines)
+  pub fn has_persistent_highlights_on_line_with_offset(
+    &self,
+    line_index: usize,
+    offset: usize,
+  ) -> bool {
+    self.has_persistent_highlights_on_line_with_offset_and_lines(
+      line_index,
+      offset,
+      &self.lines,
+    )
   }
 
   // Check if a line has persistent highlights with custom offset and lines
   pub fn has_persistent_highlights_on_line_with_offset_and_lines(
-    &self, 
-    line_index: usize, 
+    &self,
+    line_index: usize,
     offset: usize,
-    lines: &[String]
+    lines: &[String],
   ) -> bool {
     let current_line_idx = offset + line_index;
 
@@ -261,10 +271,9 @@ impl Editor {
     };
 
     // Check if any highlights overlap with this line
-    let highlights_in_range = self
-      .highlights
-      .get_highlights_for_range(abs_line_start, abs_line_end);
-    
+    let highlights_in_range =
+      self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+
     !highlights_in_range.is_empty()
   }
 
@@ -540,7 +549,9 @@ impl Editor {
     if last_end < line.len() {
       write!(buffer, "{}", &line[last_end..])?;
     }
-    buffer.queue(crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine))?;
+    buffer.queue(crossterm::terminal::Clear(
+      crossterm::terminal::ClearType::UntilNewLine,
+    ))?;
 
     Ok(true)
   }

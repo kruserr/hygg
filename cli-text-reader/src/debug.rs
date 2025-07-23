@@ -60,13 +60,13 @@ pub fn debug_log(module: &str, message: &str) {
     eprintln!("{log_line}");
 
     // Write to file
-    if let Ok(mut debug_file) = DEBUG_FILE.lock() {
-      if let Some(ref mut file) = *debug_file {
-        if let Err(e) = writeln!(file, "{log_line}") {
-          eprintln!("Failed to write to debug log: {e}");
-        } else {
-          let _ = file.flush(); // Ensure immediate write
-        }
+    if let Ok(mut debug_file) = DEBUG_FILE.lock()
+      && let Some(ref mut file) = *debug_file
+    {
+      if let Err(e) = writeln!(file, "{log_line}") {
+        eprintln!("Failed to write to debug log: {e}");
+      } else {
+        let _ = file.flush(); // Ensure immediate write
       }
     }
   }
@@ -85,9 +85,9 @@ pub fn debug_log_error(module: &str, error: &str) {
 }
 
 pub fn flush_debug_log() {
-  if let Ok(mut debug_file) = DEBUG_FILE.lock() {
-    if let Some(ref mut file) = *debug_file {
-      let _ = file.flush();
-    }
+  if let Ok(mut debug_file) = DEBUG_FILE.lock()
+    && let Some(ref mut file) = *debug_file
+  {
+    let _ = file.flush();
   }
 }

@@ -28,4 +28,4 @@ redirect-stderr = { version = "0.1", path = "../redirect-stderr" }
 uuid = { version = "1", features = ["v4"] }
 atty = "0.2"
 
-clap = { version = "4.0", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }

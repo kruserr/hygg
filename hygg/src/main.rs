@@ -94,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
           Some(buffer)
         }
       }
-      Err(_) => None
+      Err(_) => None,
     }
   };
 
@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     use cli_text_reader::demo_registry::list_all_demos;
     println!("Available demos:");
     for (id, name, description) in list_all_demos() {
-      println!("  {} - {} : {}", id, name, description);
+      println!("  {id} - {name} : {description}");
     }
     return Ok(());
   }
@@ -133,7 +133,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     use cli_text_reader::demo_components::list_all_components;
     println!("Available demo components:");
     for component in list_all_components() {
-      println!("  {} - {} : {}", component.id, component.name, component.description);
+      println!(
+        "  {} - {} : {}",
+        component.id, component.name, component.description
+      );
     }
     return Ok(());
   }
@@ -142,15 +145,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   if let Some(component_list) = args.demo_compose {
     // For custom composed demos, we'll use the existing demo infrastructure
     // Since we can't dynamically register demos, we'll print a message
-    println!("Demo composition from command line is not yet fully implemented.");
-    println!("Components requested: {}", component_list);
+    println!(
+      "Demo composition from command line is not yet fully implemented."
+    );
+    println!("Components requested: {component_list}");
     println!("Please use predefined demos with --demo <ID>");
     return Ok(());
   }
 
   // Handle specific demo ID
   if let Some(demo_id) = args.demo {
-    cli_text_reader::run_cli_text_reader_with_demo_id(vec![], args.col, demo_id)?;
+    cli_text_reader::run_cli_text_reader_with_demo_id(
+      vec![],
+      args.col,
+      demo_id,
+    )?;
     return Ok(());
   }
 
@@ -186,36 +195,41 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     (lines, None, Some(content))
   } else if let Some(file) = file {
     let temp_file = format!("{file}-{}", uuid::Uuid::new_v4());
-    
+
     let content = if (args.ocr && which("ocrmypdf").is_some()) {
-    // Validate file path to prevent command injection
-    if let Err(e) = validate_file_path(&file) {
-      eprintln!("Error: Invalid file path: {e}");
-      std::process::exit(1);
-    }
+      // Validate file path to prevent command injection
+      if let Err(e) = validate_file_path(&file) {
+        eprintln!("Error: Invalid file path: {e}");
+        std::process::exit(1);
+      }
 
-    // Additional validation for temp file path
-    if temp_file.contains("..") || temp_file.contains(";") || temp_file.contains("|") || temp_file.contains("&") {
-      eprintln!("Error: Invalid temporary file path");
-      std::process::exit(1);
-    }
+      // Additional validation for temp file path
+      if temp_file.contains("..")
+        || temp_file.contains(";")
+        || temp_file.contains("|")
+        || temp_file.contains("&")
+      {
+        eprintln!("Error: Invalid temporary file path");
+        std::process::exit(1);
+      }
 
-    // Use Command with explicit arguments to prevent shell injection
-    let mut cmd = std::process::Command::new("ocrmypdf");
-    cmd.arg("--force-ocr")
-      .arg("--")  // End of options marker
-      .arg(&file)
-      .arg(&temp_file)
-      .stdin(std::process::Stdio::null())
-      .stdout(std::process::Stdio::piped())
-      .stderr(std::process::Stdio::piped());
+      // Use Command with explicit arguments to prevent shell injection
+      let mut cmd = std::process::Command::new("ocrmypdf");
+      cmd
+        .arg("--force-ocr")
+        .arg("--") // End of options marker
+        .arg(&file)
+        .arg(&temp_file)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
+      let output = cmd.output().map_err(|e| e.to_string())?;
 
-    if !output.status.success() {
-      eprintln!("OCR processing failed");
-      std::process::exit(1);
-    }
+      if !output.status.success() {
+        eprintln!("OCR processing failed");
+        std::process::exit(1);
+      }
 
       cli_pdf_to_text::pdf_to_text(&temp_file)?
     } else {
@@ -224,40 +238,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| ext.to_lowercase());
-      
+
       match extension.as_deref() {
-        Some("epub") => {
-          match cli_epub_to_text::epub_to_text(&file) {
-            Ok(content) => content,
-            Err(e) => {
-              eprintln!("Error:\nUnable to read EPUB file '{file}'\n");
-              eprintln!("Details:\n{e}\n");
-              std::process::exit(1);
-            }
+        Some("epub") => match cli_epub_to_text::epub_to_text(&file) {
+          Ok(content) => content,
+          Err(e) => {
+            eprintln!("Error:\nUnable to read EPUB file '{file}'\n");
+            eprintln!("Details:\n{e}\n");
+            std::process::exit(1);
           }
         },
-        Some("pdf") => {
-          match cli_pdf_to_text::pdf_to_text(&file) {
-            Ok(content) => content,
-            Err(e) => {
-              eprintln!("Error:\nUnable to read PDF file '{file}'\n");
-              eprintln!("Details:\n{e}\n");
-              std::process::exit(1);
-            }
+        Some("pdf") => match cli_pdf_to_text::pdf_to_text(&file) {
+          Ok(content) => content,
+          Err(e) => {
+            eprintln!("Error:\nUnable to read PDF file '{file}'\n");
+            eprintln!("Details:\n{e}\n");
+            std::process::exit(1);
           }
         },
         _ => {
-          // For other formats, try pandoc first, then fall back to other converters
+          // For other formats, try pandoc first, then fall back to other
+          // converters
           match pandoc_to_text(&file)
             .or_else(|_| cli_epub_to_text::epub_to_text(&file))
-            .or_else(|_| cli_pdf_to_text::pdf_to_text(&file)) {
+            .or_else(|_| cli_pdf_to_text::pdf_to_text(&file))
+          {
             Ok(content) => content,
             Err(e) => {
               eprintln!("Error:\nUnable to read file '{file}'\n");
               eprintln!("Details:\n{e}\n");
-              
+
               if which("pandoc").is_none() {
-                eprintln!("pandoc not installed!\nFor additional formats, install pandoc:\nsudo apt install pandoc");
+                eprintln!(
+                  "pandoc not installed!\nFor additional formats, install pandoc:\nsudo apt install pandoc"
+                );
               }
               std::process::exit(1);
             }
@@ -271,10 +285,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Check if we have any content to display
     if lines.is_empty() || (lines.len() == 1 && lines[0].trim().is_empty()) {
       eprintln!("Error: No readable content found in file '{file}'");
-      eprintln!("The file may be empty, corrupted, or in an unsupported format.");
+      eprintln!(
+        "The file may be empty, corrupted, or in an unsupported format."
+      );
       std::process::exit(1);
     }
-    
+
     (lines, Some(temp_file), Some(content))
   } else {
     // No file provided - start with empty content
@@ -290,15 +306,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   // Pass raw content for consistent hashing across different column widths
   if let Some(content) = raw_content {
-    cli_text_reader::run_cli_text_reader_with_content(lines, args.col, Some(content), false)?;
+    cli_text_reader::run_cli_text_reader_with_content(
+      lines,
+      args.col,
+      Some(content),
+      false,
+    )?;
   } else {
     cli_text_reader::run_cli_text_reader(lines, args.col)?;
   }
 
   if let Some(temp_file) = temp_file
-    && std::path::Path::new(&temp_file).exists() {
-      std::fs::remove_file(&temp_file)?;
-    }
+    && std::path::Path::new(&temp_file).exists()
+  {
+    std::fs::remove_file(&temp_file)?;
+  }
 
   Ok(())
 }
@@ -337,10 +359,14 @@ fn validate_file_path(file_path: &str) -> Result<(), String> {
 }
 
 // Convert document to text using pandoc
-fn pandoc_to_text(file_path: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn pandoc_to_text(
+  file_path: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
   // Check if pandoc is available
   if which("pandoc").is_none() {
-    return Err("pandoc not found. Install with: sudo apt install pandoc".into());
+    return Err(
+      "pandoc not found. Install with: sudo apt install pandoc".into(),
+    );
   }
 
   // Validate file path
@@ -348,7 +374,8 @@ fn pandoc_to_text(file_path: &str) -> Result<String, Box<dyn std::error::Error>>
 
   // Run pandoc with plain text output
   let mut cmd = std::process::Command::new("pandoc");
-  cmd.arg("--to=plain")
+  cmd
+    .arg("--to=plain")
     .arg("--wrap=none")
     .arg("--")
     .arg(file_path)
@@ -360,7 +387,7 @@ fn pandoc_to_text(file_path: &str) -> Result<String, Box<dyn std::error::Error>>
 
   if !output.status.success() {
     let stderr = String::from_utf8_lossy(&output.stderr);
-    return Err(format!("pandoc failed: {}", stderr).into());
+    return Err(format!("pandoc failed: {stderr}").into());
   }
 
   Ok(String::from_utf8(output.stdout)?)

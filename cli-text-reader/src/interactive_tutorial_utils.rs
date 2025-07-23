@@ -12,26 +12,27 @@ pub fn fetch_github_stars() -> String {
     if let Some(ref stars) = *cache {
       return stars.clone();
     }
-    
+
     // Fetch stars if not cached
-    let stars_text = match ureq::get("https://api.github.com/repos/kruserr/hygg")
-      .timeout(std::time::Duration::from_secs(2))
-      .call()
-    {
-      Ok(response) => {
-        if let Ok(json) = response.into_json::<Value>() {
-          if let Some(stars) = json["stargazers_count"].as_u64() {
-            format!("⭐ {stars} stars")
+    let stars_text =
+      match ureq::get("https://api.github.com/repos/kruserr/hygg")
+        .timeout(std::time::Duration::from_secs(2))
+        .call()
+      {
+        Ok(response) => {
+          if let Ok(json) = response.into_json::<Value>() {
+            if let Some(stars) = json["stargazers_count"].as_u64() {
+              format!("⭐ {stars} stars")
+            } else {
+              "⭐ stars".to_string()
+            }
           } else {
             "⭐ stars".to_string()
           }
-        } else {
-          "⭐ stars".to_string()
         }
-      }
-      Err(_) => "⭐ stars".to_string()
-    };
-    
+        Err(_) => "⭐ stars".to_string(),
+      };
+
     // Cache the result
     *cache = Some(stars_text.clone());
     stars_text

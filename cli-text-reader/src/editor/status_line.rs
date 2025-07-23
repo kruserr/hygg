@@ -1,4 +1,4 @@
-use crossterm::{cursor::MoveTo, execute, QueueableCommand};
+use crossterm::{QueueableCommand, cursor::MoveTo, execute};
 use std::io::{self, Write};
 
 use super::core::{Editor, EditorMode};
@@ -15,9 +15,10 @@ impl Editor {
     // Position info is now always hidden per user request
 
     // Show progress indicator if enabled, in normal view mode, and not in demo
-    if self.show_progress 
-      && self.view_mode == super::core::ViewMode::Normal 
-      && !self.tutorial_demo_mode {
+    if self.show_progress
+      && self.view_mode == super::core::ViewMode::Normal
+      && !self.tutorial_demo_mode
+    {
       self.draw_progress_indicator(stdout)?;
     }
 
@@ -26,9 +27,10 @@ impl Editor {
 
   // Draw mode indicator in the status line
   fn draw_mode_indicator(&mut self, stdout: &mut io::Stdout) -> io::Result<()> {
-    // Always use the active buffer's mode - this ensures command line is shown properly
+    // Always use the active buffer's mode - this ensures command line is shown
+    // properly
     let effective_mode = self.get_active_mode();
-    
+
     match effective_mode {
       EditorMode::Command => {
         execute!(stdout, MoveTo(0, (self.height - 1) as u16))?;
@@ -157,15 +159,19 @@ impl Editor {
 
   // Draw progress indicator in the status line area
   fn draw_progress_indicator(&self, stdout: &mut io::Stdout) -> io::Result<()> {
-    // Calculate actual position in document (offset + cursor position + 1 for 1-based indexing)
-    let current_position = (self.offset + self.cursor_y + 1).min(self.total_lines);
+    // Calculate actual position in document (offset + cursor position + 1 for
+    // 1-based indexing)
+    let current_position =
+      (self.offset + self.cursor_y + 1).min(self.total_lines);
     let progress = if self.total_lines > 0 {
-      (current_position as f64 / self.total_lines as f64 * 100.0).round().min(100.0)
+      (current_position as f64 / self.total_lines as f64 * 100.0)
+        .round()
+        .min(100.0)
     } else {
       100.0 // Empty document is 100% read
     };
     let message = format!("{progress}%");
-    
+
     self.debug_log(&format!(
       "Drawing progress indicator: {} (view_mode: {:?}, demo: {})",
       message, self.view_mode, self.tutorial_demo_mode
@@ -191,9 +197,10 @@ impl Editor {
     self.draw_mode_indicator_buffered(buffer)?;
 
     // Show progress indicator if enabled, in normal view mode, and not in demo
-    if self.show_progress 
-      && self.view_mode == super::core::ViewMode::Normal 
-      && !self.tutorial_demo_mode {
+    if self.show_progress
+      && self.view_mode == super::core::ViewMode::Normal
+      && !self.tutorial_demo_mode
+    {
       self.draw_progress_indicator_buffered(buffer)?;
     }
 
@@ -201,11 +208,14 @@ impl Editor {
   }
 
   // Buffered version of draw_mode_indicator
-  fn draw_mode_indicator_buffered(&mut self, buffer: &mut Vec<u8>) -> io::Result<()> {
+  fn draw_mode_indicator_buffered(
+    &mut self,
+    buffer: &mut Vec<u8>,
+  ) -> io::Result<()> {
     let effective_mode = self.get_active_mode();
-    
+
     buffer.queue(MoveTo(0, (self.height - 1) as u16))?;
-    
+
     match effective_mode {
       EditorMode::Command => {
         write!(buffer, ":{}", self.get_active_command_buffer())?;
@@ -232,26 +242,33 @@ impl Editor {
         // Normal mode - just clear the line
       }
     }
-    
+
     // Clear to end of line after any text
     buffer.queue(crossterm::terminal::Clear(
-      crossterm::terminal::ClearType::UntilNewLine
+      crossterm::terminal::ClearType::UntilNewLine,
     ))?;
-    
+
     Ok(())
   }
 
   // Buffered version of draw_progress_indicator
-  fn draw_progress_indicator_buffered(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
-    // Calculate actual position in document (offset + cursor position + 1 for 1-based indexing)
-    let current_position = (self.offset + self.cursor_y + 1).min(self.total_lines);
+  fn draw_progress_indicator_buffered(
+    &self,
+    buffer: &mut Vec<u8>,
+  ) -> io::Result<()> {
+    // Calculate actual position in document (offset + cursor position + 1 for
+    // 1-based indexing)
+    let current_position =
+      (self.offset + self.cursor_y + 1).min(self.total_lines);
     let progress = if self.total_lines > 0 {
-      (current_position as f64 / self.total_lines as f64 * 100.0).round().min(100.0)
+      (current_position as f64 / self.total_lines as f64 * 100.0)
+        .round()
+        .min(100.0)
     } else {
       100.0 // Empty document is 100% read
     };
     let message = format!("{progress}%");
-    
+
     self.debug_log(&format!(
       "Drawing progress indicator: {} (view_mode: {:?}, demo: {})",
       message, self.view_mode, self.tutorial_demo_mode
@@ -261,7 +278,7 @@ impl Editor {
     buffer.queue(MoveTo(x, y))?;
     write!(buffer, "{message}")?;
     buffer.queue(crossterm::terminal::Clear(
-      crossterm::terminal::ClearType::UntilNewLine
+      crossterm::terminal::ClearType::UntilNewLine,
     ))?;
 
     Ok(())

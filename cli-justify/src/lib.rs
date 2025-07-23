@@ -34,14 +34,15 @@ pub fn justify(text: &str, line_width: usize) -> Vec<String> {
       let word_len = word.len();
       let space_len = if line.is_empty() { 0 } else { 1 };
       let new_len = len + space_len + word_len;
-      
-      // If adding this word would exceed the line width and we have words on the line
+
+      // If adding this word would exceed the line width and we have words on
+      // the line
       if new_len > line_width && !line.is_empty() {
         lines.push(justify_line(&line, line_width));
         line.clear();
         len = 0;
       }
-      
+
       line.push(word);
       len = if line.len() == 1 { word_len } else { len + space_len + word_len };
     }
@@ -60,13 +61,13 @@ pub fn justify(text: &str, line_width: usize) -> Vec<String> {
 
 fn justify_line(line: &[&str], line_width: usize) -> String {
   let word_len: usize = line.iter().map(|s| s.len()).sum();
-  
+
   // If the words are already longer than or equal to line width,
   // or if there's only one word, just join them with single spaces
   if word_len >= line_width || line.len() <= 1 {
     return line.join(" ");
   }
-  
+
   let spaces = line_width - word_len;
 
   let line_len_div = if (line.len() > 1) { (line.len() - 1) } else { 1 };
@@ -103,7 +104,8 @@ mod tests {
 
   #[test]
   fn test_handles_line_longer_than_width() {
-    let input_text = "This is a line that is definitely longer than the requested width";
+    let input_text =
+      "This is a line that is definitely longer than the requested width";
     let result = justify(input_text, 20);
     assert!(!result.is_empty());
     // Should not panic
@@ -124,11 +126,12 @@ mod tests {
     let input_text = "This is a test of the justification system. It should properly justify lines that need to be wrapped.";
     let result = justify(input_text, 20);
     assert!(!result.is_empty());
-    
+
     // Find a line that was justified (not the last line)
     let mut found_justified = false;
     for (i, line) in result.iter().enumerate() {
-      if !line.is_empty() && i < result.len() - 2 { // Not the last line or blank line
+      if !line.is_empty() && i < result.len() - 2 {
+        // Not the last line or blank line
         if line.len() == 20 {
           found_justified = true;
           break;

@@ -1,6 +1,7 @@
 use crossterm::{
+  QueueableCommand,
   cursor::MoveTo,
-  execute, QueueableCommand,
+  execute,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
 };
 use std::io::{Result as IoResult, Write};
@@ -20,7 +21,7 @@ impl Editor {
         "Highlighting line {} with width {} (view_mode: {:?})",
         line_index, term_width, self.view_mode
       ));
-      
+
       // First, draw the background for the entire line
       execute!(
         stdout,
@@ -40,7 +41,6 @@ impl Editor {
     }
   }
 
-
   // Highlight search matches
   pub fn highlight_search_match(
     &self,
@@ -55,33 +55,31 @@ impl Editor {
     } else {
       self.editor_state.current_match
     };
-    
-    if let Some((line_idx, start, end)) = match_to_highlight {
-      if line_idx == self.offset + line_index {
-        write!(stdout, "{center_offset_string}")?;
-        write!(stdout, "{}", &line[..start])?;
-        execute!(
-          stdout,
-          SetBackgroundColor(Color::Yellow),
-          SetForegroundColor(Color::Black)
-        )?;
-        write!(stdout, "{}", &line[start..end])?;
-        execute!(stdout, ResetColor)?;
-        write!(stdout, "{}", &line[end..])?;
-        execute!(
-          stdout,
-          crossterm::terminal::Clear(
-            crossterm::terminal::ClearType::UntilNewLine
-          )
-        )?;
-        return Ok(true);
-      }
+
+    if let Some((line_idx, start, end)) = match_to_highlight
+      && line_idx == self.offset + line_index
+    {
+      write!(stdout, "{center_offset_string}")?;
+      write!(stdout, "{}", &line[..start])?;
+      execute!(
+        stdout,
+        SetBackgroundColor(Color::Yellow),
+        SetForegroundColor(Color::Black)
+      )?;
+      write!(stdout, "{}", &line[start..end])?;
+      execute!(stdout, ResetColor)?;
+      write!(stdout, "{}", &line[end..])?;
+      execute!(
+        stdout,
+        crossterm::terminal::Clear(
+          crossterm::terminal::ClearType::UntilNewLine
+        )
+      )?;
+      return Ok(true);
     }
 
     Ok(false)
   }
-
-
 
   // Check if a line has search match
   pub fn has_search_match_on_line(&self, line_index: usize) -> bool {
@@ -91,7 +89,7 @@ impl Editor {
     } else {
       self.editor_state.current_match
     };
-    
+
     if let Some((line_idx, _, _)) = match_to_check {
       line_idx == self.offset + line_index
     } else {
@@ -111,7 +109,7 @@ impl Editor {
         "Highlighting line {} with width {} (view_mode: {:?})",
         line_index, term_width, self.view_mode
       ));
-      
+
       // First, draw the background for the entire line
       buffer.queue(MoveTo(0, line_index as u16))?;
       buffer.queue(SetBackgroundColor(Color::Rgb { r: 40, g: 40, b: 40 }))?;
@@ -142,24 +140,23 @@ impl Editor {
     } else {
       self.editor_state.current_match
     };
-    
-    if let Some((line_idx, start, end)) = match_to_highlight {
-      if line_idx == self.offset + line_index {
-        write!(buffer, "{center_offset_string}")?;
-        write!(buffer, "{}", &line[..start])?;
-        buffer.queue(SetBackgroundColor(Color::Yellow))?;
-        buffer.queue(SetForegroundColor(Color::Black))?;
-        write!(buffer, "{}", &line[start..end])?;
-        buffer.queue(ResetColor)?;
-        write!(buffer, "{}", &line[end..])?;
-        buffer.queue(crossterm::terminal::Clear(
-          crossterm::terminal::ClearType::UntilNewLine
-        ))?;
-        return Ok(true);
-      }
+
+    if let Some((line_idx, start, end)) = match_to_highlight
+      && line_idx == self.offset + line_index
+    {
+      write!(buffer, "{center_offset_string}")?;
+      write!(buffer, "{}", &line[..start])?;
+      buffer.queue(SetBackgroundColor(Color::Yellow))?;
+      buffer.queue(SetForegroundColor(Color::Black))?;
+      write!(buffer, "{}", &line[start..end])?;
+      buffer.queue(ResetColor)?;
+      write!(buffer, "{}", &line[end..])?;
+      buffer.queue(crossterm::terminal::Clear(
+        crossterm::terminal::ClearType::UntilNewLine,
+      ))?;
+      return Ok(true);
     }
 
     Ok(false)
   }
-
 }

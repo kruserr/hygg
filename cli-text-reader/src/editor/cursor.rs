@@ -1,6 +1,7 @@
 use crossterm::{
+  QueueableCommand,
   cursor::{Hide, MoveTo, SetCursorStyle, Show},
-  execute, QueueableCommand,
+  execute,
 };
 use std::io::{self, IsTerminal, Write};
 
@@ -8,6 +9,7 @@ use super::core::{Editor, EditorMode, ViewMode};
 
 impl Editor {
   // Position and style the cursor based on editor mode
+  #[allow(dead_code)]
   pub fn position_cursor(
     &self,
     stdout: &mut io::Stdout,
@@ -28,14 +30,15 @@ impl Editor {
         // Calculate cursor position based on view mode
         let cursor_y = if self.view_mode == ViewMode::HorizontalSplit {
           // In split view, determine which pane the active buffer is in
-          let is_in_top_pane = if self.tutorial_active && self.buffers.len() > 2 {
+          let is_in_top_pane = if self.tutorial_active && self.buffers.len() > 2
+          {
             // Tutorial mode: buffer 1 is in top pane, buffer 2 is in bottom
             self.active_buffer == 1
           } else {
             // Normal mode: buffer 0 is in top pane, buffer 1 is in bottom
             self.active_buffer == 0
           };
-          
+
           if is_in_top_pane {
             // Top pane - cursor is within the top pane's viewport
             self.cursor_y
@@ -79,9 +82,7 @@ impl Editor {
             1 + self.get_active_command_cursor_pos()
           } /* ":" + cursor pos */
           EditorMode::Search => 1 + self.get_active_command_cursor_pos(), /* "/" + cursor pos */
-          EditorMode::ReverseSearch => {
-            1 + self.get_active_command_cursor_pos()
-          } /* "?" + cursor pos */
+          EditorMode::ReverseSearch => 1 + self.get_active_command_cursor_pos(), /* "?" + cursor pos */
           _ => 0,
         };
 
@@ -182,9 +183,9 @@ impl Editor {
       // Cursor should remain hidden
       return Ok(());
     }
-    
+
     let active_mode = self.get_active_mode();
-    
+
     // Position the cursor at current position in text
     if active_mode == EditorMode::Normal
       || active_mode == EditorMode::VisualChar
@@ -200,14 +201,14 @@ impl Editor {
           // Normal mode: buffer 0 is in top pane, buffer 1 is in bottom
           self.active_buffer == 0
         };
-        
+
         if is_in_top_pane {
           // Top pane - cursor is within the top pane's viewport
           self.cursor_y
         } else {
           // Bottom pane - cursor is below the top pane and separator
-          let top_height = (self.height.saturating_sub(1) as f32
-            * self.split_ratio) as usize;
+          let top_height =
+            (self.height.saturating_sub(1) as f32 * self.split_ratio) as usize;
           top_height + 1 + self.cursor_y // +1 for separator line
         }
       } else {
@@ -216,7 +217,10 @@ impl Editor {
       };
 
       // Position cursor exactly on the highlighted line
-      buffer.queue(MoveTo((center_offset + self.cursor_x) as u16, cursor_y as u16))?;
+      buffer.queue(MoveTo(
+        (center_offset + self.cursor_x) as u16,
+        cursor_y as u16,
+      ))?;
 
       // Set appropriate cursor style for the mode and show cursor
       match active_mode {
@@ -228,7 +232,7 @@ impl Editor {
         }
         _ => {}
       }
-      
+
       // Show cursor at the final position and track state
       buffer.queue(Show)?;
       self.cursor_currently_visible = true;
@@ -243,9 +247,7 @@ impl Editor {
           1 + self.get_active_command_cursor_pos()
         } /* ":" + cursor pos */
         EditorMode::Search => 1 + self.get_active_command_cursor_pos(), /* "/" + cursor pos */
-        EditorMode::ReverseSearch => {
-          1 + self.get_active_command_cursor_pos()
-        } /* "?" + cursor pos */
+        EditorMode::ReverseSearch => 1 + self.get_active_command_cursor_pos(), /* "?" + cursor pos */
         _ => 0,
       };
 
@@ -254,7 +256,7 @@ impl Editor {
       buffer.queue(Show)?;
       self.cursor_currently_visible = true;
     }
-    
+
     Ok(())
   }
 }

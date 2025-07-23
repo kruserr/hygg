@@ -44,38 +44,36 @@ impl Editor {
           Ok(Some(false))
         }
       }
-      KeyCode::Char('h')
-        if key_event.modifiers.contains(KeyModifiers::ALT) =>
-      {
+      KeyCode::Char('h') if key_event.modifiers.contains(KeyModifiers::ALT) => {
         // Alt+h - switch to left pane (not applicable for horizontal split)
-        self.debug_log("Alt+h pressed - horizontal split doesn't have left/right panes");
+        self.debug_log(
+          "Alt+h pressed - horizontal split doesn't have left/right panes",
+        );
         Ok(Some(false))
       }
-      KeyCode::Char('j')
-        if key_event.modifiers.contains(KeyModifiers::ALT) =>
-      {
+      KeyCode::Char('j') if key_event.modifiers.contains(KeyModifiers::ALT) => {
         // Alt+j - switch to bottom pane
-        if self.view_mode == ViewMode::HorizontalSplit && self.active_pane != 1 {
+        if self.view_mode == ViewMode::HorizontalSplit && self.active_pane != 1
+        {
           self.debug_log("Alt+j pressed - switching to bottom pane");
           self.switch_split_pane(1);
         }
         Ok(Some(false))
       }
-      KeyCode::Char('k')
-        if key_event.modifiers.contains(KeyModifiers::ALT) =>
-      {
+      KeyCode::Char('k') if key_event.modifiers.contains(KeyModifiers::ALT) => {
         // Alt+k - switch to top pane
-        if self.view_mode == ViewMode::HorizontalSplit && self.active_pane != 0 {
+        if self.view_mode == ViewMode::HorizontalSplit && self.active_pane != 0
+        {
           self.debug_log("Alt+k pressed - switching to top pane");
           self.switch_split_pane(0);
         }
         Ok(Some(false))
       }
-      KeyCode::Char('l')
-        if key_event.modifiers.contains(KeyModifiers::ALT) =>
-      {
+      KeyCode::Char('l') if key_event.modifiers.contains(KeyModifiers::ALT) => {
         // Alt+l - switch to right pane (not applicable for horizontal split)
-        self.debug_log("Alt+l pressed - horizontal split doesn't have left/right panes");
+        self.debug_log(
+          "Alt+l pressed - horizontal split doesn't have left/right panes",
+        );
         Ok(Some(false))
       }
       KeyCode::Char('f')
@@ -102,24 +100,30 @@ impl Editor {
         self.debug_log("Ctrl+A pressed - selecting all text");
         // Enter visual line mode and select everything
         self.set_active_mode(EditorMode::VisualLine);
-        
+
         // Start selection at beginning
         self.editor_state.selection_start = Some((0, 0));
         if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
           buffer.selection_start = Some((0, 0));
         }
-        
+
         // Move to the last line and update selection
         let last_line = self.lines.len().saturating_sub(1);
         let last_col = self.lines.get(last_line).map_or(0, |line| line.len());
         self.move_to_position(last_line, last_col);
         self.update_selection();
-        
+
         Ok(Some(false))
       }
       KeyCode::Char(':') => {
-        self.debug_log_event("normal_mode", "enter_command_mode", 
-          &format!("active_buffer={}, view_mode={:?}", self.active_buffer, self.view_mode));
+        self.debug_log_event(
+          "normal_mode",
+          "enter_command_mode",
+          &format!(
+            "active_buffer={}, view_mode={:?}",
+            self.active_buffer, self.view_mode
+          ),
+        );
         self.set_active_mode(EditorMode::Command);
         self.editor_state.command_buffer.clear();
         self.editor_state.command_cursor_pos = 0;

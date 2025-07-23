@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event as CEvent, KeyCode};
 use super::core::Editor;
+use crossterm::event::{self, Event as CEvent, KeyCode};
 
 impl Editor {
   // Handle character finding keys in visual mode (f/F/t/T)
@@ -22,11 +22,11 @@ impl Editor {
             _ => return Ok(Some(false)),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, true, false) {
-            self.cursor_x = pos;
-            self.update_selection();
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, true, false)
+        {
+          self.cursor_x = pos;
+          self.update_selection();
         }
         Ok(Some(false))
       }
@@ -44,11 +44,11 @@ impl Editor {
             _ => return Ok(Some(false)),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, false, false) {
-            self.cursor_x = pos;
-            self.update_selection();
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, false, false)
+        {
+          self.cursor_x = pos;
+          self.update_selection();
         }
         Ok(Some(false))
       }
@@ -66,11 +66,11 @@ impl Editor {
             _ => return Ok(Some(false)),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, true, true) {
-            self.cursor_x = pos;
-            self.update_selection();
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, true, true)
+        {
+          self.cursor_x = pos;
+          self.update_selection();
         }
         Ok(Some(false))
       }
@@ -88,11 +88,11 @@ impl Editor {
             _ => return Ok(Some(false)),
           }
         };
-        if let KeyCode::Char(c) = char_key.code {
-          if let Some(pos) = self.find_char_on_line(c, false, true) {
-            self.cursor_x = pos;
-            self.update_selection();
-          }
+        if let KeyCode::Char(c) = char_key.code
+          && let Some(pos) = self.find_char_on_line(c, false, true)
+        {
+          self.cursor_x = pos;
+          self.update_selection();
         }
         Ok(Some(false))
       }
