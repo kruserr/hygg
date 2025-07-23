@@ -1,5 +1,5 @@
-use crossterm::event::{self, KeyCode, KeyModifiers};
 use super::core::Editor;
+use crossterm::event::{self, KeyCode, KeyModifiers};
 
 impl Editor {
   // Handle basic cursor movement keys (hjkl, arrows)
@@ -11,7 +11,7 @@ impl Editor {
       "handle_basic_movement_keys: key={:?}, active_buffer={}, view_mode={:?}",
       key_code, self.active_buffer, self.view_mode
     ));
-    
+
     match key_code {
       KeyCode::Char('j') | KeyCode::Down => {
         self.debug_log("  Calling move_cursor_down");

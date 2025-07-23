@@ -97,12 +97,12 @@ impl Editor {
       ));
       self.cursor_y = max_cursor_y;
     }
-    
+
     // Save state back to buffer if in split view
     if self.view_mode == ViewMode::HorizontalSplit {
       self.save_current_buffer_state();
     }
-    
+
     self.mark_dirty();
 
     // Set cursor to beginning of line

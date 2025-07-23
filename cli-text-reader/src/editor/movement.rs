@@ -9,9 +9,10 @@ impl Editor {
     }
     self.cursor_x = target_col;
     self.cursor_moved = true;
-    
-    // No longer need to save state after every movement since we use live state for active buffer
-    
+
+    // No longer need to save state after every movement since we use live state
+    // for active buffer
+
     self.mark_dirty();
   }
 
@@ -30,18 +31,21 @@ impl Editor {
       self.debug_log("  Cannot move down - at last line");
       return; // Already at last line, cannot move down
     }
-    
+
     self.cursor_moved = true;
 
     // Use effective viewport height
     let viewport_height = self.get_effective_viewport_height();
-    self.debug_log(&format!("  viewport_height={}", viewport_height));
+    self.debug_log(&format!("  viewport_height={viewport_height}"));
 
     // Check if we can move within the current viewport
     if self.cursor_y < viewport_height.saturating_sub(1) {
       // Try to move cursor down within current viewport
       self.cursor_y += 1;
-      self.debug_log(&format!("  Moving within viewport: cursor_y={}", self.cursor_y));
+      self.debug_log(&format!(
+        "  Moving within viewport: cursor_y={}",
+        self.cursor_y
+      ));
     } else {
       // At bottom of viewport, need to scroll
       self.offset += 1;
@@ -63,9 +67,10 @@ impl Editor {
     if let Some(line) = self.lines.get(current_line_idx) {
       self.cursor_x = self.cursor_x.min(line.len().saturating_sub(1));
     }
-    
-    // No longer need to save state after every movement since we use live state for active buffer
-    
+
+    // No longer need to save state after every movement since we use live state
+    // for active buffer
+
     self.mark_dirty();
   }
 
@@ -78,7 +83,7 @@ impl Editor {
     if current_line == 0 {
       return; // Already at first line, cannot move up
     }
-    
+
     self.cursor_moved = true;
 
     // Use effective viewport height
@@ -88,7 +93,10 @@ impl Editor {
     if self.cursor_y > 0 {
       // Try to move cursor up within current viewport
       self.cursor_y -= 1;
-      self.debug_log(&format!("  Moving within viewport: cursor_y={}", self.cursor_y));
+      self.debug_log(&format!(
+        "  Moving within viewport: cursor_y={}",
+        self.cursor_y
+      ));
     } else if self.offset > 0 {
       // At top of viewport, need to scroll
       self.offset -= 1;
@@ -110,9 +118,10 @@ impl Editor {
     if let Some(line) = self.lines.get(current_line_idx) {
       self.cursor_x = self.cursor_x.min(line.len().saturating_sub(1));
     }
-    
-    // No longer need to save state after every movement since we use live state for active buffer
-    
+
+    // No longer need to save state after every movement since we use live state
+    // for active buffer
+
     self.mark_dirty();
   }
 
@@ -121,12 +130,12 @@ impl Editor {
     if self.cursor_x > 0 {
       self.cursor_x -= 1;
       self.cursor_moved = true;
-      
+
       // Save state back to buffer if in split view
       if self.view_mode == ViewMode::HorizontalSplit {
         self.save_current_buffer_state();
       }
-      
+
       self.mark_dirty();
     }
   }
@@ -139,12 +148,12 @@ impl Editor {
       if self.cursor_x < line_length.saturating_sub(1) {
         self.cursor_x += 1;
         self.cursor_moved = true;
-        
+
         // Save state back to buffer if in split view
         if self.view_mode == ViewMode::HorizontalSplit {
           self.save_current_buffer_state();
         }
-        
+
         self.mark_dirty();
       }
     }
@@ -202,9 +211,10 @@ impl Editor {
       ViewMode::Overlay => self.center_cursor_with_overscroll(true),
       ViewMode::HorizontalSplit => self.center_cursor_with_overscroll(true),
     }
-    
-    // No longer need to save state after every movement since we use live state for active buffer
-    
+
+    // No longer need to save state after every movement since we use live state
+    // for active buffer
+
     self.mark_dirty();
   }
 }

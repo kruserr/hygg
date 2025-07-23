@@ -21,7 +21,8 @@ impl Editor {
         self.editor_state.search_direction = true;
         // Save current cursor position for preview mode
         self.editor_state.search_preview_active = true;
-        self.editor_state.search_original_cursor = Some((self.cursor_y, self.cursor_x));
+        self.editor_state.search_original_cursor =
+          Some((self.cursor_y, self.cursor_x));
         self.editor_state.search_original_offset = Some(self.offset);
         self.editor_state.search_preview_match = None;
         // Track for tutorial
@@ -43,7 +44,8 @@ impl Editor {
         self.editor_state.search_direction = false;
         // Save current cursor position for preview mode
         self.editor_state.search_preview_active = true;
-        self.editor_state.search_original_cursor = Some((self.cursor_y, self.cursor_x));
+        self.editor_state.search_original_cursor =
+          Some((self.cursor_y, self.cursor_x));
         self.editor_state.search_original_offset = Some(self.offset);
         self.editor_state.search_preview_match = None;
         // Track for tutorial
@@ -87,7 +89,8 @@ impl Editor {
           // Track search for tutorial
           if self.tutorial_active {
             // Check if this completes the search tutorial step
-            if !self.tutorial_step_completed && self.check_tutorial_completion() {
+            if !self.tutorial_step_completed && self.check_tutorial_completion()
+            {
               self.tutorial_step_completed = true;
               self.update_tutorial_step();
             }
@@ -178,34 +181,34 @@ impl Editor {
             }
           };
           match inner_key.code {
-              KeyCode::Char('w') => {
-                // Inner word
-                self.select_inner_word(false);
-                self.editor_state.operator_pending = None;
+            KeyCode::Char('w') => {
+              // Inner word
+              self.select_inner_word(false);
+              self.editor_state.operator_pending = None;
+            }
+            KeyCode::Char('W') => {
+              // Inner WORD
+              self.select_inner_word(true);
+              self.editor_state.operator_pending = None;
+            }
+            KeyCode::Char('"')
+            | KeyCode::Char('\'')
+            | KeyCode::Char('(')
+            | KeyCode::Char(')')
+            | KeyCode::Char('{')
+            | KeyCode::Char('}')
+            | KeyCode::Char('[')
+            | KeyCode::Char(']') => {
+              // Inner quotes, parentheses, braces, brackets
+              if let KeyCode::Char(c) = inner_key.code
+                && let Some((start, end)) = self.find_text_object(c)
+              {
+                let line_idx = self.offset + self.cursor_y;
+                self.editor_state.selection_start = Some((line_idx, start));
+                self.editor_state.selection_end = Some((line_idx, end));
               }
-              KeyCode::Char('W') => {
-                // Inner WORD
-                self.select_inner_word(true);
-                self.editor_state.operator_pending = None;
-              }
-              KeyCode::Char('"')
-              | KeyCode::Char('\'')
-              | KeyCode::Char('(')
-              | KeyCode::Char(')')
-              | KeyCode::Char('{')
-              | KeyCode::Char('}')
-              | KeyCode::Char('[')
-              | KeyCode::Char(']') => {
-                // Inner quotes, parentheses, braces, brackets
-                if let KeyCode::Char(c) = inner_key.code {
-                  if let Some((start, end)) = self.find_text_object(c) {
-                    let line_idx = self.offset + self.cursor_y;
-                    self.editor_state.selection_start = Some((line_idx, start));
-                    self.editor_state.selection_end = Some((line_idx, end));
-                  }
-                }
-                self.editor_state.operator_pending = None;
-              }
+              self.editor_state.operator_pending = None;
+            }
             _ => {
               self.editor_state.operator_pending = None;
             }

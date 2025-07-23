@@ -25,17 +25,18 @@ impl Editor {
 
   // Save current visual selection for gv command
   pub fn save_visual_selection(&mut self) {
-    if let Some(buffer) = self.buffers.get(self.active_buffer) {
-      if buffer.selection_start.is_some() && buffer.selection_end.is_some() {
-        let mode = self.get_active_mode();
-        self.debug_log(&format!(
-          "Saving visual selection: start={:?}, end={:?}, mode={:?}",
-          buffer.selection_start, buffer.selection_end, mode
-        ));
-        self.editor_state.last_visual_start = buffer.selection_start;
-        self.editor_state.last_visual_end = buffer.selection_end;
-        self.editor_state.last_visual_mode = Some(mode);
-      }
+    if let Some(buffer) = self.buffers.get(self.active_buffer)
+      && buffer.selection_start.is_some()
+      && buffer.selection_end.is_some()
+    {
+      let mode = self.get_active_mode();
+      self.debug_log(&format!(
+        "Saving visual selection: start={:?}, end={:?}, mode={:?}",
+        buffer.selection_start, buffer.selection_end, mode
+      ));
+      self.editor_state.last_visual_start = buffer.selection_start;
+      self.editor_state.last_visual_end = buffer.selection_end;
+      self.editor_state.last_visual_mode = Some(mode);
     }
   }
 

@@ -42,20 +42,31 @@ impl Editor {
 
   // Load buffer state into the editor
   pub fn load_buffer_state(&mut self, buffer_idx: usize) {
-    self.debug_log(&format!("=== load_buffer_state for buffer {} ===", buffer_idx));
-    self.debug_log(&format!("  Total buffers: {}, active: {}", self.buffers.len(), self.active_buffer));
+    self
+      .debug_log(&format!("=== load_buffer_state for buffer {buffer_idx} ==="));
+    self.debug_log(&format!(
+      "  Total buffers: {}, active: {}",
+      self.buffers.len(),
+      self.active_buffer
+    ));
 
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      self.debug_log(&format!("  Buffer found: lines={}, viewport_height={}, split_height={:?}", 
-        buffer.lines.len(), buffer.viewport_height, buffer.split_height));
-      
+      self.debug_log(&format!(
+        "  Buffer found: lines={}, viewport_height={}, split_height={:?}",
+        buffer.lines.len(),
+        buffer.viewport_height,
+        buffer.split_height
+      ));
+
       // Enhanced empty buffer handling with more informative placeholder
       if buffer.lines.is_empty() {
-        self.debug_log("  WARNING: Buffer has no lines, using enhanced placeholder");
+        self.debug_log(
+          "  WARNING: Buffer has no lines, using enhanced placeholder",
+        );
         self.lines = vec![
           "Buffer is empty".to_string(),
           "".to_string(),
-          "Press :q to exit".to_string()
+          "Press :q to exit".to_string(),
         ];
         self.total_lines = self.lines.len();
       } else {
@@ -63,7 +74,7 @@ impl Editor {
         self.lines = buffer.lines.clone();
         self.total_lines = buffer.lines.len();
       }
-      
+
       // Safer debug logging with additional validation
       let first_line_preview = if self.lines.is_empty() {
         self.debug_log("  WARNING: self.lines is empty after assignment!");
@@ -90,9 +101,10 @@ impl Editor {
           }
         }
       };
-      
-      self.debug_log(&format!("  Loaded lines: count={}, first_line={:?}", 
-        self.lines.len(), 
+
+      self.debug_log(&format!(
+        "  Loaded lines: count={}, first_line={:?}",
+        self.lines.len(),
         first_line_preview
       ));
 
@@ -115,34 +127,42 @@ impl Editor {
       self.editor_state.command_cursor_pos = buffer.command_cursor_pos;
 
       // Calculate viewport height with enhanced validation
-      let base_viewport_height = if self.view_mode == super::core::ViewMode::HorizontalSplit {
-        buffer.viewport_height
-      } else {
-        self.height.saturating_sub(1)
-      };
-      
+      let base_viewport_height =
+        if self.view_mode == super::core::ViewMode::HorizontalSplit {
+          buffer.viewport_height
+        } else {
+          self.height.saturating_sub(1)
+        };
+
       // Ensure viewport_height is reasonable
-      let viewport_height = base_viewport_height.max(3).min(self.height.saturating_sub(1));
-      self.debug_log(&format!("  Viewport height: base={}, adjusted={}", base_viewport_height, viewport_height));
-      
+      let viewport_height =
+        base_viewport_height.max(3).min(self.height.saturating_sub(1));
+      self.debug_log(&format!("  Viewport height: base={base_viewport_height}, adjusted={viewport_height}"));
+
       // Enhanced cursor validation with better edge case handling
       // First ensure offset is valid
       if self.offset >= self.total_lines && self.total_lines > 0 {
         let old_offset = self.offset;
         self.offset = self.total_lines.saturating_sub(viewport_height);
-        self.debug_log(&format!("  WARNING: Reset offset from {} to {} (total_lines={})", 
-          old_offset, self.offset, self.total_lines));
+        self.debug_log(&format!(
+          "  WARNING: Reset offset from {} to {} (total_lines={})",
+          old_offset, self.offset, self.total_lines
+        ));
       }
-      
+
       // Validate cursor_y within viewport and document bounds
-      let max_cursor_y = viewport_height.saturating_sub(1).min(self.total_lines.saturating_sub(self.offset + 1));
+      let max_cursor_y = viewport_height
+        .saturating_sub(1)
+        .min(self.total_lines.saturating_sub(self.offset + 1));
       if self.cursor_y > max_cursor_y {
         let old_cursor_y = self.cursor_y;
         self.cursor_y = max_cursor_y;
-        self.debug_log(&format!("  WARNING: Adjusted cursor_y from {} to {} (max={})", 
-          old_cursor_y, self.cursor_y, max_cursor_y));
+        self.debug_log(&format!(
+          "  WARNING: Adjusted cursor_y from {} to {} (max={})",
+          old_cursor_y, self.cursor_y, max_cursor_y
+        ));
       }
-      
+
       // Validate cursor_x is within line bounds with better handling
       let current_line_idx = self.offset + self.cursor_y;
       if current_line_idx < self.lines.len() {
@@ -150,12 +170,14 @@ impl Editor {
         if self.cursor_x > line_len {
           let old_cursor_x = self.cursor_x;
           self.cursor_x = line_len;
-          self.debug_log(&format!("  WARNING: Adjusted cursor_x from {} to {} (line {} len={})", 
-            old_cursor_x, self.cursor_x, current_line_idx, line_len));
+          self.debug_log(&format!(
+            "  WARNING: Adjusted cursor_x from {} to {} (line {} len={})",
+            old_cursor_x, self.cursor_x, current_line_idx, line_len
+          ));
         }
       } else {
         // If we're somehow beyond the document, reset to safe position
-        self.debug_log(&format!("  ERROR: Line index {} out of bounds, resetting cursor", current_line_idx));
+        self.debug_log(&format!("  ERROR: Line index {current_line_idx} out of bounds, resetting cursor"));
         self.cursor_y = 0;
         self.cursor_x = 0;
       }
@@ -165,21 +187,25 @@ impl Editor {
         self.lines.len(), self.offset, self.cursor_x, self.cursor_y,
         self.editor_state.mode, self.editor_state.command_buffer
       ));
-      self.debug_log(&format!("  is_split_buffer={}, split_position={:?}", 
-        buffer.is_split_buffer, buffer.split_position));
+      self.debug_log(&format!(
+        "  is_split_buffer={}, split_position={:?}",
+        buffer.is_split_buffer, buffer.split_position
+      ));
     } else {
-      self.debug_log(&format!("  ERROR: Buffer {} not found! Creating safe defaults", buffer_idx));
+      self.debug_log(&format!(
+        "  ERROR: Buffer {buffer_idx} not found! Creating safe defaults"
+      ));
       // Enhanced safe defaults if buffer not found
       self.lines = vec![
         "Error: Buffer not found".to_string(),
         "".to_string(),
-        "This is likely a bug. Press :q to exit".to_string()
+        "This is likely a bug. Press :q to exit".to_string(),
       ];
       self.total_lines = self.lines.len();
       self.offset = 0;
       self.cursor_x = 0;
       self.cursor_y = 0;
-      
+
       // Reset editor state to safe defaults
       self.editor_state.mode = super::core::EditorMode::Normal;
       self.editor_state.command_buffer.clear();
@@ -189,14 +215,16 @@ impl Editor {
       self.editor_state.selection_start = None;
       self.editor_state.selection_end = None;
     }
-    
+
     // Final safety check
     if self.lines.is_empty() {
-      self.debug_log("  CRITICAL: Lines still empty after load, adding final fallback");
+      self.debug_log(
+        "  CRITICAL: Lines still empty after load, adding final fallback",
+      );
       self.lines = vec!["[Empty]".to_string()];
       self.total_lines = 1;
     }
-    
+
     self.debug_log("=== load_buffer_state complete ===");
   }
 
@@ -207,7 +235,7 @@ impl Editor {
   }
 
   // Get the active buffer mutably
-  #[allow(dead_code)]  
+  #[allow(dead_code)]
   pub fn get_active_buffer_mut(&mut self) -> Option<&mut BufferState> {
     self.buffers.get_mut(self.active_buffer)
   }

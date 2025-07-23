@@ -1,5 +1,5 @@
 use crossterm::{
-  execute, QueueableCommand,
+  QueueableCommand, execute,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
   terminal::{Clear, ClearType},
 };
@@ -33,9 +33,12 @@ impl Editor {
     ));
 
     // Determine buffer indices based on tutorial mode
-    let (top_buffer_idx, bottom_buffer_idx) = if self.tutorial_active && self.buffers.len() > 2 {
+    let (top_buffer_idx, bottom_buffer_idx) = if self.tutorial_active
+      && self.buffers.len() > 2
+    {
       // In tutorial mode: show tutorial (1) in top, command (2) in bottom
-      self.debug_log("  Tutorial mode split: tutorial in top, command in bottom");
+      self
+        .debug_log("  Tutorial mode split: tutorial in top, command in bottom");
       (1, 2)
     } else {
       // Normal mode: show main (0) in top, command (1) in bottom
@@ -47,7 +50,7 @@ impl Editor {
     self.draw_pane(
       stdout,
       top_buffer_idx, // buffer index
-      0, // start row
+      0,              // start row
       top_height,
       term_width,
       center_offset_string,
@@ -67,7 +70,7 @@ impl Editor {
     self.draw_pane(
       stdout,
       bottom_buffer_idx, // buffer index
-      top_height + 1, // start row (after separator)
+      top_height + 1,    // start row (after separator)
       bottom_height,
       term_width,
       center_offset_string,
@@ -94,7 +97,8 @@ impl Editor {
     ));
 
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      // Use current editor state for active buffer, stored state for inactive buffer
+      // Use current editor state for active buffer, stored state for inactive
+      // buffer
       let offset = if buffer_idx == self.active_buffer {
         self.offset
       } else {
@@ -129,7 +133,7 @@ impl Editor {
             i, // Pass viewport line index
             center_offset_string,
             is_current_line,
-            offset, // Pass the offset
+            offset,        // Pass the offset
             &buffer.lines, // Pass buffer lines
           )?;
 
@@ -168,16 +172,20 @@ impl Editor {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
       // Check if this line has visual selection
-      let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
-      
+      let has_selection =
+        self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
+
       // Check if this line has persistent highlights (only for main buffer)
       let has_persistent = if buffer_idx == 0 {
-        let result = self.has_persistent_highlights_on_line_with_offset_and_lines(viewport_line_idx, offset, buffer_lines);
-        result
+        self.has_persistent_highlights_on_line_with_offset_and_lines(
+          viewport_line_idx,
+          offset,
+          buffer_lines,
+        )
       } else {
         false
       };
-      
+
       // If we have multiple types of highlights, use combined rendering
       if (has_selection || has_persistent) && !is_current_line {
         if has_selection && has_persistent {
@@ -219,7 +227,7 @@ impl Editor {
           }
         }
       }
-      
+
       // Always apply centering offset for consistency with main display
       let line_to_render = format!("{center_offset_string}{line}");
 
@@ -237,7 +245,7 @@ impl Editor {
       } else {
         None
       };
-      
+
       // Check if this line has the match
       if let Some((match_line_idx, start, end)) = match_to_highlight {
         let actual_line_idx = if buffer_idx == self.active_buffer {
@@ -247,7 +255,7 @@ impl Editor {
         } else {
           0
         };
-        
+
         if match_line_idx == actual_line_idx && !is_current_line {
           // Render with match highlighting
           write!(stdout, "{center_offset_string}")?;
@@ -322,9 +330,12 @@ impl Editor {
     ));
 
     // Determine buffer indices based on tutorial mode
-    let (top_buffer_idx, bottom_buffer_idx) = if self.tutorial_active && self.buffers.len() > 2 {
+    let (top_buffer_idx, bottom_buffer_idx) = if self.tutorial_active
+      && self.buffers.len() > 2
+    {
       // In tutorial mode: show tutorial (1) in top, command (2) in bottom
-      self.debug_log("  Tutorial mode split: tutorial in top, command in bottom");
+      self
+        .debug_log("  Tutorial mode split: tutorial in top, command in bottom");
       (1, 2)
     } else {
       // Normal mode: show main (0) in top, command (1) in bottom
@@ -336,7 +347,7 @@ impl Editor {
     self.draw_pane_buffered(
       buffer,
       top_buffer_idx, // buffer index
-      0, // start row
+      0,              // start row
       top_height,
       term_width,
       center_offset_string,
@@ -353,7 +364,7 @@ impl Editor {
     self.draw_pane_buffered(
       buffer,
       bottom_buffer_idx, // buffer index
-      top_height + 1, // start row (after separator)
+      top_height + 1,    // start row (after separator)
       bottom_height,
       term_width,
       center_offset_string,
@@ -380,7 +391,8 @@ impl Editor {
     ));
 
     if let Some(pane_buffer) = self.buffers.get(buffer_idx) {
-      // Use current editor state for active buffer, stored state for inactive buffer
+      // Use current editor state for active buffer, stored state for inactive
+      // buffer
       let offset = if buffer_idx == self.active_buffer {
         self.offset
       } else {
@@ -404,10 +416,10 @@ impl Editor {
         let line_idx = offset + i;
         if line_idx < pane_buffer.lines.len() {
           let line = &pane_buffer.lines[line_idx];
-          
+
           // Disable cursor line highlighting in split view
           let is_current_line = false;
-          
+
           // Render the line
           self.render_pane_line_buffered(
             buffer,
@@ -416,10 +428,10 @@ impl Editor {
             i, // Pass viewport line index, not display row
             center_offset_string,
             is_current_line,
-            offset, // Pass the offset
+            offset,             // Pass the offset
             &pane_buffer.lines, // Pass buffer lines
           )?;
-          
+
           // Clear to end of line
           buffer.queue(Clear(ClearType::UntilNewLine))?;
         } else {
@@ -454,22 +466,28 @@ impl Editor {
     // Apply centering if needed
     if let Some(_pane_buffer) = self.buffers.get(buffer_idx) {
       // Check if this line has visual selection
-      let _start_row = if buffer_idx == 0 { 0 } else {
+      let _start_row = if buffer_idx == 0 {
+        0
+      } else {
         // For bottom pane, calculate start row based on split ratio
         let terminal_height = self.height.saturating_sub(1);
         let top_height = (terminal_height as f32 * self.split_ratio) as usize;
         top_height + 1
       };
-      let has_selection = self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
-      
+      let has_selection =
+        self.has_pane_selection_on_line(buffer_idx, viewport_line_idx);
+
       // Check if this line has persistent highlights (only for main buffer)
       let has_persistent = if buffer_idx == 0 {
-        let result = self.has_persistent_highlights_on_line_with_offset_and_lines(viewport_line_idx, offset, buffer_lines);
-        result
+        self.has_persistent_highlights_on_line_with_offset_and_lines(
+          viewport_line_idx,
+          offset,
+          buffer_lines,
+        )
       } else {
         false
       };
-      
+
       // If we have multiple types of highlights, use combined rendering
       if (has_selection || has_persistent) && !is_current_line {
         if has_selection && has_persistent {
@@ -511,7 +529,7 @@ impl Editor {
           }
         }
       }
-      
+
       // Always apply centering offset for consistency with main display
       let line_to_render = format!("{center_offset_string}{line}");
 
@@ -529,7 +547,7 @@ impl Editor {
       } else {
         None
       };
-      
+
       // Check if this line has the match
       if let Some((match_line_idx, start, end)) = match_to_highlight {
         // Calculate the actual line index in the buffer
@@ -540,7 +558,7 @@ impl Editor {
         } else {
           0
         };
-        
+
         if match_line_idx == actual_line_idx && !is_current_line {
           // Render with match highlighting
           write!(buffer, "{center_offset_string}")?;
@@ -598,19 +616,31 @@ impl Editor {
   ) -> IoResult<bool> {
     // Only main buffer has persistent highlights
     if buffer_idx != 0 {
-      return self.render_pane_selection(stdout, buffer_idx, viewport_line_idx, line, center_offset_string);
+      return self.render_pane_selection(
+        stdout,
+        buffer_idx,
+        viewport_line_idx,
+        line,
+        center_offset_string,
+      );
     }
 
     let current_line_idx = offset + viewport_line_idx;
-    
+
     // Get all highlight ranges for this line
     let mut ranges: Vec<(usize, usize, HighlightType)> = Vec::new();
 
     // Add visual selection range if present
-    if let (Some(start), Some(end)) = (self.editor_state.selection_start, self.editor_state.selection_end) {
-      let is_line_mode = self.editor_state.mode == super::core::EditorMode::VisualLine;
+    if let (Some(start), Some(end)) =
+      (self.editor_state.selection_start, self.editor_state.selection_end)
+    {
+      let is_line_mode =
+        self.editor_state.mode == super::core::EditorMode::VisualLine;
 
-      if is_line_mode && current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+      if is_line_mode
+        && current_line_idx >= start.0.min(end.0)
+        && current_line_idx <= start.0.max(end.0)
+      {
         ranges.push((0, line.len(), HighlightType::Selection));
       } else if !is_line_mode {
         // Handle character mode selection
@@ -620,7 +650,9 @@ impl Editor {
           if start_col < end_col {
             ranges.push((start_col, end_col, HighlightType::Selection));
           }
-        } else if current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+        } else if current_line_idx >= start.0.min(end.0)
+          && current_line_idx <= start.0.max(end.0)
+        {
           // Multi-line selection logic
           if current_line_idx == start.0.min(end.0) {
             let col = if start.0 < end.0 { start.1 } else { end.1 };
@@ -644,7 +676,8 @@ impl Editor {
     }
     let abs_line_end = abs_line_start + line.len();
 
-    let line_highlights = self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+    let line_highlights =
+      self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
     for highlight in line_highlights {
       let start = if highlight.start <= abs_line_start {
         0
@@ -658,7 +691,11 @@ impl Editor {
       };
 
       if end > start && start < line.len() {
-        ranges.push((start.min(line.len()), end.min(line.len()), HighlightType::Persistent));
+        ranges.push((
+          start.min(line.len()),
+          end.min(line.len()),
+          HighlightType::Persistent,
+        ));
       }
     }
 
@@ -713,12 +750,9 @@ impl Editor {
     if last_end < line.len() {
       write!(stdout, "{}", &line[last_end..])?;
     }
-    
+
     // Clear to end of line to match normal view rendering
-    execute!(
-      stdout,
-      Clear(ClearType::UntilNewLine)
-    )?;
+    execute!(stdout, Clear(ClearType::UntilNewLine))?;
 
     Ok(true)
   }
@@ -736,19 +770,31 @@ impl Editor {
   ) -> IoResult<bool> {
     // Only main buffer has persistent highlights
     if buffer_idx != 0 {
-      return self.render_pane_selection_buffered(buffer, buffer_idx, viewport_line_idx, line, center_offset_string);
+      return self.render_pane_selection_buffered(
+        buffer,
+        buffer_idx,
+        viewport_line_idx,
+        line,
+        center_offset_string,
+      );
     }
 
     let current_line_idx = offset + viewport_line_idx;
-    
+
     // Get all highlight ranges for this line
     let mut ranges: Vec<(usize, usize, HighlightType)> = Vec::new();
 
     // Add visual selection range if present
-    if let (Some(start), Some(end)) = (self.editor_state.selection_start, self.editor_state.selection_end) {
-      let is_line_mode = self.editor_state.mode == super::core::EditorMode::VisualLine;
+    if let (Some(start), Some(end)) =
+      (self.editor_state.selection_start, self.editor_state.selection_end)
+    {
+      let is_line_mode =
+        self.editor_state.mode == super::core::EditorMode::VisualLine;
 
-      if is_line_mode && current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+      if is_line_mode
+        && current_line_idx >= start.0.min(end.0)
+        && current_line_idx <= start.0.max(end.0)
+      {
         ranges.push((0, line.len(), HighlightType::Selection));
       } else if !is_line_mode {
         // Handle character mode selection
@@ -758,7 +804,9 @@ impl Editor {
           if start_col < end_col {
             ranges.push((start_col, end_col, HighlightType::Selection));
           }
-        } else if current_line_idx >= start.0.min(end.0) && current_line_idx <= start.0.max(end.0) {
+        } else if current_line_idx >= start.0.min(end.0)
+          && current_line_idx <= start.0.max(end.0)
+        {
           // Multi-line selection logic
           if current_line_idx == start.0.min(end.0) {
             let col = if start.0 < end.0 { start.1 } else { end.1 };
@@ -782,7 +830,8 @@ impl Editor {
     }
     let abs_line_end = abs_line_start + line.len();
 
-    let line_highlights = self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
+    let line_highlights =
+      self.highlights.get_highlights_for_range(abs_line_start, abs_line_end);
     for highlight in line_highlights {
       let start = if highlight.start <= abs_line_start {
         0
@@ -796,7 +845,11 @@ impl Editor {
       };
 
       if end > start && start < line.len() {
-        ranges.push((start.min(line.len()), end.min(line.len()), HighlightType::Persistent));
+        ranges.push((
+          start.min(line.len()),
+          end.min(line.len()),
+          HighlightType::Persistent,
+        ));
       }
     }
 
@@ -845,7 +898,7 @@ impl Editor {
     if last_end < line.len() {
       write!(buffer, "{}", &line[last_end..])?;
     }
-    
+
     // Clear to end of line to match normal view rendering
     buffer.queue(Clear(ClearType::UntilNewLine))?;
 
@@ -888,7 +941,8 @@ impl Editor {
       return Ok(false);
     }
 
-    // Convert highlights to line-relative positions and merge overlapping ranges
+    // Convert highlights to line-relative positions and merge overlapping
+    // ranges
     let mut ranges: Vec<(usize, usize)> = Vec::new();
     for highlight in line_highlights {
       let start = if highlight.start <= abs_line_start {
@@ -929,7 +983,7 @@ impl Editor {
     }
 
     // Render the line with highlights
-    
+
     write!(stdout, "{center_offset_string}")?;
     let mut last_end = 0;
 
@@ -955,12 +1009,9 @@ impl Editor {
     if last_end < line.len() {
       write!(stdout, "{}", &line[last_end..])?;
     }
-    
+
     // Clear to end of line to match normal view rendering
-    execute!(
-      stdout,
-      Clear(ClearType::UntilNewLine)
-    )?;
+    execute!(stdout, Clear(ClearType::UntilNewLine))?;
 
     Ok(true)
   }
@@ -1001,7 +1052,8 @@ impl Editor {
       return Ok(false);
     }
 
-    // Convert highlights to line-relative positions and merge overlapping ranges
+    // Convert highlights to line-relative positions and merge overlapping
+    // ranges
     let mut ranges: Vec<(usize, usize)> = Vec::new();
     for highlight in line_highlights {
       let start = if highlight.start <= abs_line_start {
@@ -1064,7 +1116,7 @@ impl Editor {
     if last_end < line.len() {
       write!(buffer, "{}", &line[last_end..])?;
     }
-    
+
     // Clear to end of line to match normal view rendering
     buffer.queue(Clear(ClearType::UntilNewLine))?;
 
@@ -1072,40 +1124,47 @@ impl Editor {
   }
 
   // Check if a line in a pane has visual selection
-  fn has_pane_selection_on_line(&self, buffer_idx: usize, line_index: usize) -> bool {
+  fn has_pane_selection_on_line(
+    &self,
+    buffer_idx: usize,
+    line_index: usize,
+  ) -> bool {
     // Check if selection exists
-    let (_has_selection, current_line_idx, start, end) = if buffer_idx == self.active_buffer {
-      // For active buffer, use current editor state
-      let has_sel = self.editor_state.selection_start.is_some() && self.editor_state.selection_end.is_some();
-      if !has_sel {
+    let (_has_selection, current_line_idx, start, end) =
+      if buffer_idx == self.active_buffer {
+        // For active buffer, use current editor state
+        let has_sel = self.editor_state.selection_start.is_some()
+          && self.editor_state.selection_end.is_some();
+        if !has_sel {
+          return false;
+        }
+        (
+          has_sel,
+          self.offset + line_index,
+          self.editor_state.selection_start.unwrap(),
+          self.editor_state.selection_end.unwrap(),
+        )
+      } else if let Some(buffer) = self.buffers.get(buffer_idx) {
+        // For inactive buffer, use stored state
+        let has_sel =
+          buffer.selection_start.is_some() && buffer.selection_end.is_some();
+        if !has_sel {
+          return false;
+        }
+        (
+          has_sel,
+          buffer.offset + line_index,
+          buffer.selection_start.unwrap(),
+          buffer.selection_end.unwrap(),
+        )
+      } else {
         return false;
-      }
-      (
-        has_sel,
-        self.offset + line_index,
-        self.editor_state.selection_start.unwrap(),
-        self.editor_state.selection_end.unwrap()
-      )
-    } else if let Some(buffer) = self.buffers.get(buffer_idx) {
-      // For inactive buffer, use stored state
-      let has_sel = buffer.selection_start.is_some() && buffer.selection_end.is_some();
-      if !has_sel {
-        return false;
-      }
-      (
-        has_sel,
-        buffer.offset + line_index,
-        buffer.selection_start.unwrap(),
-        buffer.selection_end.unwrap()
-      )
-    } else {
-      return false;
-    };
-    
+      };
+
     // Check if line is in selection range
     let (min_line, _) = if start.0 <= end.0 { start } else { end };
     let (max_line, _) = if start.0 > end.0 { start } else { end };
-    
+
     current_line_idx >= min_line && current_line_idx <= max_line
   }
 
@@ -1119,93 +1178,89 @@ impl Editor {
     center_offset_string: &str,
   ) -> IoResult<bool> {
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      let (start, end, current_line_idx, is_line_mode) = if buffer_idx == self.active_buffer {
-        // For active buffer, use current editor state
-        match (self.editor_state.selection_start, self.editor_state.selection_end) {
-          (Some(s), Some(e)) => (
-            s, 
-            e, 
-            self.offset + line_index,
-            self.editor_state.mode == super::core::EditorMode::VisualLine
-          ),
-          _ => return Ok(false),
-        }
-      } else {
-        // For inactive buffer, use stored state
-        match (buffer.selection_start, buffer.selection_end) {
-          (Some(s), Some(e)) => (
-            s,
-            e,
-            buffer.offset + line_index,
-            buffer.mode == super::core::EditorMode::VisualLine
-          ),
-          _ => return Ok(false),
-        }
-      };
-        
-        // Check if this line is in selection
-        let (min_line, _) = if start.0 <= end.0 { start } else { end };
-        let (max_line, _) = if start.0 > end.0 { start } else { end };
-        
-        if current_line_idx >= min_line && current_line_idx <= max_line {
-          write!(stdout, "{center_offset_string}")?;
-          
-          if is_line_mode {
-            // Line mode - highlight entire line
-            execute!(
-              stdout,
-              SetBackgroundColor(Color::DarkBlue),
-              SetForegroundColor(Color::White)
-            )?;
-            write!(stdout, "{line}")?;
-            execute!(stdout, ResetColor)?;
-            return Ok(true);
-          } else {
-            // Character mode - highlight selected portion
-            let (start_col, end_col) = if start.0 == end.0 {
-              // Same line selection
-              if start.1 <= end.1 {
-                (start.1, end.1)
-              } else {
-                (end.1, start.1)
-              }
-            } else if current_line_idx == min_line {
-              // First line of multi-line selection
-              if start.0 < end.0 {
-                (start.1, line.len())
-              } else {
-                (end.1, line.len())
-              }
-            } else if current_line_idx == max_line {
-              // Last line of multi-line selection
-              if start.0 > end.0 {
-                (0, start.1)
-              } else {
-                (0, end.1)
-              }
-            } else {
-              // Middle line
-              (0, line.len())
-            };
-            
-            // Ensure indices are valid
-            let start_col = start_col.min(line.len());
-            let end_col = end_col.min(line.len());
-            
-            // Render with selection
-            write!(stdout, "{}", &line[..start_col])?;
-            execute!(
-              stdout,
-              SetBackgroundColor(Color::DarkBlue),
-              SetForegroundColor(Color::White)
-            )?;
-            write!(stdout, "{}", &line[start_col..end_col])?;
-            execute!(stdout, ResetColor)?;
-            write!(stdout, "{}", &line[end_col..])?;
-            
-            return Ok(true);
+      let (start, end, current_line_idx, is_line_mode) =
+        if buffer_idx == self.active_buffer {
+          // For active buffer, use current editor state
+          match (
+            self.editor_state.selection_start,
+            self.editor_state.selection_end,
+          ) {
+            (Some(s), Some(e)) => (
+              s,
+              e,
+              self.offset + line_index,
+              self.editor_state.mode == super::core::EditorMode::VisualLine,
+            ),
+            _ => return Ok(false),
           }
+        } else {
+          // For inactive buffer, use stored state
+          match (buffer.selection_start, buffer.selection_end) {
+            (Some(s), Some(e)) => (
+              s,
+              e,
+              buffer.offset + line_index,
+              buffer.mode == super::core::EditorMode::VisualLine,
+            ),
+            _ => return Ok(false),
+          }
+        };
+
+      // Check if this line is in selection
+      let (min_line, _) = if start.0 <= end.0 { start } else { end };
+      let (max_line, _) = if start.0 > end.0 { start } else { end };
+
+      if current_line_idx >= min_line && current_line_idx <= max_line {
+        write!(stdout, "{center_offset_string}")?;
+
+        if is_line_mode {
+          // Line mode - highlight entire line
+          execute!(
+            stdout,
+            SetBackgroundColor(Color::DarkBlue),
+            SetForegroundColor(Color::White)
+          )?;
+          write!(stdout, "{line}")?;
+          execute!(stdout, ResetColor)?;
+          return Ok(true);
+        } else {
+          // Character mode - highlight selected portion
+          let (start_col, end_col) = if start.0 == end.0 {
+            // Same line selection
+            if start.1 <= end.1 { (start.1, end.1) } else { (end.1, start.1) }
+          } else if current_line_idx == min_line {
+            // First line of multi-line selection
+            if start.0 < end.0 {
+              (start.1, line.len())
+            } else {
+              (end.1, line.len())
+            }
+          } else if current_line_idx == max_line {
+            // Last line of multi-line selection
+            if start.0 > end.0 { (0, start.1) } else { (0, end.1) }
+          } else {
+            // Middle line
+            (0, line.len())
+          };
+
+          // Ensure indices are valid
+          let start_col = start_col.min(line.len());
+          let end_col = end_col.min(line.len());
+
+          // Render with selection
+          write!(stdout, "{}", &line[..start_col])?;
+          execute!(
+            stdout,
+            SetBackgroundColor(Color::DarkBlue),
+            SetForegroundColor(Color::White)
+          )?;
+          write!(stdout, "{}", &line[start_col..end_col])?;
+          execute!(stdout, ResetColor)?;
+          write!(stdout, "{}", &line[end_col..])?;
+
+          return Ok(true);
         }
+      }
     }
     Ok(false)
   }
@@ -1220,87 +1275,83 @@ impl Editor {
     center_offset_string: &str,
   ) -> IoResult<bool> {
     if let Some(buffer) = self.buffers.get(buffer_idx) {
-      let (start, end, current_line_idx, is_line_mode) = if buffer_idx == self.active_buffer {
-        // For active buffer, use current editor state
-        match (self.editor_state.selection_start, self.editor_state.selection_end) {
-          (Some(s), Some(e)) => (
-            s, 
-            e, 
-            self.offset + line_index,
-            self.editor_state.mode == super::core::EditorMode::VisualLine
-          ),
-          _ => return Ok(false),
-        }
-      } else {
-        // For inactive buffer, use stored state
-        match (buffer.selection_start, buffer.selection_end) {
-          (Some(s), Some(e)) => (
-            s,
-            e,
-            buffer.offset + line_index,
-            buffer.mode == super::core::EditorMode::VisualLine
-          ),
-          _ => return Ok(false),
-        }
-      };
-        
-        // Check if this line is in selection
-        let (min_line, _) = if start.0 <= end.0 { start } else { end };
-        let (max_line, _) = if start.0 > end.0 { start } else { end };
-        
-        if current_line_idx >= min_line && current_line_idx <= max_line {
-          write!(buf, "{center_offset_string}")?;
-          
-          if is_line_mode {
-            // Line mode - highlight entire line
-            buf.queue(SetBackgroundColor(Color::DarkBlue))?;
-            buf.queue(SetForegroundColor(Color::White))?;
-            write!(buf, "{line}")?;
-            buf.queue(ResetColor)?;
-            return Ok(true);
-          } else {
-            // Character mode - highlight selected portion
-            let (start_col, end_col) = if start.0 == end.0 {
-              // Same line selection
-              if start.1 <= end.1 {
-                (start.1, end.1)
-              } else {
-                (end.1, start.1)
-              }
-            } else if current_line_idx == min_line {
-              // First line of multi-line selection
-              if start.0 < end.0 {
-                (start.1, line.len())
-              } else {
-                (end.1, line.len())
-              }
-            } else if current_line_idx == max_line {
-              // Last line of multi-line selection
-              if start.0 > end.0 {
-                (0, start.1)
-              } else {
-                (0, end.1)
-              }
-            } else {
-              // Middle line
-              (0, line.len())
-            };
-            
-            // Ensure indices are valid
-            let start_col = start_col.min(line.len());
-            let end_col = end_col.min(line.len());
-            
-            // Render with selection
-            write!(buf, "{}", &line[..start_col])?;
-            buf.queue(SetBackgroundColor(Color::DarkBlue))?;
-            buf.queue(SetForegroundColor(Color::White))?;
-            write!(buf, "{}", &line[start_col..end_col])?;
-            buf.queue(ResetColor)?;
-            write!(buf, "{}", &line[end_col..])?;
-            
-            return Ok(true);
+      let (start, end, current_line_idx, is_line_mode) =
+        if buffer_idx == self.active_buffer {
+          // For active buffer, use current editor state
+          match (
+            self.editor_state.selection_start,
+            self.editor_state.selection_end,
+          ) {
+            (Some(s), Some(e)) => (
+              s,
+              e,
+              self.offset + line_index,
+              self.editor_state.mode == super::core::EditorMode::VisualLine,
+            ),
+            _ => return Ok(false),
           }
+        } else {
+          // For inactive buffer, use stored state
+          match (buffer.selection_start, buffer.selection_end) {
+            (Some(s), Some(e)) => (
+              s,
+              e,
+              buffer.offset + line_index,
+              buffer.mode == super::core::EditorMode::VisualLine,
+            ),
+            _ => return Ok(false),
+          }
+        };
+
+      // Check if this line is in selection
+      let (min_line, _) = if start.0 <= end.0 { start } else { end };
+      let (max_line, _) = if start.0 > end.0 { start } else { end };
+
+      if current_line_idx >= min_line && current_line_idx <= max_line {
+        write!(buf, "{center_offset_string}")?;
+
+        if is_line_mode {
+          // Line mode - highlight entire line
+          buf.queue(SetBackgroundColor(Color::DarkBlue))?;
+          buf.queue(SetForegroundColor(Color::White))?;
+          write!(buf, "{line}")?;
+          buf.queue(ResetColor)?;
+          return Ok(true);
+        } else {
+          // Character mode - highlight selected portion
+          let (start_col, end_col) = if start.0 == end.0 {
+            // Same line selection
+            if start.1 <= end.1 { (start.1, end.1) } else { (end.1, start.1) }
+          } else if current_line_idx == min_line {
+            // First line of multi-line selection
+            if start.0 < end.0 {
+              (start.1, line.len())
+            } else {
+              (end.1, line.len())
+            }
+          } else if current_line_idx == max_line {
+            // Last line of multi-line selection
+            if start.0 > end.0 { (0, start.1) } else { (0, end.1) }
+          } else {
+            // Middle line
+            (0, line.len())
+          };
+
+          // Ensure indices are valid
+          let start_col = start_col.min(line.len());
+          let end_col = end_col.min(line.len());
+
+          // Render with selection
+          write!(buf, "{}", &line[..start_col])?;
+          buf.queue(SetBackgroundColor(Color::DarkBlue))?;
+          buf.queue(SetForegroundColor(Color::White))?;
+          write!(buf, "{}", &line[start_col..end_col])?;
+          buf.queue(ResetColor)?;
+          write!(buf, "{}", &line[end_col..])?;
+
+          return Ok(true);
         }
+      }
     }
     Ok(false)
   }

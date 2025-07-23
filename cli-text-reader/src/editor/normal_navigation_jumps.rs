@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event as CEvent, KeyCode};
 use super::core::Editor;
+use crossterm::event::{self, Event as CEvent, KeyCode};
 
 impl Editor {
   // Handle jump/goto keys (g/G/0/$^/%)
@@ -168,12 +168,12 @@ impl Editor {
             _ => return Ok(None),
           }
         };
-        if let KeyCode::Char(mark_char) = mark_key.code {
-          if mark_char.is_ascii_lowercase() {
-            let (line, col) = self.get_cursor_position();
-            self.marks.insert(mark_char, (line, col));
-            self.save_bookmarks();
-          }
+        if let KeyCode::Char(mark_char) = mark_key.code
+          && mark_char.is_ascii_lowercase()
+        {
+          let (line, col) = self.get_cursor_position();
+          self.marks.insert(mark_char, (line, col));
+          self.save_bookmarks();
         }
         Ok(Some(false))
       }
@@ -201,17 +201,17 @@ impl Editor {
             }
           }
           KeyCode::Char(mark_char) if mark_char.is_ascii_lowercase() => {
-              // '{mark} - jump to mark
-              if let Some(&(line, col)) = self.marks.get(&mark_char) {
-                let current_pos = self.get_cursor_position();
-                self.previous_position = Some(current_pos);
-                self.move_to_position(line, col);
-                // Track bookmark jump for tutorial
-                if self.tutorial_active {
-                  self.tutorial_bookmark_jumped = true;
-                }
+            // '{mark} - jump to mark
+            if let Some(&(line, col)) = self.marks.get(&mark_char) {
+              let current_pos = self.get_cursor_position();
+              self.previous_position = Some(current_pos);
+              self.move_to_position(line, col);
+              // Track bookmark jump for tutorial
+              if self.tutorial_active {
+                self.tutorial_bookmark_jumped = true;
               }
             }
+          }
           _ => {}
         }
         Ok(Some(false))

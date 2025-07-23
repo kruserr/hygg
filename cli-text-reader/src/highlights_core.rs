@@ -1,4 +1,6 @@
-use crate::debug::{debug_log, debug_log_error, debug_log_event, debug_log_state};
+use crate::debug::{
+  debug_log, debug_log_error, debug_log_event, debug_log_state,
+};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
@@ -130,14 +132,17 @@ impl HighlightData {
     debug_log("highlights", "Clearing all highlights");
     self.highlights.clear();
   }
-  
+
   // Clear all highlights and save (for tutorial)
   pub fn clear_all_highlights(&mut self) {
     debug_log("highlights", "Clearing all highlights for tutorial");
     self.highlights.clear();
     // Save empty highlights
     if let Err(e) = crate::highlights_persistence::save_highlights(self) {
-      debug_log_error("highlights", &format!("Failed to save cleared highlights: {e}"));
+      debug_log_error(
+        "highlights",
+        &format!("Failed to save cleared highlights: {e}"),
+      );
     }
   }
 }

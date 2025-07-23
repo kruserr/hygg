@@ -1,6 +1,8 @@
 // Re-export core types and functions
 pub use crate::highlights_core::{Highlight, HighlightData};
-pub use crate::highlights_persistence::{get_highlights_file_path, save_highlights, load_highlights};
+pub use crate::highlights_persistence::{
+  get_highlights_file_path, load_highlights, save_highlights,
+};
 
 #[cfg(test)]
 mod tests {

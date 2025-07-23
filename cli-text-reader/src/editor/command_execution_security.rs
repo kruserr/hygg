@@ -1,7 +1,7 @@
+use super::command_translation::translate_command_for_windows;
 use std::collections::HashSet;
 use std::process::{Command, Stdio};
 use std::time::Duration;
-use super::command_translation::translate_command_for_windows;
 
 // Command output structure
 pub struct CommandOutput {
@@ -23,7 +23,7 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   if cmd.is_empty() {
     return Err("Empty command".to_string());
   }
-  
+
   // On Windows, translate Unix commands to PowerShell
   #[cfg(target_os = "windows")]
   let cmd_string = translate_command_for_windows(cmd);
@@ -32,12 +32,12 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   #[cfg(target_os = "windows")]
   let is_powershell_command = {
     // Check if the translation resulted in a PowerShell command
-    cmd_string.contains("Get-") || 
-    cmd_string.contains("Select-") || 
-    cmd_string.contains("Format-") ||
-    cmd_string.contains(" | ")
+    cmd_string.contains("Get-")
+      || cmd_string.contains("Select-")
+      || cmd_string.contains("Format-")
+      || cmd_string.contains(" | ")
   };
-  
+
   // For non-Windows, keep the original reference
   #[cfg(not(target_os = "windows"))]
   let cmd_to_parse = cmd;
@@ -54,26 +54,82 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   // a text reader
   let allowed_commands: HashSet<&str> = [
     // File/directory listing and navigation
-    "ls", "pwd", "find", "locate", "which", "whereis",
+    "ls",
+    "pwd",
+    "find",
+    "locate",
+    "which",
+    "whereis",
     // File viewing and reading (core functionality for text reader)
-    "cat", "less", "more", "head", "tail", "file", "stat", "wc", "nl",
+    "cat",
+    "less",
+    "more",
+    "head",
+    "tail",
+    "file",
+    "stat",
+    "wc",
+    "nl",
     // Text processing (read-only operations)
-    "grep", "awk", "sed", "sort", "uniq", "cut", "tr", "fmt", "fold",
+    "grep",
+    "awk",
+    "sed",
+    "sort",
+    "uniq",
+    "cut",
+    "tr",
+    "fmt",
+    "fold",
     // System information (generally safe, read-only)
-    "date", "uptime", "whoami", "id", "uname", "hostname", "df", "free", "ps",
-    "top", "env", "printenv", "history",
+    "date",
+    "uptime",
+    "whoami",
+    "id",
+    "uname",
+    "hostname",
+    "df",
+    "free",
+    "ps",
+    "top",
+    "env",
+    "printenv",
+    "history",
     // Archive viewing (read-only access, but see security note above)
-    "tar", "zip", "unzip", "gzip", "gunzip", "zcat",
+    "tar",
+    "zip",
+    "unzip",
+    "gzip",
+    "gunzip",
+    "zcat",
     // Network utilities (outbound connections only, read-only data)
-    "ping", "dig", "nslookup", "curl", "wget",
+    "ping",
+    "dig",
+    "nslookup",
+    "curl",
+    "wget",
     // Text utilities (path manipulation, generally safe)
-    "echo", "printf", "basename", "dirname", "realpath", "readlink",
+    "echo",
+    "printf",
+    "basename",
+    "dirname",
+    "realpath",
+    "readlink",
     // PowerShell commands (Windows)
-    "Get-ChildItem", "Get-Content", "Get-Location", "Select-String",
-    "Get-Date", "Get-Process", "Get-Host", "Format-Table", "Select-Object",
-    "Measure-Object", "Where-Object", "Sort-Object",
+    "Get-ChildItem",
+    "Get-Content",
+    "Get-Location",
+    "Select-String",
+    "Get-Date",
+    "Get-Process",
+    "Get-Host",
+    "Format-Table",
+    "Select-Object",
+    "Measure-Object",
+    "Where-Object",
+    "Sort-Object",
     // PowerShell.exe for Windows
-    "powershell.exe", "powershell",
+    "powershell.exe",
+    "powershell",
   ]
   .iter()
   .cloned()
@@ -96,19 +152,22 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   // Even though we're not using shell execution, some commands might interpret
   // these
   let dangerous_chars: &[char] = if is_powershell_command {
-    // For PowerShell commands, allow pipes but still restrict other dangerous chars
+    // For PowerShell commands, allow pipes but still restrict other dangerous
+    // chars
     &['&', ';', '`', '$', '(', ')', '<', '>', '\\', '*', '?']
   } else {
     // For regular commands, maintain strict validation
     &['|', '&', ';', '`', '$', '(', ')', '<', '>', '\\', '*', '?']
   };
-  
+
   // Special handling for PowerShell - don't validate the full command string
   if is_powershell_command {
-    // For PowerShell, we'll validate differently since the whole command is one string
-    // Just check for the most dangerous characters
+    // For PowerShell, we'll validate differently since the whole command is one
+    // string Just check for the most dangerous characters
     if cmd_to_parse.chars().any(|c| ['`', ';', '&'].contains(&c)) {
-      return Err("PowerShell command contains dangerous characters".to_string());
+      return Err(
+        "PowerShell command contains dangerous characters".to_string(),
+      );
     }
   } else {
     // Regular validation for non-PowerShell commands
@@ -134,15 +193,24 @@ pub fn parse_secure_command(cmd: &str) -> Result<SecureCommand, String> {
   #[cfg(target_os = "windows")]
   {
     // Check if this is a PowerShell cmdlet or contains pipes
-    if is_powershell_command || program.contains('-') || program.starts_with("Get-") || program.starts_with("Select-") {
-      // For PowerShell commands, pass the entire translated command as a single argument
+    if is_powershell_command
+      || program.contains('-')
+      || program.starts_with("Get-")
+      || program.starts_with("Select-")
+    {
+      // For PowerShell commands, pass the entire translated command as a single
+      // argument
       return Ok(SecureCommand {
         program: "powershell.exe".to_string(),
-        args: vec!["-NoProfile".to_string(), "-Command".to_string(), cmd_to_parse.to_string()],
+        args: vec![
+          "-NoProfile".to_string(),
+          "-Command".to_string(),
+          cmd_to_parse.to_string(),
+        ],
       });
     }
   }
-  
+
   Ok(SecureCommand {
     program: program.to_string(),
     args: parts[1..].iter().map(|s| s.to_string()).collect(),

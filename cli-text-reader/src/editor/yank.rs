@@ -11,7 +11,7 @@ impl Editor {
       if let Some(clipboard) = &mut self.clipboard {
         let _ = clipboard.set_text(&selected_text);
       }
-      
+
       // Track yank for tutorial
       if self.tutorial_active {
         self.tutorial_yank_performed = true;
@@ -55,7 +55,7 @@ impl Editor {
           "no system clipboard",
         );
       }
-      
+
       // Track yank for tutorial
       if self.tutorial_active {
         self.tutorial_yank_performed = true;
@@ -104,7 +104,7 @@ impl Editor {
           if let Some(clipboard) = &mut self.clipboard {
             let _ = clipboard.set_text(&self.editor_state.yank_buffer);
           }
-          
+
           // Track yank for tutorial
           if self.tutorial_active {
             self.tutorial_yank_performed = true;

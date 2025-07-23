@@ -1,5 +1,5 @@
 use crossterm::{
-  execute, QueueableCommand,
+  QueueableCommand, execute,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
 };
 use std::io::{Result as IoResult, Write};
@@ -73,11 +73,7 @@ impl Editor {
           // In char mode, highlight only the selected portion
           let (start_col, end_col) = if start.0 == end.0 {
             // Selection is within the same line
-            if start.1 <= end.1 {
-              (start.1, end.1)
-            } else {
-              (end.1, start.1)
-            }
+            if start.1 <= end.1 { (start.1, end.1) } else { (end.1, start.1) }
           } else if current_line_idx == start.0 {
             // First line of multi-line selection
             let (min_line, min_col) =
@@ -200,18 +196,14 @@ impl Editor {
           write!(buffer, "{line}")?;
           buffer.queue(ResetColor)?;
           buffer.queue(crossterm::terminal::Clear(
-            crossterm::terminal::ClearType::UntilNewLine
+            crossterm::terminal::ClearType::UntilNewLine,
           ))?;
           return Ok(true);
         } else {
           // In char mode, highlight only the selected portion
           let (start_col, end_col) = if start.0 == end.0 {
             // Selection is within the same line
-            if start.1 <= end.1 {
-              (start.1, end.1)
-            } else {
-              (end.1, start.1)
-            }
+            if start.1 <= end.1 { (start.1, end.1) } else { (end.1, start.1) }
           } else if current_line_idx == start.0 {
             // First line of multi-line selection
             let (min_line, min_col) =
@@ -236,15 +228,15 @@ impl Editor {
 
           // Render the line with selection highlight
           write!(buffer, "{}", &line[..start_col])?;
-          
+
           buffer.queue(SetBackgroundColor(Color::DarkBlue))?;
           buffer.queue(SetForegroundColor(Color::White))?;
           write!(buffer, "{}", &line[start_col..end_col])?;
           buffer.queue(ResetColor)?;
-          
+
           write!(buffer, "{}", &line[end_col..])?;
           buffer.queue(crossterm::terminal::Clear(
-            crossterm::terminal::ClearType::UntilNewLine
+            crossterm::terminal::ClearType::UntilNewLine,
           ))?;
 
           return Ok(true);

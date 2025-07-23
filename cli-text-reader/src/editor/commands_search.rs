@@ -10,13 +10,15 @@ impl Editor {
 
     let query_lower = query.to_lowercase();
     // Use original saved position for search, not current cursor position
-    let (search_line, search_x) = if let (Some((y, x)), Some(offset)) = 
-        (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+    let (search_line, search_x) = if let (Some((y, x)), Some(offset)) = (
+      self.editor_state.search_original_cursor,
+      self.editor_state.search_original_offset,
+    ) {
       (offset + y, x)
     } else {
       (self.offset + self.cursor_y, self.cursor_x)
     };
-    
+
     let find_in_line = |line: &str, query: &str| -> Option<(usize, usize)> {
       line.to_lowercase().find(query).map(|start| (start, start + query.len()))
     };
@@ -30,7 +32,8 @@ impl Editor {
           if let Some(pos) = remaining.to_lowercase().find(&query_lower) {
             let start = search_x + pos;
             let end = start + query.len();
-            self.editor_state.search_preview_match = Some((search_line, start, end));
+            self.editor_state.search_preview_match =
+              Some((search_line, start, end));
             // Also store in active buffer for split view
             if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
               buffer.current_match = Some((search_line, start, end));
@@ -40,7 +43,7 @@ impl Editor {
           }
         }
       }
-      
+
       // Then search forward from next line
       for i in search_line + 1..self.lines.len() {
         if let Some((start, end)) = find_in_line(&self.lines[i], &query_lower) {
@@ -72,7 +75,8 @@ impl Editor {
         let before_cursor = &line[..search_x];
         if let Some(pos) = before_cursor.to_lowercase().rfind(&query_lower) {
           let end = pos + query.len();
-          self.editor_state.search_preview_match = Some((search_line, pos, end));
+          self.editor_state.search_preview_match =
+            Some((search_line, pos, end));
           // Also store in active buffer for split view
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
             buffer.current_match = Some((search_line, pos, end));
@@ -81,7 +85,7 @@ impl Editor {
           return;
         }
       }
-      
+
       // Then search backward from previous line
       for i in (0..search_line).rev() {
         if let Some((start, end)) = find_in_line(&self.lines[i], &query_lower) {
@@ -107,15 +111,17 @@ impl Editor {
         }
       }
     }
-    
+
     // No match found - restore original position
     self.editor_state.search_preview_match = None;
     // Clear match in active buffer
     if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
       buffer.current_match = None;
     }
-    if let (Some((y, x)), Some(offset)) = 
-        (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+    if let (Some((y, x)), Some(offset)) = (
+      self.editor_state.search_original_cursor,
+      self.editor_state.search_original_offset,
+    ) {
       self.offset = offset;
       self.cursor_y = y;
       self.cursor_x = x;
@@ -130,10 +136,10 @@ impl Editor {
 
     let query = self.editor_state.search_query.to_lowercase();
     let current_line = self.offset + self.cursor_y;
-    
+
     // Clear any existing match to ensure we search from cursor position
     self.editor_state.current_match = None;
-    
+
     let find_in_line = |line: &str, query: &str| -> Option<(usize, usize)> {
       line.to_lowercase().find(query).map(|start| (start, start + query.len()))
     };
@@ -152,7 +158,7 @@ impl Editor {
           }
         }
       }
-      
+
       // Then search forward from next line
       for i in current_line + 1..self.lines.len() {
         if let Some((start, end)) = find_in_line(&self.lines[i], &query) {
@@ -186,7 +192,7 @@ impl Editor {
           return;
         }
       }
-      
+
       // Then search backward from previous line
       for i in (0..current_line).rev() {
         if let Some((start, end)) = find_in_line(&self.lines[i], &query) {
@@ -227,8 +233,10 @@ impl Editor {
     let find_in_line = |line: &str, query: &str| -> Option<(usize, usize)> {
       line.to_lowercase().find(query).map(|start| (start, start + query.len()))
     };
-    
-    let find_in_line_backward = |line: &str, query: &str| -> Option<(usize, usize)> {
+
+    let find_in_line_backward = |line: &str,
+                                 query: &str|
+     -> Option<(usize, usize)> {
       line.to_lowercase().rfind(query).map(|start| (start, start + query.len()))
     };
 
@@ -258,7 +266,9 @@ impl Editor {
     } else {
       // Backward search - use rfind to get last occurrence in each line
       for i in (0..start_idx).rev() {
-        if let Some((start, end)) = find_in_line_backward(&self.lines[i], &query) {
+        if let Some((start, end)) =
+          find_in_line_backward(&self.lines[i], &query)
+        {
           self.editor_state.current_match = Some((i, start, end));
           // Also update active buffer's current_match
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
@@ -269,7 +279,9 @@ impl Editor {
       }
       // Wrap around to end
       for i in (start_idx..self.lines.len()).rev() {
-        if let Some((start, end)) = find_in_line_backward(&self.lines[i], &query) {
+        if let Some((start, end)) =
+          find_in_line_backward(&self.lines[i], &query)
+        {
           self.editor_state.current_match = Some((i, start, end));
           // Also update active buffer's current_match
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
@@ -295,7 +307,7 @@ impl Editor {
       } else {
         new_offset as usize
       };
-      
+
       // Move cursor to the match position
       self.cursor_y = line_idx.saturating_sub(self.offset);
       self.cursor_x = col_idx;
@@ -305,7 +317,8 @@ impl Editor {
 
   // Center the view on the preview match and move cursor to preview it
   pub fn center_on_preview_match(&mut self) {
-    if let Some((line_idx, col_idx, _)) = self.editor_state.search_preview_match {
+    if let Some((line_idx, col_idx, _)) = self.editor_state.search_preview_match
+    {
       // Center the view
       let content_height = self.height.saturating_sub(1);
       let half_height = (content_height / 2) as i32;
@@ -317,7 +330,7 @@ impl Editor {
       } else {
         new_offset as usize
       };
-      
+
       // Move cursor to the match position for preview
       self.cursor_y = line_idx.saturating_sub(self.offset);
       self.cursor_x = col_idx;

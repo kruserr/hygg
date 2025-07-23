@@ -43,7 +43,7 @@ impl Editor {
         if std::io::stdout().is_terminal() {
           // Create a buffer to collect all rendering commands
           let mut render_buffer = Vec::new();
-          
+
           // Only hide cursor if it's currently visible
           // This reduces flicker on Windows terminals
           use crossterm::QueueableCommand;
@@ -62,19 +62,27 @@ impl Editor {
           // cursor stays in the middle with equal lines above and below
           // Skip on first iteration if we loaded progress to preserve exact
           // position
-          // Also skip centering when entering command/search modes to prevent layout shift
+          // Also skip centering when entering command/search modes to prevent
+          // layout shift
           let should_skip_center = first_iteration && skip_first_center;
           let is_mode_change_only = matches!(
             self.editor_state.mode,
-            EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
+            EditorMode::Command
+              | EditorMode::Search
+              | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
-          
+
           // Skip centering if we just switched buffers or demo hint is active
-          let skip_for_demo_hint = self.tutorial_demo_mode && self.demo_hint_text.is_some();
-          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched && !skip_for_demo_hint {
+          let skip_for_demo_hint =
+            self.tutorial_demo_mode && self.demo_hint_text.is_some();
+          if !should_skip_center
+            && !is_mode_change_only
+            && !self.buffer_just_switched
+            && !skip_for_demo_hint
+          {
             self.center_cursor();
           }
-          
+
           // Clear the buffer switch flag after checking
           if self.buffer_just_switched {
             self.debug_log("Skipping center_cursor due to buffer switch");
@@ -99,10 +107,18 @@ impl Editor {
           // Draw all content to the buffer instead of stdout
           match self.view_mode {
             ViewMode::Normal | ViewMode::Overlay => {
-              self.draw_content_buffered(&mut render_buffer, term_width, &center_offset_string)?;
+              self.draw_content_buffered(
+                &mut render_buffer,
+                term_width,
+                &center_offset_string,
+              )?;
             }
             ViewMode::HorizontalSplit => {
-              self.draw_split_view_buffered(&mut render_buffer, term_width, &center_offset_string)?;
+              self.draw_split_view_buffered(
+                &mut render_buffer,
+                term_width,
+                &center_offset_string,
+              )?;
             }
           }
 
@@ -111,7 +127,11 @@ impl Editor {
 
           // Render demo hint if active
           if self.tutorial_demo_mode {
-            self.render_demo_hint_buffered(&mut render_buffer, self.width, self.height)?;
+            self.render_demo_hint_buffered(
+              &mut render_buffer,
+              self.width,
+              self.height,
+            )?;
           }
 
           // Position cursor and show it at the final position
@@ -120,7 +140,7 @@ impl Editor {
           // Write everything to stdout in one go
           stdout.write_all(&render_buffer)?;
           stdout.flush()?;
-          
+
           // Reset cursor_moved flag after rendering
           self.cursor_moved = false;
         } else {
@@ -129,18 +149,27 @@ impl Editor {
           let should_skip_center = first_iteration && skip_first_center;
           let is_mode_change_only = matches!(
             self.editor_state.mode,
-            EditorMode::Command | EditorMode::Search | EditorMode::ReverseSearch
+            EditorMode::Command
+              | EditorMode::Search
+              | EditorMode::ReverseSearch
           ) && !self.cursor_moved;
-          
+
           // Skip centering if we just switched buffers or demo hint is active
-          let skip_for_demo_hint = self.tutorial_demo_mode && self.demo_hint_text.is_some();
-          if !should_skip_center && !is_mode_change_only && !self.buffer_just_switched && !skip_for_demo_hint {
+          let skip_for_demo_hint =
+            self.tutorial_demo_mode && self.demo_hint_text.is_some();
+          if !should_skip_center
+            && !is_mode_change_only
+            && !self.buffer_just_switched
+            && !skip_for_demo_hint
+          {
             self.center_cursor();
           }
-          
+
           // Clear the buffer switch flag after checking
           if self.buffer_just_switched {
-            self.debug_log("Skipping center_cursor due to buffer switch (non-terminal)");
+            self.debug_log(
+              "Skipping center_cursor due to buffer switch (non-terminal)",
+            );
             self.buffer_just_switched = false;
           }
 
@@ -159,7 +188,11 @@ impl Editor {
               self.draw_content(stdout, term_width, &center_offset_string)?;
             }
             ViewMode::HorizontalSplit => {
-              self.draw_split_view(stdout, term_width, &center_offset_string)?;
+              self.draw_split_view(
+                stdout,
+                term_width,
+                &center_offset_string,
+              )?;
             }
           }
 
@@ -175,8 +208,8 @@ impl Editor {
           self.cursor_moved = false;
         }
       } else {
-        // Even if not redrawing, ensure cursor is visible and positioned correctly
-        // But do it efficiently with a single write
+        // Even if not redrawing, ensure cursor is visible and positioned
+        // correctly But do it efficiently with a single write
         if self.show_cursor && std::io::stdout().is_terminal() {
           use crossterm::QueueableCommand;
           let mut buffer = Vec::new();
@@ -204,19 +237,19 @@ impl Editor {
         // Check for demo script actions
         if self.tutorial_demo_mode {
           // Check if hint should be cleared
-          if let Some(until) = self.demo_hint_until {
-            if std::time::Instant::now() > until {
-              // Only mark dirty if we actually had hint text
-              if self.demo_hint_text.is_some() {
-                self.demo_hint_text = None;
-                self.demo_hint_until = None;
-                self.mark_dirty();
-              } else {
-                self.demo_hint_until = None;
-              }
+          if let Some(until) = self.demo_hint_until
+            && std::time::Instant::now() > until
+          {
+            // Only mark dirty if we actually had hint text
+            if self.demo_hint_text.is_some() {
+              self.demo_hint_text = None;
+              self.demo_hint_until = None;
+              self.mark_dirty();
+            } else {
+              self.demo_hint_until = None;
             }
           }
-          
+
           if let Some(key_event) = self.check_demo_progress() {
             // Simulate the key event
             self.debug_log(&format!("Demo injecting key event: {key_event:?}"));
@@ -228,14 +261,15 @@ impl Editor {
             // handle_event will mark dirty if needed
             continue;
           }
-          
-          // Check immediately after demo progress - demo might have just completed
+
+          // Check immediately after demo progress - demo might have just
+          // completed
           if self.should_exit_after_demo() {
             self.debug_log("Demo complete, exiting (immediate)");
             break;
           }
         }
-        
+
         // Check if demo should exit (after demo completion)
         if self.should_exit_after_demo() {
           self.debug_log(&format!(
@@ -260,7 +294,7 @@ impl Editor {
                 ));
                 continue;
               }
-              
+
               // Enhanced debug logging for Windows key events
               #[cfg(target_os = "windows")]
               {
@@ -331,39 +365,43 @@ impl Editor {
           self.debug_log("Not a terminal - exiting main loop");
           break;
         }
-        
+
         // For demo mode when not in terminal, still check demo progress
-        if self.tutorial_demo_mode {
-          if let Some(key_event) = self.check_demo_progress() {
-            self.debug_log(&format!("Demo injecting key event (non-terminal): {key_event:?}"));
-            let exit = self.handle_event(key_event, stdout)?;
-            if exit {
-              self.debug_log("Exiting from demo action (non-terminal)");
-              break;
-            }
-            // handle_event will mark dirty if needed
+        if self.tutorial_demo_mode
+          && let Some(key_event) = self.check_demo_progress()
+        {
+          self.debug_log(&format!(
+            "Demo injecting key event (non-terminal): {key_event:?}"
+          ));
+          let exit = self.handle_event(key_event, stdout)?;
+          if exit {
+            self.debug_log("Exiting from demo action (non-terminal)");
+            break;
           }
+          // handle_event will mark dirty if needed
         }
-        
+
         // Check if demo should exit
         if self.should_exit_after_demo() {
           self.debug_log("Demo complete, exiting (non-terminal)");
           break;
         }
-        
+
         // Wait a bit and continue
         std::thread::sleep(std::time::Duration::from_millis(50));
       }
 
       // Save progress with exact viewport state
       let current_line = self.offset + self.cursor_y;
-      if current_line != self.last_offset || self.offset != self.last_saved_viewport_offset {
+      if current_line != self.last_offset
+        || self.offset != self.last_saved_viewport_offset
+      {
         save_progress_with_viewport(
-          self.document_hash, 
-          current_line, 
+          self.document_hash,
+          current_line,
           self.total_lines,
           Some(self.offset),
-          Some(self.cursor_y)
+          Some(self.cursor_y),
         )?;
         self.last_offset = current_line;
         self.last_saved_viewport_offset = self.offset;

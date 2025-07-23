@@ -1,5 +1,5 @@
 use crossterm::{
-  execute, QueueableCommand,
+  QueueableCommand, execute,
   style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor},
   terminal::{Clear, ClearType},
 };
@@ -8,7 +8,6 @@ use std::io::{self, Result as IoResult, Write};
 use super::core::{Editor, ViewMode};
 
 impl Editor {
-
   // Draw content with proper highlighting
   pub(super) fn draw_content(
     &self,
@@ -187,7 +186,12 @@ impl Editor {
 
         // Try highlighting selection only
         if has_selection
-          && self.highlight_selection_buffered(buffer, i, &line, center_offset_string)?
+          && self.highlight_selection_buffered(
+            buffer,
+            i,
+            &line,
+            center_offset_string,
+          )?
         {
           continue;
         }
@@ -219,15 +223,20 @@ impl Editor {
         // Normal line rendering - if current line was highlighted,
         // we need to use appropriate text color
         if is_current_line {
-          // For the highlighted line, use a color that contrasts with the background
-          buffer.queue(crossterm::style::SetForegroundColor(crossterm::style::Color::White))?;
+          // For the highlighted line, use a color that contrasts with the
+          // background
+          buffer.queue(crossterm::style::SetForegroundColor(
+            crossterm::style::Color::White,
+          ))?;
           write!(buffer, "{center_offset_string}{line}")?;
           buffer.queue(crossterm::style::ResetColor)?;
           // Don't clear the line since we want to keep the background color
         } else {
           write!(buffer, "{center_offset_string}{line}")?;
           // Clear to end of line to avoid artifacts
-          buffer.queue(crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine))?;
+          buffer.queue(crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine,
+          ))?;
         }
       } else {
         // This is beyond the document - show blank line for overscroll
@@ -237,7 +246,9 @@ impl Editor {
 
         if is_current_line {
           // Show highlighted empty line for cursor position
-          buffer.queue(crossterm::style::SetForegroundColor(crossterm::style::Color::White))?;
+          buffer.queue(crossterm::style::SetForegroundColor(
+            crossterm::style::Color::White,
+          ))?;
           write!(buffer, "{center_offset_string}")?;
           buffer.queue(crossterm::style::ResetColor)?;
           // Don't clear the line since we want to keep the background color
@@ -245,7 +256,9 @@ impl Editor {
           // Just show blank line
           write!(buffer, "{center_offset_string}")?;
           // Clear to end of line
-          buffer.queue(crossterm::terminal::Clear(crossterm::terminal::ClearType::UntilNewLine))?;
+          buffer.queue(crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::UntilNewLine,
+          ))?;
         }
       }
     }
@@ -257,5 +270,4 @@ impl Editor {
 
     Ok(())
   }
-
 }

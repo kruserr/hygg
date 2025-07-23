@@ -71,7 +71,7 @@ impl Editor {
       KeyCode::Backspace => {
         if self.editor_state.command_cursor_pos > 0 {
           let pos = self.editor_state.command_cursor_pos;
-          
+
           // Just remove the character
           self.editor_state.command_buffer.remove(pos - 1);
           self.editor_state.command_cursor_pos -= 1;
@@ -82,8 +82,8 @@ impl Editor {
             buffer.command_cursor_pos = self.editor_state.command_cursor_pos;
           }
         } else if self.editor_state.command_buffer.is_empty() {
-          // If we're at position 0 and buffer is empty, we're trying to delete the ':'
-          // Return to normal mode
+          // If we're at position 0 and buffer is empty, we're trying to delete
+          // the ':' Return to normal mode
           self.set_active_mode(EditorMode::Normal);
           self.editor_state.command_cursor_pos = 0;
           self.editor_state.visual_selection_active = false;
@@ -141,42 +141,42 @@ impl Editor {
         if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
       {
         // Ctrl+R in command mode - paste from register
-        if let CEvent::Key(register_key) = event::read()? {
-          if let KeyCode::Char('0') = register_key.code {
-            // Paste from yank buffer (register 0) at cursor position
-            let pos = self.editor_state.command_cursor_pos;
-            let yank_text = self.editor_state.yank_buffer.clone();
-            self.debug_log_event(
-              "command_mode",
-              "paste_register_0",
-              &format!("yank_buffer='{yank_text}', pos={pos}"),
-            );
+        if let CEvent::Key(register_key) = event::read()?
+          && let KeyCode::Char('0') = register_key.code
+        {
+          // Paste from yank buffer (register 0) at cursor position
+          let pos = self.editor_state.command_cursor_pos;
+          let yank_text = self.editor_state.yank_buffer.clone();
+          self.debug_log_event(
+            "command_mode",
+            "paste_register_0",
+            &format!("yank_buffer='{yank_text}', pos={pos}"),
+          );
 
-            // Remove newlines from yanked text to prevent command execution
-            let clean_text = yank_text.replace('\n', " ").replace('\r', "");
-            self.debug_log_state("command_mode", "clean_text", &clean_text);
+          // Remove newlines from yanked text to prevent command execution
+          let clean_text = yank_text.replace('\n', " ").replace('\r', "");
+          self.debug_log_state("command_mode", "clean_text", &clean_text);
 
-            self.editor_state.command_buffer.insert_str(pos, &clean_text);
-            self.editor_state.command_cursor_pos += clean_text.len();
+          self.editor_state.command_buffer.insert_str(pos, &clean_text);
+          self.editor_state.command_cursor_pos += clean_text.len();
 
-            // Also update active buffer's command buffer
-            if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
-              buffer.command_buffer.insert_str(pos, &clean_text);
-              buffer.command_cursor_pos = self.editor_state.command_cursor_pos;
-            }
-            
-            // Track paste for tutorial
-            if self.tutorial_active {
-              self.tutorial_paste_performed = true;
-              self.debug_log("Tutorial: paste performed via Ctrl+R 0");
-            }
-            
-            self.debug_log_state(
-              "command_mode",
-              "new_command_buffer",
-              &self.editor_state.command_buffer,
-            );
+          // Also update active buffer's command buffer
+          if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
+            buffer.command_buffer.insert_str(pos, &clean_text);
+            buffer.command_cursor_pos = self.editor_state.command_cursor_pos;
           }
+
+          // Track paste for tutorial
+          if self.tutorial_active {
+            self.tutorial_paste_performed = true;
+            self.debug_log("Tutorial: paste performed via Ctrl+R 0");
+          }
+
+          self.debug_log_state(
+            "command_mode",
+            "new_command_buffer",
+            &self.editor_state.command_buffer,
+          );
         }
         // Other registers not implemented yet
       }
@@ -184,30 +184,28 @@ impl Editor {
         if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
       {
         // Ctrl+V in command mode - paste from system clipboard
-        if let Some(clipboard) = &mut self.clipboard {
-          if let Ok(clipboard_text) = clipboard.get_text() {
-            let pos = self.editor_state.command_cursor_pos;
-            // Remove newlines from clipboard text to prevent command execution
-            let clean_text =
-              clipboard_text.replace('\n', " ").replace('\r', "");
-            self.editor_state.command_buffer.insert_str(pos, &clean_text);
-            self.editor_state.command_cursor_pos += clean_text.len();
+        if let Some(clipboard) = &mut self.clipboard
+          && let Ok(clipboard_text) = clipboard.get_text()
+        {
+          let pos = self.editor_state.command_cursor_pos;
+          // Remove newlines from clipboard text to prevent command execution
+          let clean_text = clipboard_text.replace('\n', " ").replace('\r', "");
+          self.editor_state.command_buffer.insert_str(pos, &clean_text);
+          self.editor_state.command_cursor_pos += clean_text.len();
 
-            // Also update active buffer's command buffer
-            if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
-              buffer.command_buffer.insert_str(pos, &clean_text);
-              buffer.command_cursor_pos = self.editor_state.command_cursor_pos;
-            }
-            
-            // Track paste for tutorial
-            if self.tutorial_active {
-              self.tutorial_paste_performed = true;
-              self.debug_log("Tutorial: paste performed via Ctrl+V");
-            }
-            
-            self
-              .debug_log(&format!("Pasted from clipboard: '{clipboard_text}'"));
+          // Also update active buffer's command buffer
+          if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
+            buffer.command_buffer.insert_str(pos, &clean_text);
+            buffer.command_cursor_pos = self.editor_state.command_cursor_pos;
           }
+
+          // Track paste for tutorial
+          if self.tutorial_active {
+            self.tutorial_paste_performed = true;
+            self.debug_log("Tutorial: paste performed via Ctrl+V");
+          }
+
+          self.debug_log(&format!("Pasted from clipboard: '{clipboard_text}'"));
         }
       }
       KeyCode::Char(c) => {

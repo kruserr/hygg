@@ -19,7 +19,7 @@ impl Editor {
     self.show_highlighter = config.enable_line_highlighter.unwrap_or(true);
     self.show_cursor = config.show_cursor.unwrap_or(true);
     self.show_progress = config.show_progress.unwrap_or(true);
-    
+
     // Check if tutorial should be shown
     let tutorial_enabled = config.enable_tutorial.unwrap_or(true);
     let tutorial_shown = config.tutorial_shown.unwrap_or(false);
@@ -44,7 +44,7 @@ impl Editor {
     }
 
     // Tutorial will be shown automatically on first launch if enabled
-    
+
     // Note: Even with empty lines, we should allow the editor to run
     // so users can access the tutorial with :tutorial command
 
@@ -52,7 +52,9 @@ impl Editor {
     match load_progress(self.document_hash) {
       Ok(progress) => {
         // Check if we have new viewport information
-        if let (Some(viewport_offset), Some(saved_cursor_y)) = (progress.viewport_offset, progress.cursor_y) {
+        if let (Some(viewport_offset), Some(saved_cursor_y)) =
+          (progress.viewport_offset, progress.cursor_y)
+        {
           // Use exact saved viewport state
           self.offset = viewport_offset;
           self.cursor_y = saved_cursor_y;
@@ -64,7 +66,7 @@ impl Editor {
           let saved_line = progress.offset;
           let content_height = self.height.saturating_sub(1);
           let center_y = content_height / 2;
-          
+
           // Try to center the saved line on screen
           if saved_line < center_y {
             // Line is near the top, can't center fully
@@ -89,7 +91,7 @@ impl Editor {
             self.offset, self.cursor_y
           ));
         }
-        
+
         // Update tracking fields
         self.last_offset = progress.offset;
         self.last_saved_viewport_offset = self.offset;
@@ -106,11 +108,11 @@ impl Editor {
       execute!(stdout, terminal::EnterAlternateScreen, Hide)?;
       terminal::enable_raw_mode()?;
     }
-    
+
     // Show tutorial on first launch or start demo mode
     if self.tutorial_demo_mode {
       let demo_id = self.demo_id.unwrap_or(0); // Default to marketing demo if no ID specified
-      self.debug_log(&format!("Starting demo mode with ID: {}", demo_id));
+      self.debug_log(&format!("Starting demo mode with ID: {demo_id}"));
       self.start_demo_mode(demo_id);
     } else if tutorial_enabled && !tutorial_shown && !self.tutorial_demo_mode {
       self.debug_log("Showing interactive tutorial for first-time user");

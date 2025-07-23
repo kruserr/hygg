@@ -102,26 +102,26 @@ impl Editor {
         if search_line == line_idx { col_idx + 1 } else { line.len() };
 
       for search_col in (0..search_end).rev() {
-        if let Some(ch) = line.chars().nth(search_col) {
-          if ch == '.' || ch == '!' || ch == '?' {
-            // Found sentence end, start is after this
-            if search_col + 1 < line.len() {
-              start_pos = (search_line, search_col + 1);
-            } else if search_line + 1 < self.lines.len() {
-              start_pos = (search_line + 1, 0);
-            }
-            // Skip whitespace after punctuation
-            while start_pos.1 < self.lines[start_pos.0].len()
-              && self.lines[start_pos.0]
-                .chars()
-                .nth(start_pos.1)
-                .is_some_and(|c| c.is_whitespace())
-            {
-              start_pos.1 += 1;
-            }
-            found_start = true;
-            break 'outer;
+        if let Some(ch) = line.chars().nth(search_col)
+          && (ch == '.' || ch == '!' || ch == '?')
+        {
+          // Found sentence end, start is after this
+          if search_col + 1 < line.len() {
+            start_pos = (search_line, search_col + 1);
+          } else if search_line + 1 < self.lines.len() {
+            start_pos = (search_line + 1, 0);
           }
+          // Skip whitespace after punctuation
+          while start_pos.1 < self.lines[start_pos.0].len()
+            && self.lines[start_pos.0]
+              .chars()
+              .nth(start_pos.1)
+              .is_some_and(|c| c.is_whitespace())
+          {
+            start_pos.1 += 1;
+          }
+          found_start = true;
+          break 'outer;
         }
       }
     }
@@ -137,12 +137,12 @@ impl Editor {
       let search_start = if search_line == line_idx { col_idx } else { 0 };
 
       for search_col in search_start..line.len() {
-        if let Some(ch) = line.chars().nth(search_col) {
-          if ch == '.' || ch == '!' || ch == '?' {
-            end_pos = (search_line, search_col + 1);
-            found_end = true;
-            break 'outer2;
-          }
+        if let Some(ch) = line.chars().nth(search_col)
+          && (ch == '.' || ch == '!' || ch == '?')
+        {
+          end_pos = (search_line, search_col + 1);
+          found_end = true;
+          break 'outer2;
         }
       }
     }

@@ -25,7 +25,10 @@ impl Editor {
     match key_event.code {
       KeyCode::Esc => {
         // Restore original cursor position
-        if let (Some((y, x)), Some(offset)) = (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+        if let (Some((y, x)), Some(offset)) = (
+          self.editor_state.search_original_cursor,
+          self.editor_state.search_original_offset,
+        ) {
           self.cursor_y = y;
           self.cursor_x = x;
           self.offset = offset;
@@ -47,7 +50,8 @@ impl Editor {
         // Move cursor to the preview match if found
         if let Some((_line, _col, _)) = self.editor_state.search_preview_match {
           // Set current_match from preview
-          self.editor_state.current_match = self.editor_state.search_preview_match;
+          self.editor_state.current_match =
+            self.editor_state.search_preview_match;
           // Also update active buffer's current_match
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
             buffer.current_match = self.editor_state.search_preview_match;
@@ -70,8 +74,9 @@ impl Editor {
       KeyCode::Backspace => {
         if !self.editor_state.command_buffer.is_empty() {
           self.editor_state.command_buffer.pop();
-          self.editor_state.command_cursor_pos = self.editor_state.command_buffer.len();
-          
+          self.editor_state.command_cursor_pos =
+            self.editor_state.command_buffer.len();
+
           // Sync with active buffer
           if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
             buffer.command_buffer = self.editor_state.command_buffer.clone();
@@ -82,8 +87,12 @@ impl Editor {
           let direction = self.editor_state.search_direction;
           self.find_preview_match(&query, direction);
         } else {
-          // If search buffer is already empty, exit search mode and restore cursor
-          if let (Some((y, x)), Some(offset)) = (self.editor_state.search_original_cursor, self.editor_state.search_original_offset) {
+          // If search buffer is already empty, exit search mode and restore
+          // cursor
+          if let (Some((y, x)), Some(offset)) = (
+            self.editor_state.search_original_cursor,
+            self.editor_state.search_original_offset,
+          ) {
             self.cursor_y = y;
             self.cursor_x = x;
             self.offset = offset;

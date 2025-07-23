@@ -14,10 +14,10 @@ impl Editor {
     self.handle_number_prefix_clearing(key_event);
 
     // Handle tmux prefix mode if active
-    if self.tmux_prefix_active {
-      if let Some(result) = self.handle_tmux_prefix(key_event)? {
-        return Ok(result);
-      }
+    if self.tmux_prefix_active
+      && let Some(result) = self.handle_tmux_prefix(key_event)?
+    {
+      return Ok(result);
     }
 
     // Try control keys first (mode switching, etc.)
